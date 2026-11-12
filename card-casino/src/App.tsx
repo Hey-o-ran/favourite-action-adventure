@@ -4,6 +4,7 @@ import { Blackjack } from './games/Blackjack';
 import { Klondike } from './games/Klondike';
 import { VideoPoker } from './games/VideoPoker';
 import { HigherLower } from './games/HigherLower';
+import { Rules } from './components/Rules';
 
 interface GameEntry {
   id: string;
@@ -53,6 +54,7 @@ function logout() {
 export function App() {
   const { balance, refill } = useWallet();
   const [activeId, setActiveId] = useState(GAMES[0].id);
+  const [showRules, setShowRules] = useState(false);
   const active = GAMES.find((g) => g.id === activeId)!;
 
   return (
@@ -63,6 +65,9 @@ export function App() {
           <div className="balance" aria-live="polite">
             {balance.toLocaleString()} coins
           </div>
+          <button onClick={() => setShowRules((v) => !v)} aria-pressed={showRules}>
+            {showRules ? 'Back to game' : 'Rules'}
+          </button>
           <button onClick={logout}>Log out</button>
         </div>
       </header>
@@ -76,26 +81,31 @@ export function App() {
         </div>
       )}
 
-      <nav>
-        {GAMES.map((g) => (
-          <button
-            key={g.id}
-            className={g.id === activeId ? 'active' : undefined}
-            onClick={() => setActiveId(g.id)}
-          >
-            {g.name}
-          </button>
+      {showRules && <Rules />}
+
+      {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
+      <div hidden={showRules}>
+        <nav>
+          {GAMES.map((g) => (
+            <button
+              key={g.id}
+              className={g.id === activeId ? 'active' : undefined}
+              onClick={() => setActiveId(g.id)}
+            >
+              {g.name}
+            </button>
+          ))}
+        </nav>
+
+        <p className="blurb">{active.blurb}</p>
+
+        {/* Games stay mounted when hidden so an unfinished hand isn't lost when switching games. */}
+        {GAMES.map(({ id, Component }) => (
+          <div key={id} hidden={id !== activeId}>
+            <Component />
+          </div>
         ))}
-      </nav>
-
-      <p className="blurb">{active.blurb}</p>
-
-      {/* Games stay mounted when hidden so an unfinished hand isn't lost when switching games. */}
-      {GAMES.map(({ id, Component }) => (
-        <div key={id} hidden={id !== activeId}>
-          <Component />
-        </div>
-      ))}
+      </div>
     </div>
   );
 }
