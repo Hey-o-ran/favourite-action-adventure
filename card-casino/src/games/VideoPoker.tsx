@@ -22,7 +22,8 @@ export function VideoPoker() {
 
   const deal = () => {
     if (!wager(bet)) return;
-    setRound(dealVideoPoker(round?.deck ?? shuffle(newDeck()), bet));
+    // Fresh shuffle every hand, as in a real machine: no leftover deck, no duplicate cards.
+    setRound(dealVideoPoker(shuffle(newDeck()), bet));
   };
 
   const draw = () => {
