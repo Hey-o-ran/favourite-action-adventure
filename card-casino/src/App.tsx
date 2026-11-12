@@ -5,6 +5,7 @@ import { Klondike } from './games/Klondike';
 import { VideoPoker } from './games/VideoPoker';
 import { HigherLower } from './games/HigherLower';
 import { Rules } from './components/Rules';
+import { UpdateLog } from './components/UpdateLog';
 
 interface GameEntry {
   id: string;
@@ -54,7 +55,10 @@ function logout() {
 export function App() {
   const { balance, refill } = useWallet();
   const [activeId, setActiveId] = useState(GAMES[0].id);
-  const [showRules, setShowRules] = useState(false);
+  const [view, setView] = useState<'game' | 'rules' | 'updates'>('game');
+  const showRules = view !== 'game';
+  /** Clicking the button for the page you're already on takes you back to the games. */
+  const toggleView = (target: 'rules' | 'updates') => setView((v) => (v === target ? 'game' : target));
   const active = GAMES.find((g) => g.id === activeId)!;
 
   return (
@@ -65,8 +69,11 @@ export function App() {
           <div className="balance" aria-live="polite">
             {balance.toLocaleString()} coins
           </div>
-          <button onClick={() => setShowRules((v) => !v)} aria-pressed={showRules}>
-            {showRules ? 'Back to game' : 'Rules'}
+          <button onClick={() => toggleView('updates')} aria-pressed={view === 'updates'}>
+            {view === 'updates' ? 'Back to game' : "What's new"}
+          </button>
+          <button onClick={() => toggleView('rules')} aria-pressed={view === 'rules'}>
+            {view === 'rules' ? 'Back to game' : 'Rules'}
           </button>
           <button onClick={logout}>Log out</button>
         </div>
@@ -81,7 +88,8 @@ export function App() {
         </div>
       )}
 
-      {showRules && <Rules />}
+      {view === 'rules' && <Rules />}
+      {view === 'updates' && <UpdateLog />}
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
       <div hidden={showRules}>
