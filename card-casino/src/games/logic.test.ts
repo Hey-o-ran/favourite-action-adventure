@@ -5,6 +5,7 @@ import { evaluateHand } from './videoPokerRules';
 import { newKlondike, moveCards, outcome, type KState } from './klondikeRules';
 import { guessHigherLower, guessJackpot, startHigherLower } from './higherLowerRules';
 import { dealThird, startRedDog } from './redDogRules';
+import { bankerDraws, handTotal as baccaratTotal, playBaccarat } from './baccaratRules';
 
 const c = (rank: number, suit: Card['suit'] = 'spades'): Card => ({ rank, suit });
 
@@ -175,5 +176,73 @@ describe('red dog', () => {
     const capped = dealThird(startRedDog([c(4), c(9), c(6)], 10), 50);
     expect(capped).toMatchObject({ raise: 10, returned: 40 });
     expect(dealThird(startRedDog([c(4), c(9), c(2)], 10), 10).returned).toBe(0);
+  });
+});
+
+describe('baccarat', () => {
+  it('scores face cards as 0, aces as 1, and keeps only the last digit', () => {
+    expect(baccaratTotal([c(13), c(12)])).toBe(0);
+    expect(baccaratTotal([c(1), c(9)])).toBe(0); // 10
+    expect(baccaratTotal([c(7), c(8)])).toBe(5); // 15
+    expect(baccaratTotal([c(9), c(9), c(9)])).toBe(7); // 27
+  });
+
+  // Deal order is player, banker, player, banker, then any third cards (player first).
+  it('stops on a natural, so nobody draws', () => {
+    const r = playBaccarat([c(4), c(2), c(5), c(10), c(7), c(7)], 'player', 10);
+    expect(r).toMatchObject({ natural: true, winner: 'player', returned: 20 });
+    expect(r.player).toHaveLength(2);
+    expect(r.banker).toHaveLength(2);
+  });
+
+  it('has the player draw on 0 to 5 and stand on 6 or 7', () => {
+    const draws = playBaccarat([c(2), c(10), c(3), c(10), c(4), c(1)], 'player', 10);
+    expect(draws.player).toHaveLength(3); // 5 draws
+    const stands = playBaccarat([c(3), c(10), c(3), c(10), c(2), c(1)], 'player', 10);
+    expect(stands.player).toHaveLength(2); // 6 stands
+  });
+
+  it("has the banker draw on 0 to 5 when the player stands", () => {
+    // Player 3+3 = 6 stands, banker 2+3 = 5 draws a 4 for 9.
+    const r = playBaccarat([c(3), c(2), c(3), c(3), c(4)], 'banker', 10);
+    expect(r.banker).toHaveLength(3);
+    expect(r.winner).toBe('banker');
+    // Banker 6 stands when the player stood.
+    expect(playBaccarat([c(3), c(3), c(3), c(3), c(4)], 'banker', 10).banker).toHaveLength(2);
+  });
+
+  it("follows the banker's third-card table when the player drew", () => {
+    // banker total -> player third card values on which the banker draws
+    const table: Record<number, number[]> = {
+      0: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      1: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      2: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      3: [0, 1, 2, 3, 4, 5, 6, 7, 9],
+      4: [2, 3, 4, 5, 6, 7],
+      5: [4, 5, 6, 7],
+      6: [6, 7],
+      7: [],
+    };
+    for (const [total, draws] of Object.entries(table)) {
+      for (let third = 0; third <= 9; third++) {
+        expect(bankerDraws(Number(total), third), `banker ${total}, player third ${third}`).toBe(draws.includes(third));
+      }
+    }
+  });
+
+  it('pays 1 to 1 on Player and returns the stake on a tie for Player and Banker bets', () => {
+    expect(playBaccarat([c(2), c(4), c(3), c(5)], 'player', 10).returned).toBe(0); // banker 9 beats player 5
+    // Both hands are a natural 8: a tie.
+    const tie = [c(4), c(3), c(4), c(5)];
+    expect(playBaccarat(tie, 'player', 10)).toMatchObject({ winner: 'tie', returned: 10 });
+    expect(playBaccarat(tie, 'banker', 10).returned).toBe(10);
+    expect(playBaccarat(tie, 'tie', 10).returned).toBe(90); // 8 to 1
+  });
+
+  it('takes a 5% commission on Banker wins, rounded down to a whole coin', () => {
+    const bankerWins = [c(2), c(4), c(3), c(5)]; // banker natural 9
+    expect(playBaccarat(bankerWins, 'banker', 10).returned).toBe(19); // 19.5 rounded down
+    expect(playBaccarat(bankerWins, 'banker', 100).returned).toBe(195);
+    expect(playBaccarat(bankerWins, 'tie', 10).returned).toBe(0);
   });
 });

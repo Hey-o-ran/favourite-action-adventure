@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
 import { SPREAD_PAYOUTS, THREE_OF_A_KIND_PAYOUT, WIDE_SPREAD_PAYOUT } from '../games/redDogRules';
+import { BANKER_PAYOUT_PERCENT, PLAYER_PAYOUT, TIE_PAYOUT } from '../games/baccaratRules';
 
 /** A small card for diagrams. `back` draws a face-down card. */
 function MiniCard({ x, y, label, red, back }: { x: number; y: number; label?: string; red?: boolean; back?: boolean }) {
@@ -114,6 +115,23 @@ function RedDogDiagram() {
       <Note x={230} y={36} anchor="start">Wins on 5, 6, 7 or 8</Note>
       <Note x={230} y={56} anchor="start">4 cards in between = pays 1 to 1</Note>
       <Note x={210} y={120}>Landing on the 4 or the 9 loses. Aces are high.</Note>
+    </svg>
+  );
+}
+
+function BaccaratDiagram() {
+  return (
+    <svg viewBox="0 0 420 150" role="img" aria-label="Player holds 7 and 8, totalling 5; Banker holds 4 and 5, totalling 9; Banker wins">
+      <Note x={10} y={16} anchor="start">Player</Note>
+      <MiniCard x={10} y={24} label="7♠" />
+      <MiniCard x={54} y={24} label="8♥" red />
+      <Note x={72} y={100}>7 + 8 = 15 → 5</Note>
+      <Note x={230} y={16} anchor="start">Banker</Note>
+      <MiniCard x={230} y={24} label="4♣" />
+      <MiniCard x={274} y={24} label="5♦" red />
+      <Note x={292} y={100}>4 + 5 = 9 → 9</Note>
+      <Note x={210} y={126}>Only the last digit counts. Closest to 9 wins, so Banker wins here.</Note>
+      <Note x={210} y={144}>J, Q, K and 10 are worth 0. Aces are 1.</Note>
     </svg>
   );
 }
@@ -236,6 +254,42 @@ export function Rules() {
           <li>Raise only on a spread of 7 or more. That's where the third card lands between them more than half the time.</li>
           <li>On a narrow spread (1 or 2) the big payout is tempting, but it wins less than one time in six. Don't add to it.</li>
           <li>Every hand uses a freshly shuffled deck, so there's nothing to remember from earlier hands.</li>
+        </ul>
+      </Section>
+
+      <Section title="Baccarat" diagram={<BaccaratDiagram />}>
+        <h3>How to play</h3>
+        <ul>
+          <li>You don't play any cards. Choose a bet, press Deal, and the cards play themselves out by fixed rules.</li>
+          <li>Two hands are dealt: <b>Player</b> and <b>Banker</b>. These are just names, and you can bet on either one whoever you are.</li>
+          <li>Add up a hand and only the last digit counts (15 is 5). The hand closest to 9 wins. 10, J, Q and K are worth 0 and an Ace is 1.</li>
+          <li>If either hand starts on 8 or 9 it's a <b>natural</b> and the round ends. Otherwise a hand may draw a third card, depending on its total. The game does this for you.</li>
+        </ul>
+        <table className="paytable">
+          <tbody>
+            <tr>
+              <td>Player wins</td>
+              <td>{PLAYER_PAYOUT} to 1</td>
+            </tr>
+            <tr>
+              <td>Banker wins</td>
+              <td>0.{BANKER_PAYOUT_PERCENT} to 1</td>
+            </tr>
+            <tr>
+              <td>Tie</td>
+              <td>{TIE_PAYOUT} to 1</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>Banker pays a little less because the casino takes a 5% commission, and winnings are rounded down to a whole coin.</li>
+          <li>If the round is a tie, Player and Banker bets are returned. Only a Tie bet wins.</li>
+        </ul>
+        <h3>Tips</h3>
+        <ul>
+          <li>Banker is the best bet over time, even with the commission, and Player is close behind.</li>
+          <li>The Tie bet pays 8 to 1 but is the worst bet at the table. It's fun for a flutter, not a plan.</li>
+          <li>There's no skill in the cards, so the only choices are your bet and your bet size. Keep your bets small relative to your coins.</li>
         </ul>
       </Section>
     </div>
