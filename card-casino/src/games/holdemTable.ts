@@ -27,7 +27,7 @@ export function nextHandSetup(finished: HoldemState): NextHand {
   return { stacks, button: (finished.button + 1) % SEAT_COUNT, rebought, humanBust: stacks[0] < BIG_BLIND };
 }
 
-const YOU_VERBS: Record<string, string> = { folds: 'fold', checks: 'check', calls: 'call', bets: 'bet', raises: 'raise', posts: 'post' };
+const YOU_VERBS: Record<string, string> = { folds: 'fold', checks: 'check', calls: 'call', bets: 'bet', raises: 'raise', posts: 'post', goes: 'go' };
 
 /** Turns the engine's log ("Seat 1 calls 2.") into player-facing lines ("Bot 1 calls 2.", "You call 2."). */
 export function formatLog(lines: readonly string[]): string[] {
@@ -36,7 +36,7 @@ export function formatLog(lines: readonly string[]): string[] {
     .map((line) =>
       line
         .replace(/[Ss]eat (\d)/g, (_, n: string) => seatName(Number(n)))
-        .replace(/^You (folds|checks|calls|bets|raises|posts)\b/, (_, verb: string) => `You ${YOU_VERBS[verb]}`)
+        .replace(/^You (folds|checks|calls|bets|raises|posts|goes)\b/, (_, verb: string) => `You ${YOU_VERBS[verb]}`)
         .replace(/, You\b/, ', you'),
     );
 }

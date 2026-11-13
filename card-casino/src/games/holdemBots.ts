@@ -14,6 +14,8 @@ export const RAISE_WHEN_FREE = 0.55;
 export const RAISE_WHEN_FACING = 0.65;
 /** How far a bot's judgement can wobble either way, as a share of the 0 to 1 scale. */
 export const JITTER = 0.1;
+/** To call a bet that puts all of its remaining chips at risk, a bot needs at least this strength. */
+export const CALL_ALL_IN = 0.6;
 
 const value = (card: Card) => (card.rank === 1 ? 14 : card.rank);
 const clamp = (n: number, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, n));
@@ -109,7 +111,10 @@ export function botAction(s: HoldemState, random: () => number = Math.random): A
 
   if (legal.raise && strength >= RAISE_WHEN_FACING) return 'raise';
 
-  // Otherwise call if the hand is worth the price. A bigger bet into a smaller pot needs a better hand.
+  // Otherwise call if the hand is worth the price. A bigger bet into a smaller pot needs a better hand,
+  // and risking every remaining chip (calling an all-in) needs a strong one.
   const potOdds = legal.callAmount / (s.pot + legal.callAmount);
-  return strength >= 0.2 + potOdds * 0.5 ? 'call' : 'fold';
+  const riskingEverything = legal.callAmount >= s.seats[s.toAct].stack;
+  const needed = Math.max(0.2 + potOdds * 0.5, riskingEverything ? CALL_ALL_IN : 0);
+  return strength >= needed ? 'call' : 'fold';
 }

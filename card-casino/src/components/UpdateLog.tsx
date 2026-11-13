@@ -8,6 +8,16 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: "All in at the poker table",
+    points: [
+      'There is a new All in button when you play Texas Hold\'em. It bets as many coins as the table allows, all in one go!',
+      'The button shows how many coins it will use. If you have the fewest coins, that is all of them. If you have more, the extra stays safe in your pile.',
+      'The robots will not go all in on their own, but when you do, they think hard. They only call with a really good hand, otherwise they give up.',
+      'Careful, it is a big gamble. If you win you could win lots of coins, and if you lose, they are gone.',
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: "Smarter robots and Hold'em rules",
     points: [
       'The poker robots grew up! They now look at their cards. They give up on bad hands, keep going with good ones, and raise when they have something great.',

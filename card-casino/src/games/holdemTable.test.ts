@@ -67,3 +67,9 @@ describe('describing a hand', () => {
     expect(net).toBe(shown.payouts[0] - 2); // everyone put in 2 before checking down
   });
 });
+
+describe('describing an all-in', () => {
+  it('words the log for you and for the bots', () => {
+    expect(formatLog(['Seat 0 goes all in (100).', 'Seat 1 goes all in (50).'])).toEqual(['You go all in (100).', 'Bot 1 goes all in (50).']);
+  });
+});

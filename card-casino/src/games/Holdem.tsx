@@ -130,10 +130,23 @@ export function Holdem() {
             ) : (
               <button className="primary" onClick={() => play('call')} disabled={!myTurn || !legal.call}>
                 Call {legal.callAmount}
+                {legal.callAmount >= me.stack && ' (all in)'}
               </button>
             )}
             <button onClick={() => play('raise')} disabled={!myTurn || !legal.raise}>
               {hand.currentBet === 0 ? 'Bet' : 'Raise to'} {legal.raiseTo || ''}
+            </button>
+            <button
+              className="all-in"
+              onClick={() => play('allin')}
+              disabled={!myTurn || !legal.allIn}
+              title={
+                legal.allInTo >= me.stack + me.bet
+                  ? 'Bet every chip you have'
+                  : 'Bet the most the other players can match. You keep the rest.'
+              }
+            >
+              All in {myTurn && legal.allIn ? `(${legal.allInTo})` : ''}
             </button>
           </>
         )}

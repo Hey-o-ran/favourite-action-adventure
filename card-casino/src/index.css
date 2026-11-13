@@ -358,3 +358,6 @@ button.primary {
   font-weight: 800;
 }
 .holdem-log { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+
+button.all-in { background: linear-gradient(135deg, #f43f5e, #a855f7); border-color: transparent; font-weight: 700; }
+button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-weight: inherit; }

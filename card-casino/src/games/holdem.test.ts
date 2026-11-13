@@ -283,6 +283,111 @@ describe('no side pots: bets are capped at the shortest stack', () => {
   });
 });
 
+describe('going all in', () => {
+  const holes: [string, string, string] = ['As Ah', 'Ks Kh', '9s 9h'];
+  const board = '2c 3d 4h 5s 7c';
+  const fresh = (stackList = [100, 100, 100]) => startHand(stackList, 0, rigged(0, holes, board));
+
+  it('is on offer, and goes up to what the shortest stack can match', () => {
+    const a = legalActions(fresh());
+    expect(a.allIn).toBe(true);
+    expect(a.allInTo).toBe(100); // everyone has 100 in total, counting the blinds
+  });
+
+  it('puts the chips in, sets the bet, and makes the others respond', () => {
+    const s = act(fresh(), 'allin');
+    expect(stacks(s)).toEqual([0, 99, 98]);
+    expect(s.pot).toBe(103);
+    expect(s.currentBet).toBe(100);
+    expect(s.toAct).toBe(1);
+    expect(legalActions(s)).toMatchObject({ call: true, callAmount: 99, raise: false, allIn: false });
+    expect(s.log[s.log.length - 1]).toBe('Seat 0 goes all in (100).');
+  });
+
+  it('wins the pot outright if everyone else folds', () => {
+    let s = act(fresh(), 'allin');
+    s = act(s, 'fold');
+    s = act(s, 'fold');
+    expect(s.over).toBe(true);
+    expect(s.winners).toEqual([0]);
+    expect(stacks(s)).toEqual([103, 99, 98]);
+  });
+
+  it('runs the board out and settles at showdown when both call', () => {
+    let s = act(fresh(), 'allin');
+    s = act(s, 'call');
+    s = act(s, 'call');
+    expect(s.over).toBe(true);
+    expect(s.street).toBe('showdown');
+    expect(s.board).toHaveLength(5);
+    expect(s.pot).toBe(300);
+    expect(s.winners).toEqual([0]); // pocket aces hold up
+    expect(stacks(s)).toEqual([300, 0, 0]);
+  });
+
+  it('works even after the raises have run out', () => {
+    let s = fresh();
+    s = act(s, 'raise'); // to 4
+    s = act(s, 'raise'); // to 6
+    expect(s.toAct).toBe(2);
+    const a = legalActions(s);
+    expect(a.raise).toBe(false); // the limit is reached
+    expect(a.allIn).toBe(true);
+    s = act(s, 'allin');
+    expect(s.currentBet).toBe(100);
+  });
+
+  it('can be the opening bet on a later street', () => {
+    let s = act(act(act(fresh(), 'call'), 'call'), 'check'); // to the flop, everyone has 98 left
+    expect(s.street).toBe('flop');
+    expect(legalActions(s).allInTo).toBe(98);
+    s = act(s, 'allin');
+    expect(s.currentBet).toBe(98);
+    expect(s.seats[1].stack).toBe(0);
+  });
+
+  it('only goes as far as the others can match when you hold the biggest stack', () => {
+    // Seat 2 is the big blind with 10 chips in all, so that's the limit even though seat 0 has 100.
+    const s = act(fresh([100, 100, 10]), 'allin');
+    expect(s.currentBet).toBe(10);
+    expect(stacks(s)).toEqual([90, 99, 8]);
+    const done = act(act(s, 'call'), 'call');
+    expect(done.over).toBe(true);
+    expect(done.pot).toBe(30);
+    expect(stacks(done)).toEqual([90 + 30, 90, 0]); // aces win and keep the 90 that never went in
+    expect(stacks(done).reduce((a, b) => a + b)).toBe(210);
+  });
+
+  it('is everything you have when you hold the shortest stack', () => {
+    // The short stack (seat 0, button) shoves its last 10 chips and the rest can all call it.
+    const s = act(fresh([10, 100, 100]), 'allin');
+    expect(s.seats[0].stack).toBe(0);
+    expect(s.currentBet).toBe(10);
+    const done = checkDownAllIn(s);
+    expect(done.over).toBe(true);
+    expect(stacks(done).reduce((a, b) => a + b)).toBe(210);
+  });
+
+  it('cannot be used once someone is already all in for the most that can be matched', () => {
+    const s = act(fresh(), 'allin');
+    expect(legalActions(s).allIn).toBe(false);
+    expect(act(s, 'allin')).toBe(s); // ignored
+  });
+
+  it('is ignored when it is not your turn or the hand is over', () => {
+    const over = act(act(fresh(), 'fold'), 'fold');
+    expect(over.over).toBe(true);
+    expect(act(over, 'allin')).toBe(over);
+  });
+});
+
+/** Calls until the hand ends. */
+function checkDownAllIn(s: HoldemState): HoldemState {
+  let state = s;
+  while (!state.over) state = act(state, legalActions(state).check ? 'check' : 'call');
+  return state;
+}
+
 describe('simulated play', () => {
   /** A small repeatable random number generator, so a failure can be reproduced. */
   function randomFrom(seed: number) {
@@ -310,6 +415,11 @@ describe('simulated play', () => {
       expect(a.callAmount).toBeLessThanOrEqual(s.seats[s.toAct!].stack); // every call fits in the stack
       const options = (['fold', 'check', 'call', 'raise'] as const).filter((k) => a[k]);
       expect(options.length).toBeGreaterThan(0);
+      // Sometimes shove, so the all-in path gets plenty of exercise.
+      if (a.allIn && random() < 0.15) {
+        s = act(s, 'allin');
+        continue;
+      }
       // Raise often so stacks go all in, but still fold and call sometimes.
       s = act(s, random() < 0.4 && a.raise ? 'raise' : options[Math.floor(random() * options.length)]);
     }
