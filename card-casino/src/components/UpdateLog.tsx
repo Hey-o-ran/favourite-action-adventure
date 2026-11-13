@@ -8,12 +8,13 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
-    title: 'Crazy Eights, and games sorted into groups',
+    title: 'Crazy Eights, and a game finder',
     points: [
       'A brand-new game: Crazy Eights! You play against a robot. Match the top card by its colour-and-shape (suit) or its number. Be first to run out of cards to win.',
       '8s are wild, which means they can be played any time. When you play one, you get to pick the suit that comes next.',
-      'The games are now sorted into groups at the top: Table Games, Poker, Solo and Versus Bots. That way it will stay easy to find a game when we add lots more.',
-      'The Rules page uses the same groups, with the rules for one game at a time.',
+      'There is now a game finder at the top. Pick a country where a game was invented, how many players it has, what kind of game it is, or whether it is luck or skill. The list shrinks to just the games that fit.',
+      'Press Clear filters to see every game again. The Rules page has the same finder.',
+      'Each game now tells you where it comes from. Some games are so old that nobody is sure, and we say so!',
     ],
   },
   {
