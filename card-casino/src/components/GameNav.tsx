@@ -5,8 +5,11 @@ import {
   activeFilterCount,
   filterOptions,
   matchesFilters,
+  SORT_OPTIONS,
+  sortGames,
   type Filters,
   type GameFacts,
+  type SortOrder,
 } from '../gameFilters';
 
 export interface NavGame extends GameFacts {
@@ -20,11 +23,16 @@ interface GameNavProps {
   onSelect: (id: string) => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
+  sort: SortOrder;
+  onSortChange: (sort: SortOrder) => void;
 }
 
-/** Filter dropdowns plus a row of the games that match them. */
-export function GameNav({ games, activeId, onSelect, filters, onFiltersChange }: GameNavProps) {
-  const matches = games.filter((g) => matchesFilters(g, filters));
+/** Filter and sort dropdowns plus a row of the games that match, in the chosen order. */
+export function GameNav({ games, activeId, onSelect, filters, onFiltersChange, sort, onSortChange }: GameNavProps) {
+  const matches = sortGames(
+    games.filter((g) => matchesFilters(g, filters)),
+    sort,
+  );
   const active = games.find((g) => g.id === activeId);
   // Keep the game you're playing on screen even if a filter would hide it, so you never lose track of it.
   const shown = active && !matches.includes(active) ? [active, ...matches] : matches;
@@ -47,6 +55,16 @@ export function GameNav({ games, activeId, onSelect, filters, onFiltersChange }:
           </label>
         ))}
         {filtering && <button onClick={() => onFiltersChange(NO_FILTERS)}>Clear filters</button>}
+        <label className="filter sort">
+          <span>Sort by</span>
+          <select value={sort} onChange={(e) => onSortChange(e.target.value as SortOrder)}>
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <p className="match-count" aria-live="polite">
