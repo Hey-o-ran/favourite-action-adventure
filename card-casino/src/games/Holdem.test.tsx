@@ -148,7 +148,7 @@ describe("Texas Hold'em table", () => {
 
 describe('going all in', () => {
   it('offers an All in button with the amount, and only on your turn', async () => {
-    const user = renderTable();
+    const user = await renderTable();
     await user.click(screen.getByRole('button', { name: /sit down/i }));
     expect(screen.getByRole('button', { name: /all in \(100\)/i })).toBeEnabled();
 
@@ -158,7 +158,7 @@ describe('going all in', () => {
   });
 
   it('puts your chips in, runs the board out against calling bots, and pays out what you win', async () => {
-    const user = renderTable();
+    const user = await renderTable();
     await user.click(screen.getByRole('button', { name: /sit down/i }));
     await user.click(screen.getByRole('button', { name: /all in \(100\)/i }));
     expect(screen.getByText(/you go all in \(100\)/i)).toBeInTheDocument();
