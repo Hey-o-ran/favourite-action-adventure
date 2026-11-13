@@ -332,6 +332,13 @@ button.primary {
 .origin-note { display: block; margin-top: 2px; font-style: italic; }
 .filter.sort { margin-left: auto; }
 
+.admin-panel { background: var(--felt-dark); border-radius: 12px; padding: 16px; }
+.admin-panel h2 { margin: 0 0 8px; color: var(--gold); }
+.admin-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.admin-table th { text-align: left; color: var(--muted); font-weight: 600; padding: 6px 12px 6px 0; }
+.admin-table td { padding: 8px 12px 8px 0; border-top: 1px solid #ffffff1a; word-break: break-word; }
+.admin-table td:last-child { text-align: right; padding-right: 0; }
+
 .holdem-seats { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-bottom: 8px; }
 .holdem-seat { padding: 6px 8px; border-radius: 10px; border: 2px solid transparent; }
 .holdem-seat.active { border-color: var(--gold); }
