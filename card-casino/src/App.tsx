@@ -4,6 +4,7 @@ import { Blackjack } from './games/Blackjack';
 import { Klondike } from './games/Klondike';
 import { VideoPoker } from './games/VideoPoker';
 import { HigherLower } from './games/HigherLower';
+import { RedDog } from './games/RedDog';
 import { Rules } from './components/Rules';
 
 interface GameEntry {
@@ -38,6 +39,12 @@ const GAMES: GameEntry[] = [
     name: 'Higher or Lower',
     blurb: 'Guess whether the next card is higher or lower. Each correct guess grows the pot. Cash out any time.',
     Component: HigherLower,
+  },
+  {
+    id: 'red-dog',
+    name: 'Red Dog',
+    blurb: 'Two cards are dealt. Bet that a third card lands between them. The tighter the gap, the bigger the payout.',
+    Component: RedDog,
   },
 ];
 
