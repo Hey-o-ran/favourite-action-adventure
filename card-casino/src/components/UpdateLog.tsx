@@ -6,7 +6,15 @@ interface Update {
 
 /** Newest first. Written for kids, so keep it short, friendly and jargon-free. Add new updates at the top. */
 const UPDATES: Update[] = [
-{    date: '13 November 2026',    title: 'Sort by popularity',    points: [      'Next to the game finder there is now a Sort by box. Pick Most popular first and the games line up with the most loved ones at the front.',      'We worked out how popular each game is by looking around, so it is our best guess and not an exact score. Solitaire and Blackjack are right at the top.',      'Pick Default order to put the games back the way they were.',    ],  },
+  {
+    date: '13 November 2026',
+    title: 'Sort by popularity',
+    points: [
+      'Next to the game finder there is now a Sort by box. Pick Most popular first and the games line up with the most loved ones at the front.',
+      'We worked out how popular each game is by looking around, so it is our best guess and not an exact score. Solitaire and Blackjack are right at the top.',
+      'Pick Default order to put the games back the way they were.',
+    ],
+  },
   {
     date: '13 November 2026',
     title: 'Crazy Eights, and a game finder',
