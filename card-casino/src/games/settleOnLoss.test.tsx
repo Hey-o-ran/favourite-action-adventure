@@ -13,7 +13,15 @@ vi.mock('../cards', async (orig) => ({ ...(await orig<typeof import('../cards')>
 const wager = vi.fn<(amount: number) => boolean>();
 const settle = vi.fn<(returned: number) => void>();
 
-const wallet = (): WalletValue => ({ balance: 1000, wager, settle, refill: vi.fn() });
+const wallet = (): WalletValue => ({
+  balance: 1000,
+  wager,
+  settle,
+  refill: vi.fn(),
+  flush: async () => {},
+  status: 'saved',
+  dismissNotice: vi.fn(),
+});
 const renderGame = (game: JSX.Element) => render(<WalletContext.Provider value={wallet()}>{game}</WalletContext.Provider>);
 
 beforeEach(() => {

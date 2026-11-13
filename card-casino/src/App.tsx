@@ -13,6 +13,7 @@ import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
 import { AdminPanel } from './components/AdminPanel';
 import { AnnouncementBar } from './components/AnnouncementBar';
+import { SaveStatus } from './components/SaveStatus';
 import { useSession } from './session';
 import { NO_FILTERS, UNCLEAR_ORIGIN, originLabel, type Filters, type GameFacts, type SortOrder } from './gameFilters';
 
@@ -127,8 +128,16 @@ const GAMES: GameEntry[] = [
 ];
 
 export function App() {
-  const { balance, refill } = useWallet();
-  const { session, logout } = useSession();
+  const { balance, refill, flush } = useWallet();
+  const { session, logout: endSession } = useSession();
+  /** Saves any unsaved coin change first, so logging out never loses it. */
+  const logout = async () => {
+    try {
+      await flush();
+    } finally {
+      endSession();
+    }
+  };
   const [activeId, setActiveId] = useState(GAMES[0].id);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [sort, setSort] = useState<SortOrder>('default');
@@ -161,6 +170,8 @@ export function App() {
           <button onClick={logout}>Log out</button>
         </div>
       </header>
+
+      <SaveStatus />
 
       {balance === 0 && (
         <div className="banner">

@@ -359,6 +359,8 @@ button.primary {
 }
 .holdem-log { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
 
+.save-status { color: var(--gold); font-size: 0.85rem; margin: 0 0 8px; }
+
 button.all-in { background: linear-gradient(135deg, #f43f5e, #a855f7); border-color: transparent; font-weight: 700; }
 button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-weight: inherit; }
 

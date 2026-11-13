@@ -9,10 +9,11 @@ import { SessionContext, type Session } from './session';
 import { WalletProvider, useWallet } from './wallet';
 import * as api from './api';
 import { ApiError, type AbuseEvent } from './api';
+import { fakeBalanceServer } from './testBalanceServer';
 
 vi.mock('./api', async (orig) => {
   const actual = await orig<typeof import('./api')>();
-  return { ...actual, listActiveEvents: vi.fn(), claimEvent: vi.fn() };
+  return { ...actual, listActiveEvents: vi.fn(), claimEvent: vi.fn(), getBalance: vi.fn(), saveBalance: vi.fn() };
 });
 
 const session: Session = {
@@ -72,6 +73,7 @@ const tree = () => (
 async function start(events: AbuseEvent[] = []) {
   vi.mocked(api.listActiveEvents).mockResolvedValue({ events });
   const view = render(tree());
+  await screen.findByTestId('balance');
   await act(async () => {
     await vi.advanceTimersByTimeAsync(0);
   });
@@ -83,9 +85,15 @@ const poll = () =>
   });
 const balance = () => Number(screen.getByTestId('balance').textContent);
 
+// What the server holds for the player. The wallet loads from it and saves back to it.
+let server = fakeBalanceServer();
+
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   vi.resetAllMocks();
+  server = fakeBalanceServer();
+  vi.mocked(api.getBalance).mockImplementation(server.get);
+  vi.mocked(api.saveBalance).mockImplementation(server.save);
   vi.mocked(api.claimEvent).mockResolvedValue({ eventId: 'x', claimed: true });
   window.localStorage.clear();
 });
@@ -116,7 +124,7 @@ describe('free coins', () => {
   it('does not pay again after a reload, because it remembers the event', async () => {
     const first = await start([freeCoins()]);
     first.unmount();
-    window.localStorage.setItem('card-casino.balance', '2000'); // the balance saved by the first visit
+    server.state.balance = 2000; // the balance the first visit saved to the server
     await start([freeCoins()]);
     expect(api.claimEvent).toHaveBeenCalledTimes(1);
     expect(balance()).toBe(2000);
@@ -260,6 +268,7 @@ describe('when things go wrong', () => {
   it('carries on quietly if the server cannot be reached', async () => {
     vi.mocked(api.listActiveEvents).mockRejectedValue(new ApiError(0, 'NETWORK_ERROR', 'down'));
     render(tree());
+    await screen.findByTestId('balance');
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
@@ -271,6 +280,7 @@ describe('when things go wrong', () => {
   it('carries on quietly if the events service does not exist yet', async () => {
     vi.mocked(api.listActiveEvents).mockRejectedValue(new ApiError(404, 'NOT_FOUND', 'Route not found'));
     render(tree());
+    await screen.findByTestId('balance');
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
@@ -301,6 +311,7 @@ describe('when things go wrong', () => {
   it('logs you out if the login has expired', async () => {
     vi.mocked(api.listActiveEvents).mockRejectedValue(new ApiError(401, 'UNAUTHORIZED', 'Please log in'));
     render(tree());
+    await screen.findByTestId('balance');
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
