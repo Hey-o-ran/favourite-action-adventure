@@ -53,7 +53,18 @@ interface ErrorBody {
   error?: { code?: string; message?: string; fields?: Record<string, string>; details?: Record<string, unknown> };
 }
 
-async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown, token?: string): Promise<T | undefined> {
+interface RequestOptions {
+  /** Lets the request finish even if the page is being closed. */
+  keepalive?: boolean;
+}
+
+async function request<T>(
+  method: 'GET' | 'POST' | 'PUT',
+  path: string,
+  body?: unknown,
+  token?: string,
+  options: RequestOptions = {},
+): Promise<T | undefined> {
   const headers: Record<string, string> = {};
   if (body !== undefined) headers['content-type'] = 'application/json';
   if (token) headers.authorization = `Bearer ${token}`;
@@ -64,6 +75,7 @@ async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown, 
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      keepalive: options.keepalive,
     });
   } catch {
     throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server');
@@ -102,3 +114,14 @@ export const approveUser = async (token: string, userId: string) =>
     undefined,
     token,
   ))!;
+
+export interface BalanceResponse {
+  balance: number;
+  /** Changes on every save; send it back so a stale save is rejected. */
+  version: number;
+}
+
+export const getBalance = async (token: string) =>
+  (await request<BalanceResponse>('GET', '/v1/me/balance', undefined, token))!;
+export const saveBalance = async (token: string, req: BalanceResponse, options?: RequestOptions) =>
+  (await request<BalanceResponse>('PUT', '/v1/me/balance', req, token, options))!;

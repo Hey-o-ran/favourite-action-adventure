@@ -2,28 +2,22 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
+import { ApiError, getBalance, saveBalance } from './api';
+import { BalanceSync, type SyncState } from './balanceSync';
+import { useSession } from './session';
 
+/** What a new account starts with. The server applies it; this is only shown in the rules text. */
 export const STARTING_BALANCE = 1000;
 export const REFILL_AMOUNT = 500;
-const STORAGE_KEY = 'card-casino.balance';
 
-function readBalance(): number {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw !== null) {
-      const n = Number(raw);
-      if (Number.isInteger(n) && n >= 0) return n;
-    }
-  } catch {
-    // Storage unavailable (private mode, blocked): fall back to the default.
-  }
-  return STARTING_BALANCE;
-}
+/** The balance used to live here, shared by every account on the browser. It now lives on the server. */
+const LEGACY_STORAGE_KEY = 'card-casino.balance';
 
 export interface WalletValue {
   balance: number;
@@ -33,42 +27,124 @@ export interface WalletValue {
   settle(returned: number): void;
   /** Gives the player a fresh stake when they are out of coins. */
   refill(): void;
+  /** Saves any change to the server right now. */
+  flush(): Promise<void>;
+  /** `failed` while the latest balance has not reached the server yet. */
+  status: SyncState['status'];
+  /** A short message to show the player, e.g. after the server corrected the balance. */
+  notice?: string;
+  dismissNotice(): void;
 }
 
 const WalletContext = createContext<WalletValue | null>(null);
 
-export function WalletProvider({ children }: { children: ReactNode }) {
-  const [balance, setBalance] = useState(readBalance);
-  // A ref mirrors the balance so back-to-back wagers in one event see the latest value.
-  const current = useRef(balance);
+const INITIAL: SyncState = { balance: 0, version: 0, loaded: false, status: 'saved' };
 
-  const commit = useCallback((next: number) => {
-    current.current = next;
-    setBalance(next);
+export function WalletProvider({ children, saveDelayMs }: { children: ReactNode; saveDelayMs?: number }) {
+  const { session, logout } = useSession();
+  const token = session.idToken;
+  const [state, setState] = useState<SyncState>(INITIAL);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const syncRef = useRef<BalanceSync>();
+
+  useEffect(() => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, String(next));
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
-      // Ignore: the balance still works for this session.
+      // Storage unavailable: nothing to clean up.
     }
   }, []);
 
+  useEffect(() => {
+    setLoadFailed(false);
+    setState(INITIAL);
+    const sync = new BalanceSync(
+      {
+        get: () => getBalance(token),
+        save: (balance, version, options) => saveBalance(token, { balance, version }, options),
+      },
+      { onChange: setState, onUnauthorized: logout },
+      saveDelayMs,
+    );
+    syncRef.current = sync;
+
+    let cancelled = false;
+    sync.load().catch((err) => {
+      if (cancelled) return;
+      if (err instanceof ApiError && err.status === 401) logout();
+      else setLoadFailed(true);
+    });
+
+    // Don't lose the last change when the tab is closed or hidden.
+    const flushNow = () => void sync.flush({ keepalive: true });
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') flushNow();
+    };
+    window.addEventListener('pagehide', flushNow);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('pagehide', flushNow);
+      document.removeEventListener('visibilitychange', onVisibility);
+      sync.dispose();
+    };
+  }, [token, logout, saveDelayMs, attempt]);
+
+  const wager = useCallback((amount: number) => {
+    const sync = syncRef.current;
+    if (!sync) return false;
+    const balance = sync.state.balance;
+    if (!Number.isInteger(amount) || amount <= 0 || amount > balance) return false;
+    sync.set(balance - amount);
+    return true;
+  }, []);
+  const settle = useCallback((returned: number) => {
+    const sync = syncRef.current;
+    if (sync) sync.set(sync.state.balance + Math.max(0, Math.floor(returned)));
+  }, []);
+  const refill = useCallback(() => {
+    const sync = syncRef.current;
+    if (sync && sync.state.balance === 0) sync.set(REFILL_AMOUNT);
+  }, []);
+  const flush = useCallback(() => syncRef.current?.flush() ?? Promise.resolve(), []);
+  const dismissNotice = useCallback(() => syncRef.current?.clearNotice(), []);
+
   const value = useMemo<WalletValue>(
     () => ({
-      balance,
-      wager: (amount) => {
-        if (!Number.isInteger(amount) || amount <= 0 || amount > current.current) return false;
-        commit(current.current - amount);
-        return true;
-      },
-      settle: (returned) => {
-        commit(current.current + Math.max(0, Math.floor(returned)));
-      },
-      refill: () => {
-        if (current.current === 0) commit(REFILL_AMOUNT);
-      },
+      balance: state.balance,
+      wager,
+      settle,
+      refill,
+      flush,
+      status: state.status,
+      notice: state.notice,
+      dismissNotice,
     }),
-    [balance, commit],
+    [state.balance, state.status, state.notice, wager, settle, refill, flush, dismissNotice],
   );
+
+  if (!state.loaded) {
+    return (
+      <div className="login">
+        <div className="login-card">
+          <h1>Card Casino</h1>
+          {loadFailed ? (
+            <>
+              <p role="alert" className="login-error">
+                Could not load your balance. Check your connection and try again.
+              </p>
+              <button className="primary" onClick={() => setAttempt((n) => n + 1)}>
+                Try again
+              </button>
+            </>
+          ) : (
+            <p className="hint">Loading your balance…</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
