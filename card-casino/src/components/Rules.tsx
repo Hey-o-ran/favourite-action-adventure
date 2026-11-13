@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { GameNav, type NavGame } from './GameNav';
+import type { Filters } from '../gameFilters';
 import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
@@ -175,10 +176,12 @@ interface RulesProps {
   games: NavGame[];
   gameId: string;
   onSelect: (id: string) => void;
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
 
 /** One rules page per game, keyed by the game's id in App.tsx. Add an entry here when you add a game. */
-export function Rules({ games, gameId, onSelect }: RulesProps) {
+export function Rules({ games, gameId, onSelect, filters, onFiltersChange }: RulesProps) {
   const pages: Record<string, ReactNode> = {
     blackjack: (
       <Section title="Blackjack" diagram={<BlackjackDiagram />}>
@@ -359,7 +362,7 @@ export function Rules({ games, gameId, onSelect }: RulesProps) {
 
   return (
     <div className="rules">
-      <GameNav games={games} activeId={gameId} onSelect={onSelect} />
+      <GameNav games={games} activeId={gameId} onSelect={onSelect} filters={filters} onFiltersChange={onFiltersChange} />
       {pages[gameId] ?? <p className="blurb">The rules for this game haven't been written yet.</p>}
     </div>
   );
