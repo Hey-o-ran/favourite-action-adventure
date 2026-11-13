@@ -302,3 +302,31 @@ button.primary {
 .side-picker small { opacity: 0.8; }
 .hand { margin-bottom: 8px; }
 .hand-label { margin: 6px 0; color: var(--muted); font-weight: 600; }
+
+.game-nav { margin-top: 8px; }
+.game-nav button { padding: 6px 12px; font-size: 0.92rem; }
+
+.pile-row { display: flex; gap: 24px; justify-content: center; margin: 14px 0; }
+.pile { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.pile small { color: var(--muted); }
+.pile .suit { font-weight: 700; color: var(--ink); }
+.pile .suit.red { color: var(--loss); }
+.dim { opacity: 0.5; }
+.dim .card { pointer-events: none; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin: 12px 0 4px; }
+.filter { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); min-width: 140px; }
+.filter select {
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid #ffffff33;
+  background: var(--felt-dark);
+  color: var(--ink);
+}
+.filter select:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.match-count { margin: 8px 0 0; color: var(--muted); font-size: 0.85rem; }
+.game-nav button.outside:not(.active) { opacity: 0.6; border-style: dashed; }
+.muted { color: var(--muted); align-self: center; }
+.facts { margin: -8px 0 16px; color: var(--muted); font-size: 0.85rem; }
+.origin-note { display: block; margin-top: 2px; font-style: italic; }

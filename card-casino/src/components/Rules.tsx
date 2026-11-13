@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react';
+import { GameNav, type NavGame } from './GameNav';
+import type { Filters } from '../gameFilters';
+import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
 import { SPREAD_PAYOUTS, THREE_OF_A_KIND_PAYOUT, WIDE_SPREAD_PAYOUT } from '../games/redDogRules';
@@ -136,6 +139,29 @@ function BaccaratDiagram() {
   );
 }
 
+function CrazyEightsDiagram() {
+  return (
+    <svg viewBox="0 0 420 170" role="img" aria-label="The top card is 7 of hearts. A 7 of spades matches by rank, a king of hearts by suit, an 8 is wild, and a 3 of diamonds cannot be played">
+      <Note x={10} y={16} anchor="start">Top of the pile</Note>
+      <MiniCard x={10} y={24} label="7♥" red />
+      <Note x={150} y={16} anchor="start">Your hand</Note>
+      <MiniCard x={150} y={24} label="7♠" />
+      <MiniCard x={198} y={24} label="K♥" red />
+      <MiniCard x={246} y={24} label="8♣" />
+      <g opacity="0.45">
+        <MiniCard x={294} y={24} label="3♦" red />
+      </g>
+      <Note x={169} y={96}>same rank</Note>
+      <Note x={217} y={96}>same suit</Note>
+      <Note x={265} y={96}>wild!</Note>
+      <Note x={313} y={96}>no match</Note>
+      <Note x={210} y={128}>Play a card that matches the suit or the number of the top card.</Note>
+      <Note x={210} y={148}>An 8 matches anything, and you choose the suit that comes next.</Note>
+      <Note x={210} y={166}>Can't play? Draw until you can.</Note>
+    </svg>
+  );
+}
+
 function Section({ title, diagram, children }: { title: string; diagram: ReactNode; children: ReactNode }) {
   return (
     <section className="rules-section">
@@ -147,13 +173,15 @@ function Section({ title, diagram, children }: { title: string; diagram: ReactNo
 }
 
 interface RulesProps {
-  games: { id: string; name: string }[];
+  games: NavGame[];
   gameId: string;
   onSelect: (id: string) => void;
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
 }
 
 /** One rules page per game, keyed by the game's id in App.tsx. Add an entry here when you add a game. */
-export function Rules({ games, gameId, onSelect }: RulesProps) {
+export function Rules({ games, gameId, onSelect, filters, onFiltersChange }: RulesProps) {
   const pages: Record<string, ReactNode> = {
     blackjack: (
       <Section title="Blackjack" diagram={<BlackjackDiagram />}>
@@ -310,17 +338,31 @@ export function Rules({ games, gameId, onSelect }: RulesProps) {
         </ul>
       </Section>
     ),
+    'crazy-eights': (
+      <Section title="Crazy Eights" diagram={<CrazyEightsDiagram />}>
+        <h3>How to play</h3>
+        <ul>
+          <li>You and the bot get {HAND_SIZE} cards each. One card is turned face up to start the pile. The first player to get rid of every card wins.</li>
+          <li>On your turn, play a card that matches the top card's <b>suit</b> or its <b>number</b>. Click a card to play it. Cards you can't play right now are dimmed.</li>
+          <li><b>8s are wild.</b> You can play one at any time, then choose which suit comes next.</li>
+          <li>If you have nothing to play, press <b>Draw cards</b>. You keep drawing until you pick up a card you can play.</li>
+          <li>If the deck runs out, the pile is reshuffled. If nobody can move at all, the round is a draw and your bet is returned.</li>
+          <li>Win the round to get your bet back plus {WIN_PAYOUT}× your bet. Lose and you lose your bet.</li>
+        </ul>
+        <h3>Tips</h3>
+        <ul>
+          <li>Save your 8s. They're your escape when nothing else fits, and a good way to finish.</li>
+          <li>When you play an 8, choose the suit you hold the most cards of.</li>
+          <li>Get rid of awkward cards, such as the only one you have in a suit, while you can.</li>
+          <li>Watch the bot's card count. When it gets low, stop saving your 8s and go out.</li>
+        </ul>
+      </Section>
+    ),
   };
 
   return (
     <div className="rules">
-      <nav aria-label="Choose a game">
-        {games.map((g) => (
-          <button key={g.id} className={g.id === gameId ? 'active' : undefined} onClick={() => onSelect(g.id)}>
-            {g.name}
-          </button>
-        ))}
-      </nav>
+      <GameNav games={games} activeId={gameId} onSelect={onSelect} filters={filters} onFiltersChange={onFiltersChange} />
       {pages[gameId] ?? <p className="blurb">The rules for this game haven't been written yet.</p>}
     </div>
   );
