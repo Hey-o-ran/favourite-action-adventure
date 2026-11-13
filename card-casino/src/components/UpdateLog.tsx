@@ -8,6 +8,15 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: 'Rules are easier to find',
+    points: [
+      'Now every game has its very own rules page, so you do not have to scroll past all the other games.',
+      'Press Rules while you are playing a game and you will see the rules for that game straight away.',
+      'Want to read about a different game? Tap its name at the top of the Rules page.',
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: 'Baccarat is here!',
     points: [
       'A new game where you do not play any cards at all. You just pick who you think will win and the cards do the rest.',

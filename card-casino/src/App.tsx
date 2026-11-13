@@ -102,7 +102,7 @@ export function App() {
         </div>
       )}
 
-      {view === 'rules' && <Rules />}
+      {view === 'rules' && <Rules games={GAMES} gameId={activeId} onSelect={setActiveId} />}
       {view === 'updates' && <UpdateLog />}
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
