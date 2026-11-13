@@ -8,6 +8,16 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: 'ADMIN ABUSE!',
+    points: [
+      'Surprise events are here! Sometimes the admin will start an ADMIN ABUSE event, and a bright banner will pop up at the very top of your screen to tell you what is happening.',
+      'One event is free coins. Everyone playing gets a pile of coins added to their balance, all at once!',
+      'Another event makes your next game unloseable. That means you cannot lose any coins on it. If you lose, you get your bet back. If you win, you keep your winnings as normal.',
+      'Each event only lasts a few minutes, so keep an eye out. You will only get each event once.',
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: "All in at the poker table",
     points: [
       'There is a new All in button when you play Texas Hold\'em. It bets as many coins as the table allows, all in one go!',

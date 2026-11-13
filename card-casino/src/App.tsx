@@ -12,6 +12,7 @@ import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
 import { AdminPanel } from './components/AdminPanel';
+import { AnnouncementBar } from './components/AnnouncementBar';
 import { useSession } from './session';
 import { NO_FILTERS, UNCLEAR_ORIGIN, originLabel, type Filters, type GameFacts, type SortOrder } from './gameFilters';
 
@@ -139,6 +140,7 @@ export function App() {
 
   return (
     <div className="app">
+      <AnnouncementBar />
       <header>
         <h1>Card Casino</h1>
         <div className="header-actions">

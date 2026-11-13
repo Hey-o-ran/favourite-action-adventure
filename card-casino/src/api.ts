@@ -102,3 +102,30 @@ export const approveUser = async (token: string, userId: string) =>
     undefined,
     token,
   ))!;
+
+/** An "admin abuse" event: the admin starts it and every player is told about it. */
+export type AbuseEventType = 'FREE_COINS' | 'UNLOSEABLE';
+export interface AbuseEvent {
+  eventId: string;
+  type: AbuseEventType;
+  title: string;
+  message: string;
+  /** Coins given to each player, for FREE_COINS events. */
+  amount?: number;
+  startedAt: string;
+  expiresAt: string;
+}
+export interface StartEventRequest {
+  type: AbuseEventType;
+  /** FREE_COINS only. */
+  amount?: number;
+  durationMinutes?: number;
+}
+
+export const startEvent = async (token: string, req: StartEventRequest) =>
+  (await request<{ event: AbuseEvent }>('POST', '/v1/admin/events', req, token))!;
+export const listActiveEvents = async (token: string) =>
+  (await request<{ events: AbuseEvent[] }>('GET', '/v1/events/active', undefined, token))!;
+/** `claimed` is true only the first time this player claims this event, so apply its effect only then. */
+export const claimEvent = async (token: string, eventId: string) =>
+  (await request<{ eventId: string; claimed: boolean }>('POST', `/v1/events/${encodeURIComponent(eventId)}/claim`, undefined, token))!;

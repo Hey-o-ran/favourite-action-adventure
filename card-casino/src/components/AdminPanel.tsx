@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ApiError, approveUser, listPendingUsers, type PendingUser } from '../api';
 import { useSession } from '../session';
+import { AdminAbuse } from './AdminAbuse';
 
 /** Lists accounts waiting for approval, with a button to approve each one. Admins only. */
 export function AdminPanel() {
@@ -100,6 +101,7 @@ export function AdminPanel() {
           </tbody>
         </table>
       )}
+      <AdminAbuse />
     </section>
   );
 }

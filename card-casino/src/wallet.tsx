@@ -35,7 +35,8 @@ export interface WalletValue {
   refill(): void;
 }
 
-const WalletContext = createContext<WalletValue | null>(null);
+/** Exported so a wrapper (like the admin abuse protection) can provide an adjusted wallet to the games. */
+export const WalletContext = createContext<WalletValue | null>(null);
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState(readBalance);

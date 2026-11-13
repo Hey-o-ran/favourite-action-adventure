@@ -361,3 +361,45 @@ button.primary {
 
 button.all-in { background: linear-gradient(135deg, #f43f5e, #a855f7); border-color: transparent; font-weight: 700; }
 button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-weight: inherit; }
+
+/* Admin abuse: announcements at the very top of the screen */
+.abuse-bars { position: sticky; top: 0; z-index: 20; display: grid; gap: 6px; margin: 0 0 10px; }
+.abuse-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f43f5e, #a855f7);
+  color: #fff;
+  box-shadow: 0 4px 14px #0007;
+}
+.abuse-bar.shield { background: linear-gradient(135deg, #0ea5e9, #22c55e); }
+.abuse-bar.saved { background: linear-gradient(135deg, #f59e0b, #f5c542); color: #1a1300; }
+.abuse-title { font-weight: 800; letter-spacing: 0.06em; font-size: 0.8rem; background: #0004; padding: 2px 8px; border-radius: 999px; }
+.abuse-bar.saved .abuse-title { background: #1a130022; }
+.abuse-message { font-weight: 700; }
+.abuse-outcome { opacity: 0.95; font-size: 0.9rem; }
+.abuse-dismiss { margin-left: auto; padding: 0 10px; background: #0003; border-color: transparent; color: inherit; font-size: 1.2rem; line-height: 1.6; }
+
+/* Admin abuse: the admin panel section */
+.admin-abuse { margin-top: 28px; padding-top: 16px; border-top: 1px solid #ffffff22; }
+.admin-abuse h3, .admin-abuse h4 { margin: 0 0 6px; }
+.admin-abuse h4 { margin-top: 18px; }
+.abuse-form { border: 1px solid #ffffff33; border-radius: 10px; padding: 10px 14px; margin: 10px 0; display: grid; gap: 10px; }
+.abuse-form legend { padding: 0 6px; color: var(--muted); font-size: 0.85rem; }
+.abuse-choice { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+.abuse-field { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; color: var(--muted); max-width: 240px; }
+.abuse-field input, .abuse-field select {
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid #ffffff33;
+  background: var(--felt-dark);
+  color: var(--ink);
+}
+.abuse-preview { margin: 8px 0 12px; }
+.abuse-confirm { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.abuse-started { color: var(--gain); }
+.abuse-live { margin: 6px 0 0; padding-left: 18px; }

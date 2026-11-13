@@ -5,12 +5,13 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/vitest';
 import { App } from './App';
 import { WalletProvider } from './wallet';
+import { AbuseEventsProvider } from './abuseEvents';
 import { SessionContext, type Session } from './session';
 import * as api from './api';
 
 vi.mock('./api', async (orig) => {
   const actual = await orig<typeof import('./api')>();
-  return { ...actual, listPendingUsers: vi.fn(), approveUser: vi.fn() };
+  return { ...actual, listPendingUsers: vi.fn(), approveUser: vi.fn(), listActiveEvents: vi.fn(), claimEvent: vi.fn() };
 });
 
 const sessionFor = (isAdmin: boolean): Session => ({
@@ -61,5 +62,54 @@ describe('casino header', () => {
     renderApp(false);
     await user.click(screen.getByRole('button', { name: /log out/i }));
     expect(logout).toHaveBeenCalled();
+  });
+});
+
+describe('admin abuse announcements', () => {
+  it('appear at the very top of the screen, above the header, and the effect shows in the balance', async () => {
+    vi.mocked(api.listActiveEvents).mockResolvedValue({
+      events: [
+        {
+          eventId: 'e1',
+          type: 'FREE_COINS',
+          title: 'ADMIN ABUSE',
+          message: 'Everyone gets 1,000 coins!',
+          amount: 1000,
+          startedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 600_000).toISOString(),
+        },
+      ],
+    });
+    vi.mocked(api.claimEvent).mockResolvedValue({ eventId: 'e1', claimed: true });
+    render(
+      <SessionContext.Provider value={{ session: sessionFor(false), logout }}>
+        <WalletProvider>
+          <AbuseEventsProvider>
+            <App />
+          </AbuseEventsProvider>
+        </WalletProvider>
+      </SessionContext.Provider>,
+    );
+
+    const announcement = await screen.findByText('Everyone gets 1,000 coins!');
+    const title = screen.getByRole('heading', { name: /card casino/i });
+    // The announcement comes before the page title in the document.
+    expect(announcement.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(await screen.findByText(/2,000 coins/)).toBeInTheDocument(); // 1,000 to start plus the 1,000 gift
+  });
+
+  it('show nothing at all when no event is on', async () => {
+    vi.mocked(api.listActiveEvents).mockResolvedValue({ events: [] });
+    render(
+      <SessionContext.Provider value={{ session: sessionFor(false), logout }}>
+        <WalletProvider>
+          <AbuseEventsProvider>
+            <App />
+          </AbuseEventsProvider>
+        </WalletProvider>
+      </SessionContext.Provider>,
+    );
+    await vi.waitFor(() => expect(api.listActiveEvents).toHaveBeenCalled());
+    expect(screen.queryByText('ADMIN ABUSE')).not.toBeInTheDocument();
   });
 });

@@ -40,7 +40,8 @@ export function Klondike() {
     const result = outcome(next);
     if (result !== 'playing') {
       setStatus(result);
-      if (result === 'won') settle(activeBet * 2);
+      // Every wager is settled once: for double on a win, and for 0 when the game is stuck.
+      settle(result === 'won' ? activeBet * 2 : 0);
     }
   };
 
@@ -78,6 +79,7 @@ export function Klondike() {
 
   const forfeit = () => {
     setStatus('lost');
+    settle(0); // giving up loses the bet, so tell the wallet the round is over
     setSelected(null);
   };
 
