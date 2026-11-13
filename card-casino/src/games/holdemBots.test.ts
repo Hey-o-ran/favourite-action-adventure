@@ -178,3 +178,58 @@ describe('bots playing whole hands', () => {
     for (const move of ['fold', 'check', 'call', 'raise']) expect(moves.get(move) ?? 0).toBeGreaterThan(50);
   });
 });
+
+describe('facing an all-in', () => {
+  /** The button (seat 0) shoves, and seat 1 (a bot with the cards given) has to answer. */
+  function facingShove(botHole: string) {
+    return act(rigged(['9s 8d', botHole, '7d 2c']), 'allin');
+  }
+
+  it('folds a weak hand rather than risk every chip', () => {
+    const s = facingShove('9c 6h');
+    expect(s.toAct).toBe(1);
+    expect(botAction(s, steady)).toBe('fold');
+  });
+
+  it('folds a medium hand it would happily call a normal bet with', () => {
+    // Ten-nine suited is worth a call of 2 before the flop, but not 99 chips.
+    const normal = rigged(['9s 8d', 'Tc 9c', '7d 2c']);
+    expect(botAction(act(normal, 'call'), steady)).toBe('call');
+    expect(botAction(facingShove('Tc 9c'), steady)).toBe('fold');
+  });
+
+  it('calls with a strong hand', () => {
+    expect(botAction(facingShove('As Ah'), steady)).toBe('call');
+    expect(botAction(facingShove('Qs Qh'), steady)).toBe('call');
+  });
+
+  it('can only call, since nobody can raise past an all-in', () => {
+    const s = facingShove('As Ah');
+    expect(legalActions(s).raise).toBe(false);
+    expect(botAction(s, steady)).not.toBe('raise');
+  });
+
+  it('calls an all-in after the flop with a made hand but not with air', () => {
+    // Everyone sees the flop, then the human shoves into seat 1.
+    const base = (botHole: string) => {
+      let s = rigged(['9s 8d', botHole, '7d 2c'], 'Ac Ad 4h 5s 7c');
+      s = act(act(act(s, 'call'), 'call'), 'check'); // to the flop, seat 1 first
+      s = act(s, 'check'); // seat 1
+      s = act(s, 'check'); // seat 2
+      return act(s, 'allin'); // seat 0 shoves; seat 1 to respond
+    };
+    expect(botAction(base('Ah Kd'), steady)).toBe('call'); // three aces
+    expect(botAction(base('6h 3d'), steady)).toBe('fold'); // nothing but the board's pair
+  });
+
+  it('never goes all in on its own', () => {
+    for (let hand = 0; hand < 300; hand++) {
+      let s = startHand([100, 100, 100], hand % 3, shuffle(newDeck()));
+      while (!s.over) {
+        const action = botAction(s);
+        expect(action).not.toBe('allin');
+        s = act(s, action);
+      }
+    }
+  });
+});

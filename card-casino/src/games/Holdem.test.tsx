@@ -129,3 +129,35 @@ describe("Texas Hold'em table", () => {
     expect([98, 100, 101, 104]).toContain(chips);
   });
 });
+
+describe('going all in', () => {
+  it('offers an All in button with the amount, and only on your turn', async () => {
+    const user = renderTable();
+    await user.click(screen.getByRole('button', { name: /sit down/i }));
+    expect(screen.getByRole('button', { name: /all in \(100\)/i })).toBeEnabled();
+
+    await user.click(screen.getByRole('button', { name: /fold/i }));
+    // The bots are playing now, so it's not your turn and the button is switched off.
+    expect(screen.getByRole('button', { name: /^all in/i })).toBeDisabled();
+  });
+
+  it('puts your chips in, runs the board out against calling bots, and pays out what you win', async () => {
+    const user = renderTable();
+    await user.click(screen.getByRole('button', { name: /sit down/i }));
+    await user.click(screen.getByRole('button', { name: /all in \(100\)/i }));
+    expect(screen.getByText(/you go all in \(100\)/i)).toBeInTheDocument();
+    await letBotsPlay();
+
+    // Everyone is all in, so the rest of the cards come out and the bots show their hands.
+    expect(faceDown()).toBe(0);
+    expect(screen.getByText(/wins|win|split/i)).toBeInTheDocument();
+
+    // Next hand is not offered if you're out of chips. Either way you can cash out what is left.
+    const leave = screen.getByRole('button', { name: /leave table/i });
+    const chips = Number(leave.textContent!.match(/\((\d+)\)/)![1]);
+    // You staked all 100: you lost it, won all 300, or split the pot two ways (150) or three (100).
+    expect([0, 100, 150, 300]).toContain(chips);
+    await user.click(leave);
+    expect(balance()).toBe(900 + chips);
+  });
+});

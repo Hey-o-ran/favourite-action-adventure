@@ -396,9 +396,11 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
               <li><b>Check</b> if nobody has bet, to pass without paying.</li>
               <li><b>Call</b> to match the bet.</li>
               <li><b>Bet or Raise</b> to make the bet bigger.</li>
+              <li><b>All in</b> to bet as much as you possibly can in one go.</li>
             </ul>
           </li>
           <li>Bets are a fixed size: {betSize('preflop')} coins before the flop and on the flop, and {betSize('turn')} coins on the turn and river. There can be at most {MAX_RAISES} raises in a round.</li>
+          <li><b>All in</b> skips those limits. It bets straight up to the most the other players can match. If you have the fewest coins at the table, that's every coin you have. If you have more, the extra coins stay safely in your stack. The button shows the amount, and everyone else must call it or fold. Once someone is all in, nobody can bet any more and the rest of the cards are just dealt.</li>
           <li>When the betting is done, players still in show their cards. Your hand is the <b>best five cards</b> you can make from your 2 plus the 5 shared ones. The best hand wins all the coins in the middle. A tie splits them.</li>
           <li>If everyone else folds, you win the middle without showing your cards.</li>
           <li>Nobody can bet more than the player with the fewest coins can match, so there are no side pots. If someone runs out, the rest of the cards are just dealt.</li>
@@ -433,6 +435,7 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
           <li>The bots never bluff. If a bot raises, it has a good hand. If it only calls, it's usually not that strong.</li>
           <li>Look at the shared cards for what others might have: three of one suit, or cards in a row, could mean a flush or a straight.</li>
           <li>When you have a strong hand, bet and raise so the pot grows.</li>
+          <li>Going all in is a big move. Save it for a very strong hand, because a bot will only call one with a strong hand of its own. If you shove with a weak hand and get called, you could lose a lot at once.</li>
         </ul>
       </Section>
     ),

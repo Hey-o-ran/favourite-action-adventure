@@ -9,6 +9,9 @@ import { bestHand, compareScores } from './pokerHands';
  *  - At most 2 raises per round (an opening bet doesn't count as a raise).
  *  - No side pots. Nobody can bet more than the shortest stack still in the hand, so every bet
  *    can always be matched in full and everyone left at showdown has put in the same amount.
+ *  - All in: a seat may bet straight up to that limit instead of the usual fixed amount, even after
+ *    the raises have run out. If it holds the shortest stack that really is all its chips; otherwise it
+ *    is the most the table can match, and it keeps the chips it didn't need.
  */
 
 export const SEAT_COUNT = 3;
@@ -18,7 +21,7 @@ export const BIG_BLIND = 2;
 export const MAX_RAISES = 2;
 
 export type Street = 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
-export type Action = 'fold' | 'check' | 'call' | 'raise';
+export type Action = 'fold' | 'check' | 'call' | 'raise' | 'allin';
 
 export interface Seat {
   /** Chips behind, not yet in the pot. */
@@ -65,11 +68,24 @@ export interface LegalActions {
   raise: boolean;
   /** The total this seat's bet becomes if it raises. */
   raiseTo: number;
+  /** Whether the seat can bet up to the table limit, going past the fixed bet size and the raise limit. */
+  allIn: boolean;
+  /** The total this seat's bet becomes if it goes all in. */
+  allInTo: number;
 }
 
 export const betSize = (street: Street) => (street === 'preflop' || street === 'flop' ? 2 : 4);
 
-const NO_ACTIONS: LegalActions = { fold: false, check: false, call: false, callAmount: 0, raise: false, raiseTo: 0 };
+const NO_ACTIONS: LegalActions = {
+  fold: false,
+  check: false,
+  call: false,
+  callAmount: 0,
+  raise: false,
+  raiseTo: 0,
+  allIn: false,
+  allInTo: 0,
+};
 
 const left = (seat: number) => (seat + 1) % SEAT_COUNT;
 
@@ -130,16 +146,21 @@ export function legalActions(s: HoldemState): LegalActions {
   if (s.over || s.toAct === null) return NO_ACTIONS;
   const seat = s.seats[s.toAct];
   const toCall = s.currentBet - seat.bet;
-  const raiseTo = Math.min(s.currentBet + betSize(s.street), betCap(s));
+  const cap = betCap(s);
+  const raiseTo = Math.min(s.currentBet + betSize(s.street), cap);
   // An opening bet doesn't use up one of the raises.
   const raisesLeft = s.currentBet === 0 || s.raises < MAX_RAISES;
+  const hasChipsToRaise = seat.stack > toCall;
   return {
     fold: toCall > 0,
     check: toCall === 0,
     call: toCall > 0,
     callAmount: toCall,
-    raise: raisesLeft && raiseTo > s.currentBet && seat.stack > toCall,
+    raise: raisesLeft && raiseTo > s.currentBet && hasChipsToRaise,
     raiseTo,
+    // All in ignores the fixed bet size and the raise limit, but never goes past what everyone can match.
+    allIn: cap > s.currentBet && hasChipsToRaise,
+    allInTo: cap,
   };
 }
 
@@ -263,19 +284,24 @@ export function act(s: HoldemState, action: Action): HoldemState {
     seats[who].acted = true;
     pot += amount;
     note = `Seat ${who} calls ${amount}.`;
-  } else {
-    if (!legal.raise) return s;
-    const amount = legal.raiseTo - seat.bet;
+  } else if (action === 'raise' || action === 'allin') {
+    const allIn = action === 'allin';
+    if (!(allIn ? legal.allIn : legal.raise)) return s;
+    const target = allIn ? legal.allInTo : legal.raiseTo;
+    const amount = target - seat.bet;
     const opening = currentBet === 0;
     seats[who].stack -= amount;
-    seats[who].bet = legal.raiseTo;
+    seats[who].bet = target;
     seats[who].totalIn += amount;
     pot += amount;
-    currentBet = legal.raiseTo;
+    currentBet = target;
     if (!opening) raises += 1;
     // Everyone else gets to respond to the raise.
     seats = seats.map((x, i) => (i === who ? { ...x, acted: true } : { ...x, acted: x.folded || x.stack === 0 ? x.acted : false }));
-    note = opening ? `Seat ${who} bets ${legal.raiseTo}.` : `Seat ${who} raises to ${legal.raiseTo}.`;
+    if (allIn) note = `Seat ${who} goes all in (${target}).`;
+    else note = opening ? `Seat ${who} bets ${target}.` : `Seat ${who} raises to ${target}.`;
+  } else {
+    return s;
   }
 
   const next: HoldemState = { ...s, seats, pot, currentBet, raises, log: [...s.log, note] };
