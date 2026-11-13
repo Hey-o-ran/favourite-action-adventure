@@ -27,7 +27,10 @@ export function HigherLower() {
 
   const guess = (direction: 'higher' | 'lower') => {
     if (!game) return;
-    setGame(guessHigherLower(game, direction));
+    const next = guessHigherLower(game, direction);
+    setGame(next);
+    // A wrong guess ends the round. The wallet expects a settle for every wager, with 0 for a loss.
+    if (next.status === 'lost') settle(0);
   };
 
   const cashOut = () => {
@@ -43,6 +46,7 @@ export function HigherLower() {
     const next = guessJackpot(game);
     if (next.status !== 'jackpot') {
       setGame(next);
+      if (next.status === 'lost') settle(0);
       return;
     }
     setGame(next);

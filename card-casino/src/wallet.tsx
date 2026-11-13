@@ -36,7 +36,8 @@ export interface WalletValue {
   dismissNotice(): void;
 }
 
-const WalletContext = createContext<WalletValue | null>(null);
+/** Exported so a wrapper (like the admin abuse protection) can provide an adjusted wallet to the games. */
+export const WalletContext = createContext<WalletValue | null>(null);
 
 const INITIAL: SyncState = { balance: 0, version: 0, loaded: false, status: 'saved' };
 
