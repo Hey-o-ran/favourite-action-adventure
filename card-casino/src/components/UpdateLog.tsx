@@ -8,6 +8,25 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: "All in at the poker table",
+    points: [
+      'There is a new All in button when you play Texas Hold\'em. It bets as many coins as the table allows, all in one go!',
+      'The button shows how many coins it will use. If you have the fewest coins, that is all of them. If you have more, the extra stays safe in your pile.',
+      'The robots will not go all in on their own, but when you do, they think hard. They only call with a really good hand, otherwise they give up.',
+      'Careful, it is a big gamble. If you win you could win lots of coins, and if you lose, they are gone.',
+    ],
+  },
+  {
+    date: '13 November 2026',
+    title: "Smarter robots and Hold'em rules",
+    points: [
+      'The poker robots grew up! They now look at their cards. They give up on bad hands, keep going with good ones, and raise when they have something great.',
+      'They are honest, too: they never bluff. If a robot raises, it really has a good hand. Can you spot it?',
+      "The Rules page now explains Texas Hold'em step by step, with a picture of how your two cards and the shared cards make a hand, and a list of the best hands.",
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: "Texas Hold'em (early version)",
     points: [
       "A new poker game! You sit at a table with two robots. Everyone gets two secret cards, and five more cards are turned up in the middle for everyone to share. The best five-card hand wins all the coins in the middle.",

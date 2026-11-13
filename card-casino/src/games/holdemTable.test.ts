@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { newDeck, shuffle } from '../cards';
-import { botAction } from './holdemBots';
 import { BUY_IN, act, legalActions, startHand, type HoldemState } from './holdemRules';
 import { describeResult, formatLog, nextHandSetup } from './holdemTable';
 
@@ -13,20 +12,6 @@ function checkDown(s: HoldemState): HoldemState {
   return state;
 }
 
-describe('bots', () => {
-  it('check when they can and call when they must, and never fold or raise', () => {
-    const s = deal();
-    expect(botAction(s)).toBe('call'); // facing the big blind
-    const bb = act(act(s, 'call'), 'call'); // big blind to act with nothing to call
-    expect(botAction(bb)).toBe('check');
-  });
-
-  it('finish a hand on their own when everyone just calls', () => {
-    const s = checkDown(deal());
-    expect(s.over).toBe(true);
-    expect(s.street).toBe('showdown');
-  });
-});
 
 describe('carrying on to the next hand', () => {
   it('moves the button and keeps the stacks', () => {
@@ -80,5 +65,11 @@ describe('describing a hand', () => {
     const { text, net } = describeResult(shown);
     expect(text).toMatch(/(wins|win|split)/);
     expect(net).toBe(shown.payouts[0] - 2); // everyone put in 2 before checking down
+  });
+});
+
+describe('describing an all-in', () => {
+  it('words the log for you and for the bots', () => {
+    expect(formatLog(['Seat 0 goes all in (100).', 'Seat 1 goes all in (50).'])).toEqual(['You go all in (100).', 'Bot 1 goes all in (50).']);
   });
 });

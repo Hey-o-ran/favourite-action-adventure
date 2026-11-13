@@ -7,6 +7,13 @@ import { WalletProvider, useWallet } from '../wallet';
 import { SessionContext, type Session } from '../session';
 import * as api from '../api';
 import { Holdem } from './Holdem';
+import { legalActions } from './holdemRules';
+
+// These tests are about the screen, not the bots' strategy (that has its own tests), so the bots here
+// just check or call. That keeps every hand going to a showdown and makes the results predictable.
+vi.mock('./holdemBots', () => ({
+  botAction: (s: Parameters<typeof legalActions>[0]) => (legalActions(s).check ? 'check' : 'call'),
+}));
 
 vi.mock('../api', async (orig) => {
   const actual = await orig<typeof import('../api')>();
@@ -136,5 +143,37 @@ describe("Texas Hold'em table", () => {
     expect(balance()).toBe(900 + chips); // the stack comes back to the wallet
     // Everyone put in 2 to a 6-chip pot: you lost it (98), won it (104), or split it two ways (101) or three (100).
     expect([98, 100, 101, 104]).toContain(chips);
+  });
+});
+
+describe('going all in', () => {
+  it('offers an All in button with the amount, and only on your turn', async () => {
+    const user = renderTable();
+    await user.click(screen.getByRole('button', { name: /sit down/i }));
+    expect(screen.getByRole('button', { name: /all in \(100\)/i })).toBeEnabled();
+
+    await user.click(screen.getByRole('button', { name: /fold/i }));
+    // The bots are playing now, so it's not your turn and the button is switched off.
+    expect(screen.getByRole('button', { name: /^all in/i })).toBeDisabled();
+  });
+
+  it('puts your chips in, runs the board out against calling bots, and pays out what you win', async () => {
+    const user = renderTable();
+    await user.click(screen.getByRole('button', { name: /sit down/i }));
+    await user.click(screen.getByRole('button', { name: /all in \(100\)/i }));
+    expect(screen.getByText(/you go all in \(100\)/i)).toBeInTheDocument();
+    await letBotsPlay();
+
+    // Everyone is all in, so the rest of the cards come out and the bots show their hands.
+    expect(faceDown()).toBe(0);
+    expect(screen.getByText(/wins|win|split/i)).toBeInTheDocument();
+
+    // Next hand is not offered if you're out of chips. Either way you can cash out what is left.
+    const leave = screen.getByRole('button', { name: /leave table/i });
+    const chips = Number(leave.textContent!.match(/\((\d+)\)/)![1]);
+    // You staked all 100: you lost it, won all 300, or split the pot two ways (150) or three (100).
+    expect([0, 100, 150, 300]).toContain(chips);
+    await user.click(leave);
+    expect(balance()).toBe(900 + chips);
   });
 });
