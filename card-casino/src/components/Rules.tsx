@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
+import { SPREAD_PAYOUTS, THREE_OF_A_KIND_PAYOUT, WIDE_SPREAD_PAYOUT } from '../games/redDogRules';
 
 /** A small card for diagrams. `back` draws a face-down card. */
 function MiniCard({ x, y, label, red, back }: { x: number; y: number; label?: string; red?: boolean; back?: boolean }) {
@@ -100,6 +101,23 @@ function HigherLowerDiagram() {
   );
 }
 
+function RedDogDiagram() {
+  return (
+    <svg viewBox="0 0 420 130" role="img" aria-label="A 4 and a 9 are dealt; the third card wins if it is a 5, 6, 7 or 8">
+      <MiniCard x={20} y={20} label="4♣" />
+      <rect x="82" y="20" width="38" height="54" rx="5" fill="none" stroke="#f5c542" strokeDasharray="4 3" strokeWidth="1.5" />
+      <text x="101" y="53" textAnchor="middle" fontSize="18" fill="#f5c542">?</text>
+      <MiniCard x={142} y={20} label="9♥" red />
+      <Note x={39} y={90}>Low</Note>
+      <Note x={101} y={90}>Third card</Note>
+      <Note x={161} y={90}>High</Note>
+      <Note x={230} y={36} anchor="start">Wins on 5, 6, 7 or 8</Note>
+      <Note x={230} y={56} anchor="start">4 cards in between = pays 1 to 1</Note>
+      <Note x={210} y={120}>Landing on the 4 or the 9 loses. Aces are high.</Note>
+    </svg>
+  );
+}
+
 function Section({ title, diagram, children }: { title: string; diagram: ReactNode; children: ReactNode }) {
   return (
     <section className="rules-section">
@@ -184,6 +202,40 @@ export function Rules() {
           <li>Guess against the middle: if a 7 shows, higher and lower are close to even.</li>
           <li>On a 2 or 3, bet higher. On a Queen, King or Ace, bet lower.</li>
           <li>Cash out while you're ahead. The streak gets riskier the longer it goes.</li>
+        </ul>
+      </Section>
+
+      <Section title="Red Dog" diagram={<RedDogDiagram />}>
+        <h3>How to play</h3>
+        <ul>
+          <li>Place a bet and two cards are dealt. The gap between them is the <b>spread</b>: how many ranks fit in between.</li>
+          <li>You win if the third card lands strictly between the two. Landing on either one loses. Aces are high.</li>
+          <li>The smaller the spread, the bigger the payout:</li>
+        </ul>
+        <table className="paytable">
+          <tbody>
+            {SPREAD_PAYOUTS.map((p) => (
+              <tr key={p.spread}>
+                <td>{p.spread} card in between</td>
+                <td>{p.payout} to 1</td>
+              </tr>
+            ))}
+            <tr>
+              <td>4 or more in between</td>
+              <td>{WIDE_SPREAD_PAYOUT} to 1</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><b>Consecutive cards</b> (like 6 and 7) can't have anything between them, so it's a push and you keep your bet.</li>
+          <li><b>A pair</b> gets a third card straight away. If it matches you win {THREE_OF_A_KIND_PAYOUT} to 1, otherwise it's a push.</li>
+          <li><b>Raise:</b> after seeing the spread you can add up to your original bet before the third card is dealt.</li>
+        </ul>
+        <h3>Tips</h3>
+        <ul>
+          <li>Raise only on a spread of 7 or more. That's where the third card lands between them more than half the time.</li>
+          <li>On a narrow spread (1 or 2) the big payout is tempting, but it wins less than one time in six. Don't add to it.</li>
+          <li>Every hand uses a freshly shuffled deck, so there's nothing to remember from earlier hands.</li>
         </ul>
       </Section>
     </div>
