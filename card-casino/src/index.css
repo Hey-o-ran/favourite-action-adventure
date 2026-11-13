@@ -330,3 +330,4 @@ button.primary {
 .muted { color: var(--muted); align-self: center; }
 .facts { margin: -8px 0 16px; color: var(--muted); font-size: 0.85rem; }
 .origin-note { display: block; margin-top: 2px; font-style: italic; }
+.filter.sort { margin-left: auto; }

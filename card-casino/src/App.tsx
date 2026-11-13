@@ -10,7 +10,7 @@ import { CrazyEights } from './games/CrazyEights';
 import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
-import { NO_FILTERS, UNCLEAR_ORIGIN, originLabel, type Filters, type GameFacts } from './gameFilters';
+import { NO_FILTERS, UNCLEAR_ORIGIN, originLabel, type Filters, type GameFacts, type SortOrder } from './gameFilters';
 
 interface GameEntry extends GameFacts {
   id: string;
@@ -33,6 +33,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Beat the dealer',
     skill: 'Mix of both',
+    popularity: 2,
     Component: Blackjack,
   },
   {
@@ -44,6 +45,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Bet on a winner',
     skill: 'Mostly luck',
+    popularity: 3,
     Component: Baccarat,
   },
   {
@@ -55,6 +57,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Guess the card',
     skill: 'Mostly luck',
+    popularity: 7,
     Component: RedDog,
   },
   {
@@ -66,6 +69,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Poker',
     skill: 'Mix of both',
+    popularity: 4,
     Component: VideoPoker,
   },
   {
@@ -77,6 +81,7 @@ const GAMES: GameEntry[] = [
     players: 'Solo',
     type: 'Solitaire',
     skill: 'Mostly skill',
+    popularity: 1,
     Component: Klondike,
   },
   {
@@ -88,6 +93,7 @@ const GAMES: GameEntry[] = [
     players: 'Solo',
     type: 'Guess the card',
     skill: 'Mostly luck',
+    popularity: 6,
     Component: HigherLower,
   },
   {
@@ -99,6 +105,7 @@ const GAMES: GameEntry[] = [
     players: '2 players',
     type: 'Empty your hand',
     skill: 'Mix of both',
+    popularity: 5,
     Component: CrazyEights,
   },
 ];
@@ -117,6 +124,7 @@ export function App() {
   const { balance, refill } = useWallet();
   const [activeId, setActiveId] = useState(GAMES[0].id);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const [sort, setSort] = useState<SortOrder>('default');
   const [view, setView] = useState<'game' | 'rules' | 'updates'>('game');
   const showRules = view !== 'game';
   /** Clicking the button for the page you're already on takes you back to the games. */
@@ -151,13 +159,29 @@ export function App() {
       )}
 
       {view === 'rules' && (
-        <Rules games={GAMES} gameId={activeId} onSelect={setActiveId} filters={filters} onFiltersChange={setFilters} />
+        <Rules
+          games={GAMES}
+          gameId={activeId}
+          onSelect={setActiveId}
+          filters={filters}
+          onFiltersChange={setFilters}
+          sort={sort}
+          onSortChange={setSort}
+        />
       )}
       {view === 'updates' && <UpdateLog />}
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
       <div hidden={showRules}>
-        <GameNav games={GAMES} activeId={activeId} onSelect={setActiveId} filters={filters} onFiltersChange={setFilters} />
+        <GameNav
+          games={GAMES}
+          activeId={activeId}
+          onSelect={setActiveId}
+          filters={filters}
+          onFiltersChange={setFilters}
+          sort={sort}
+          onSortChange={setSort}
+        />
 
         <p className="blurb">{active.blurb}</p>
         <p className="facts">

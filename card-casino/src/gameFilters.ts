@@ -13,6 +13,24 @@ export interface GameFacts {
   skill: (typeof SKILL_OPTIONS)[number];
   /** One sentence of history shown under the game, especially where the origin is disputed. */
   originNote?: string;
+  /**
+   * Rough worldwide popularity, 1 = most popular. This is an estimate, not a measured ranking:
+   * there is no reliable global card-game chart. Give every game its own number.
+   */
+  popularity: number;
+}
+
+export type SortOrder = 'default' | 'popularity';
+export const SORT_OPTIONS: { id: SortOrder; label: string }[] = [
+  { id: 'default', label: 'Default order' },
+  { id: 'popularity', label: 'Most popular first' },
+];
+
+/** Returns the games in the chosen order without changing the original list. Ties keep their original order. */
+export function sortGames<T extends { popularity: number }>(games: readonly T[], sort: SortOrder): T[] {
+  const sorted = [...games];
+  if (sort === 'popularity') sorted.sort((a, b) => a.popularity - b.popularity);
+  return sorted;
 }
 
 export type FilterKey = 'origin' | 'players' | 'type' | 'skill';

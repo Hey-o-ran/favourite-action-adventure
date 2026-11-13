@@ -6,6 +6,7 @@ import {
   filterOptions,
   matchesFilters,
   originLabel,
+  sortGames,
   type GameFacts,
 } from './gameFilters';
 
@@ -14,6 +15,7 @@ const game = (over: Partial<GameFacts> = {}): GameFacts => ({
   players: 'Vs the house',
   type: 'Beat the dealer',
   skill: 'Mix of both',
+  popularity: 1,
   ...over,
 });
 
@@ -58,5 +60,36 @@ describe('game filters', () => {
   it('words the origin, saying so when it is unclear', () => {
     expect(originLabel(game({ origin: 'Italy' }))).toBe('From Italy');
     expect(originLabel(game({ origin: UNCLEAR_ORIGIN }))).toBe('Origin unclear');
+  });
+});
+
+describe('sorting games', () => {
+  const games = [
+    { name: 'C', ...game({ popularity: 3 }) },
+    { name: 'A', ...game({ popularity: 1 }) },
+    { name: 'B', ...game({ popularity: 2 }) },
+  ];
+  const names = (list: { name: string }[]) => list.map((g) => g.name).join('');
+
+  it('keeps the original order by default', () => {
+    expect(names(sortGames(games, 'default'))).toBe('CAB');
+  });
+
+  it('puts the most popular game (lowest number) first', () => {
+    expect(names(sortGames(games, 'popularity'))).toBe('ABC');
+  });
+
+  it('leaves the original list untouched', () => {
+    sortGames(games, 'popularity');
+    expect(names(games)).toBe('CAB');
+  });
+
+  it('keeps ties in their original order', () => {
+    const tied = [
+      { name: 'X', ...game({ popularity: 2 }) },
+      { name: 'Y', ...game({ popularity: 1 }) },
+      { name: 'Z', ...game({ popularity: 2 }) },
+    ];
+    expect(names(sortGames(tied, 'popularity'))).toBe('YXZ');
   });
 });
