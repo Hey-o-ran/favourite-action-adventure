@@ -8,6 +8,16 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: "Texas Hold'em (early version)",
+    points: [
+      "A new poker game! You sit at a table with two robots. Everyone gets two secret cards, and five more cards are turned up in the middle for everyone to share. The best five-card hand wins all the coins in the middle.",
+      'You sit down with 100 coins. When you leave the table, the coins you have left go back into your balance.',
+      'This is an early version. The robots are very simple for now: they never give up and never raise. They will get smarter soon.',
+      'The rules page for this game is coming in the next update.',
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: 'Sort by popularity',
     points: [
       'Next to the game finder there is now a Sort by box. Pick Most popular first and the games line up with the most loved ones at the front.',

@@ -331,3 +331,23 @@ button.primary {
 .facts { margin: -8px 0 16px; color: var(--muted); font-size: 0.85rem; }
 .origin-note { display: block; margin-top: 2px; font-style: italic; }
 .filter.sort { margin-left: auto; }
+
+.holdem-seats { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-bottom: 8px; }
+.holdem-seat { padding: 6px 8px; border-radius: 10px; border: 2px solid transparent; }
+.holdem-seat.active { border-color: var(--gold); }
+.holdem-seat.folded { opacity: 0.5; }
+.holdem-seat.winner { border-color: var(--gain); }
+.holdem-board { margin: 8px 0; }
+.dealer-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 1.4em;
+  height: 1.4em;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #1a1300;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.holdem-log { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
