@@ -297,3 +297,8 @@ button.primary {
 .update h3 { margin: 2px 0 6px; }
 .update-date { margin: 0; color: var(--muted); font-size: 0.85rem; }
 .update ul { margin: 0; padding-left: 20px; color: var(--muted); line-height: 1.5; }
+
+.side-picker { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 12px; }
+.side-picker small { opacity: 0.8; }
+.hand { margin-bottom: 8px; }
+.hand-label { margin: 6px 0; color: var(--muted); font-weight: 600; }

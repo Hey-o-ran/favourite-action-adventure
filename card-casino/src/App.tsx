@@ -5,6 +5,7 @@ import { Klondike } from './games/Klondike';
 import { VideoPoker } from './games/VideoPoker';
 import { HigherLower } from './games/HigherLower';
 import { RedDog } from './games/RedDog';
+import { Baccarat } from './games/Baccarat';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
 
@@ -46,6 +47,12 @@ const GAMES: GameEntry[] = [
     name: 'Red Dog',
     blurb: 'Two cards are dealt. Bet that a third card lands between them. The tighter the gap, the bigger the payout.',
     Component: RedDog,
+  },
+  {
+    id: 'baccarat',
+    name: 'Baccarat',
+    blurb: 'Bet on Player, Banker or a Tie. The hand closest to 9 wins. The cards play themselves out.',
+    Component: Baccarat,
   },
 ];
 
@@ -95,7 +102,7 @@ export function App() {
         </div>
       )}
 
-      {view === 'rules' && <Rules />}
+      {view === 'rules' && <Rules games={GAMES} gameId={activeId} onSelect={setActiveId} />}
       {view === 'updates' && <UpdateLog />}
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}

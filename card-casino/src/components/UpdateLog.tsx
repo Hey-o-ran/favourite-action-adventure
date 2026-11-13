@@ -7,6 +7,34 @@ interface Update {
 /** Newest first. Written for kids, so keep it short, friendly and jargon-free. Add new updates at the top. */
 const UPDATES: Update[] = [
   {
+    date: '13 November 2026',
+    title: 'Rules are easier to find',
+    points: [
+      'Now every game has its very own rules page, so you do not have to scroll past all the other games.',
+      'Press Rules while you are playing a game and you will see the rules for that game straight away.',
+      'Want to read about a different game? Tap its name at the top of the Rules page.',
+    ],
+  },
+  {
+    date: '13 November 2026',
+    title: 'Baccarat is here!',
+    points: [
+      'A new game where you do not play any cards at all. You just pick who you think will win and the cards do the rest.',
+      'Choose Player, Banker or Tie. Whichever hand is closest to 9 wins. Face cards and 10s are worth zero, which is a funny rule!',
+      'The Rules page explains it step by step, with a picture.',
+    ],
+  },
+  {
+    date: '13 November 2026',
+    title: 'Red Dog is here!',
+    points: [
+      'Two cards are dealt. You bet that a third card will land in between them, like a 6 between a 4 and a 9.',
+      'The closer the two cards are, the bigger your prize, but the harder it is to win.',
+      'After you see the cards, you can raise your bet if you feel lucky.',
+      'There is a how-to-play picture and some tips on the Rules page.',
+    ],
+  },
+  {
     date: '12 November 2026',
     title: 'Fairer Jacks or Better',
     points: [

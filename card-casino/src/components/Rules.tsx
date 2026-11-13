@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
 import { SPREAD_PAYOUTS, THREE_OF_A_KIND_PAYOUT, WIDE_SPREAD_PAYOUT } from '../games/redDogRules';
+import { BANKER_PAYOUT_PERCENT, PLAYER_PAYOUT, TIE_PAYOUT } from '../games/baccaratRules';
 
 /** A small card for diagrams. `back` draws a face-down card. */
 function MiniCard({ x, y, label, red, back }: { x: number; y: number; label?: string; red?: boolean; back?: boolean }) {
@@ -118,6 +119,23 @@ function RedDogDiagram() {
   );
 }
 
+function BaccaratDiagram() {
+  return (
+    <svg viewBox="0 0 420 150" role="img" aria-label="Player holds 7 and 8, totalling 5; Banker holds 4 and 5, totalling 9; Banker wins">
+      <Note x={10} y={16} anchor="start">Player</Note>
+      <MiniCard x={10} y={24} label="7♠" />
+      <MiniCard x={54} y={24} label="8♥" red />
+      <Note x={72} y={100}>7 + 8 = 15 → 5</Note>
+      <Note x={230} y={16} anchor="start">Banker</Note>
+      <MiniCard x={230} y={24} label="4♣" />
+      <MiniCard x={274} y={24} label="5♦" red />
+      <Note x={292} y={100}>4 + 5 = 9 → 9</Note>
+      <Note x={210} y={126}>Only the last digit counts. Closest to 9 wins, so Banker wins here.</Note>
+      <Note x={210} y={144}>J, Q, K and 10 are worth 0. Aces are 1.</Note>
+    </svg>
+  );
+}
+
 function Section({ title, diagram, children }: { title: string; diagram: ReactNode; children: ReactNode }) {
   return (
     <section className="rules-section">
@@ -128,9 +146,16 @@ function Section({ title, diagram, children }: { title: string; diagram: ReactNo
   );
 }
 
-export function Rules() {
-  return (
-    <div className="rules">
+interface RulesProps {
+  games: { id: string; name: string }[];
+  gameId: string;
+  onSelect: (id: string) => void;
+}
+
+/** One rules page per game, keyed by the game's id in App.tsx. Add an entry here when you add a game. */
+export function Rules({ games, gameId, onSelect }: RulesProps) {
+  const pages: Record<string, ReactNode> = {
+    blackjack: (
       <Section title="Blackjack" diagram={<BlackjackDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -146,7 +171,9 @@ export function Rules() {
           <li>If the dealer shows 2–6 they bust often, so stand on 12–16.</li>
         </ul>
       </Section>
+    ),
 
+    klondike: (
       <Section title="Klondike Solitaire" diagram={<KlondikeDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -163,7 +190,9 @@ export function Rules() {
           <li>Empty a column only when you have a King ready to place.</li>
         </ul>
       </Section>
+    ),
 
+    'video-poker': (
       <Section title="Jacks or Better" diagram={<PokerDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -188,7 +217,9 @@ export function Rules() {
           <li>With no pair, keep your high cards (J, Q, K, A).</li>
         </ul>
       </Section>
+    ),
 
+    'higher-lower': (
       <Section title="Higher or Lower" diagram={<HigherLowerDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -204,7 +235,9 @@ export function Rules() {
           <li>Cash out while you're ahead. The streak gets riskier the longer it goes.</li>
         </ul>
       </Section>
+    ),
 
+    'red-dog': (
       <Section title="Red Dog" diagram={<RedDogDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -238,6 +271,57 @@ export function Rules() {
           <li>Every hand uses a freshly shuffled deck, so there's nothing to remember from earlier hands.</li>
         </ul>
       </Section>
+    ),
+
+    baccarat: (
+      <Section title="Baccarat" diagram={<BaccaratDiagram />}>
+        <h3>How to play</h3>
+        <ul>
+          <li>You don't play any cards. Choose a bet, press Deal, and the cards play themselves out by fixed rules.</li>
+          <li>Two hands are dealt: <b>Player</b> and <b>Banker</b>. These are just names, and you can bet on either one whoever you are.</li>
+          <li>Add up a hand and only the last digit counts (15 is 5). The hand closest to 9 wins. 10, J, Q and K are worth 0 and an Ace is 1.</li>
+          <li>If either hand starts on 8 or 9 it's a <b>natural</b> and the round ends. Otherwise a hand may draw a third card, depending on its total. The game does this for you.</li>
+        </ul>
+        <table className="paytable">
+          <tbody>
+            <tr>
+              <td>Player wins</td>
+              <td>{PLAYER_PAYOUT} to 1</td>
+            </tr>
+            <tr>
+              <td>Banker wins</td>
+              <td>0.{BANKER_PAYOUT_PERCENT} to 1</td>
+            </tr>
+            <tr>
+              <td>Tie</td>
+              <td>{TIE_PAYOUT} to 1</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul>
+          <li>Banker pays a little less because the casino takes a 5% commission, and winnings are rounded down to a whole coin.</li>
+          <li>If the round is a tie, Player and Banker bets are returned. Only a Tie bet wins.</li>
+        </ul>
+        <h3>Tips</h3>
+        <ul>
+          <li>Banker is the best bet over time, even with the commission, and Player is close behind.</li>
+          <li>The Tie bet pays 8 to 1 but is the worst bet at the table. It's fun for a flutter, not a plan.</li>
+          <li>There's no skill in the cards, so the only choices are your bet and your bet size. Keep your bets small relative to your coins.</li>
+        </ul>
+      </Section>
+    ),
+  };
+
+  return (
+    <div className="rules">
+      <nav aria-label="Choose a game">
+        {games.map((g) => (
+          <button key={g.id} className={g.id === gameId ? 'active' : undefined} onClick={() => onSelect(g.id)}>
+            {g.name}
+          </button>
+        ))}
+      </nav>
+      {pages[gameId] ?? <p className="blurb">The rules for this game haven't been written yet.</p>}
     </div>
   );
 }
