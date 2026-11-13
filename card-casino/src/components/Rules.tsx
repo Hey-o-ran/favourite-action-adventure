@@ -146,9 +146,16 @@ function Section({ title, diagram, children }: { title: string; diagram: ReactNo
   );
 }
 
-export function Rules() {
-  return (
-    <div className="rules">
+interface RulesProps {
+  games: { id: string; name: string }[];
+  gameId: string;
+  onSelect: (id: string) => void;
+}
+
+/** One rules page per game, keyed by the game's id in App.tsx. Add an entry here when you add a game. */
+export function Rules({ games, gameId, onSelect }: RulesProps) {
+  const pages: Record<string, ReactNode> = {
+    blackjack: (
       <Section title="Blackjack" diagram={<BlackjackDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -164,7 +171,9 @@ export function Rules() {
           <li>If the dealer shows 2–6 they bust often, so stand on 12–16.</li>
         </ul>
       </Section>
+    ),
 
+    klondike: (
       <Section title="Klondike Solitaire" diagram={<KlondikeDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -181,7 +190,9 @@ export function Rules() {
           <li>Empty a column only when you have a King ready to place.</li>
         </ul>
       </Section>
+    ),
 
+    'video-poker': (
       <Section title="Jacks or Better" diagram={<PokerDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -206,7 +217,9 @@ export function Rules() {
           <li>With no pair, keep your high cards (J, Q, K, A).</li>
         </ul>
       </Section>
+    ),
 
+    'higher-lower': (
       <Section title="Higher or Lower" diagram={<HigherLowerDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -222,7 +235,9 @@ export function Rules() {
           <li>Cash out while you're ahead. The streak gets riskier the longer it goes.</li>
         </ul>
       </Section>
+    ),
 
+    'red-dog': (
       <Section title="Red Dog" diagram={<RedDogDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -256,7 +271,9 @@ export function Rules() {
           <li>Every hand uses a freshly shuffled deck, so there's nothing to remember from earlier hands.</li>
         </ul>
       </Section>
+    ),
 
+    baccarat: (
       <Section title="Baccarat" diagram={<BaccaratDiagram />}>
         <h3>How to play</h3>
         <ul>
@@ -292,6 +309,19 @@ export function Rules() {
           <li>There's no skill in the cards, so the only choices are your bet and your bet size. Keep your bets small relative to your coins.</li>
         </ul>
       </Section>
+    ),
+  };
+
+  return (
+    <div className="rules">
+      <nav aria-label="Choose a game">
+        {games.map((g) => (
+          <button key={g.id} className={g.id === gameId ? 'active' : undefined} onClick={() => onSelect(g.id)}>
+            {g.name}
+          </button>
+        ))}
+      </nav>
+      {pages[gameId] ?? <p className="blurb">The rules for this game haven't been written yet.</p>}
     </div>
   );
 }
