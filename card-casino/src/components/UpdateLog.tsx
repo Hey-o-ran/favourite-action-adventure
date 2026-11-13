@@ -8,6 +8,15 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: "Smarter robots and Hold'em rules",
+    points: [
+      'The poker robots grew up! They now look at their cards. They give up on bad hands, keep going with good ones, and raise when they have something great.',
+      'They are honest, too: they never bluff. If a robot raises, it really has a good hand. Can you spot it?',
+      "The Rules page now explains Texas Hold'em step by step, with a picture of how your two cards and the shared cards make a hand, and a list of the best hands.",
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: "Texas Hold'em (early version)",
     points: [
       "A new poker game! You sit at a table with two robots. Everyone gets two secret cards, and five more cards are turned up in the middle for everyone to share. The best five-card hand wins all the coins in the middle.",
