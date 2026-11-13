@@ -6,6 +6,15 @@ import { newKlondike, moveCards, outcome, type KState } from './klondikeRules';
 import { guessHigherLower, guessJackpot, startHigherLower } from './higherLowerRules';
 import { dealThird, startRedDog } from './redDogRules';
 import { bankerDraws, handTotal as baccaratTotal, playBaccarat } from './baccaratRules';
+import {
+  botTurn,
+  drawForPlayer,
+  isPlayable,
+  playCard,
+  returnedFor,
+  startCrazyEights,
+  type CrazyEightsState,
+} from './crazyEightsRules';
 
 const c = (rank: number, suit: Card['suit'] = 'spades'): Card => ({ rank, suit });
 
@@ -244,5 +253,127 @@ describe('baccarat', () => {
     expect(playBaccarat(bankerWins, 'banker', 10).returned).toBe(19); // 19.5 rounded down
     expect(playBaccarat(bankerWins, 'banker', 100).returned).toBe(195);
     expect(playBaccarat(bankerWins, 'tie', 10).returned).toBe(0);
+  });
+});
+
+describe('crazy eights', () => {
+  const FILLER = Array.from({ length: 30 }, (_, i) => c(2 + (i % 5), (['clubs', 'diamonds', 'hearts', 'spades'] as const)[i % 4]));
+
+  /** A deck that deals `player` and `bot` hands (alternating), then `starter`, then the rest. */
+  function deck(player: Card[], bot: Card[], starter: Card, rest: Card[] = FILLER): Card[] {
+    const dealt: Card[] = [];
+    for (let i = 0; i < 7; i++) dealt.push(player[i], bot[i]);
+    return [...dealt, starter, ...rest];
+  }
+  const pad = (cards: Card[], filler: Card) => [...cards, ...Array(7 - cards.length).fill(filler)];
+
+  /** A running game with chosen hands, the top card showing, and a stock to draw from. */
+  function game(over: Partial<CrazyEightsState>): CrazyEightsState {
+    return {
+      stock: [], discard: [c(7, 'hearts')], player: [c(3, 'clubs')], bot: [c(4, 'clubs')],
+      suit: 'hearts', turn: 'player', status: 'playing', passes: 0, bet: 10, log: '', ...over,
+    };
+  }
+
+  it('deals 7 cards each and turns up a starter, burying an 8', () => {
+    const p = pad([], c(2, 'clubs'));
+    const b = pad([], c(3, 'clubs'));
+    const s = startCrazyEights(deck(p, b, c(8, 'hearts'), [c(9, 'spades'), c(5, 'clubs')]), 10);
+    expect(s.player).toHaveLength(7);
+    expect(s.bot).toHaveLength(7);
+    expect(s.discard).toEqual([c(9, 'spades')]); // the 8 was skipped
+    expect(s.suit).toBe('spades');
+    expect(s.stock[s.stock.length - 1]).toEqual(c(8, 'hearts')); // and buried at the bottom
+    expect(s.turn).toBe('player');
+  });
+
+  it('allows a match on suit or rank, and always allows an 8', () => {
+    const s = game({ discard: [c(7, 'hearts')], suit: 'hearts' });
+    expect(isPlayable(c(13, 'hearts'), s)).toBe(true); // suit
+    expect(isPlayable(c(7, 'spades'), s)).toBe(true); // rank
+    expect(isPlayable(c(8, 'clubs'), s)).toBe(true); // wild
+    expect(isPlayable(c(3, 'diamonds'), s)).toBe(false);
+  });
+
+  it('plays a card, moves it to the pile, and passes the turn', () => {
+    const s = playCard(game({ player: [c(7, 'spades'), c(3, 'clubs')] }), 0);
+    expect(s.discard[s.discard.length - 1]).toEqual(c(7, 'spades'));
+    expect(s.suit).toBe('spades');
+    expect(s.player).toEqual([c(3, 'clubs')]);
+    expect(s.turn).toBe('bot');
+  });
+
+  it("refuses a card that doesn't match, or a play out of turn", () => {
+    const s = game({ player: [c(3, 'diamonds')] });
+    expect(playCard(s, 0)).toBe(s);
+    expect(playCard({ ...s, player: [c(13, 'hearts')], turn: 'bot' }, 0).player).toHaveLength(1);
+  });
+
+  it('lets an 8 set the suit, and the next card must match it', () => {
+    const s = playCard(game({ player: [c(8, 'clubs'), c(3, 'clubs')] }), 0, 'diamonds');
+    expect(s.suit).toBe('diamonds');
+    expect(isPlayable(c(5, 'diamonds'), s)).toBe(true);
+    expect(isPlayable(c(5, 'hearts'), s)).toBe(false);
+  });
+
+  it('wins when the last card is played, paying 2 times the bet', () => {
+    const s = playCard(game({ player: [c(9, 'hearts')], bet: 10 }), 0);
+    expect(s.status).toBe('won');
+    expect(returnedFor(s)).toBe(20);
+  });
+
+  it('draws until a playable card turns up, and only when nothing can be played', () => {
+    const stuck = game({ player: [c(3, 'clubs')], stock: [c(4, 'spades'), c(5, 'clubs'), c(9, 'hearts'), c(2, 'spades')] });
+    const s = drawForPlayer(stuck);
+    expect(s.player.map((x) => x.rank)).toEqual([3, 4, 5, 9]); // stopped at the 9 of hearts
+    expect(s.stock).toHaveLength(1);
+    expect(s.turn).toBe('player');
+
+    const canPlay = game({ player: [c(7, 'clubs')], stock: [c(9, 'hearts')] });
+    expect(drawForPlayer(canPlay)).toBe(canPlay);
+  });
+
+  it('refills the stock from the pile (keeping the top card) when it runs out', () => {
+    const s = drawForPlayer(game({
+      player: [c(3, 'clubs')], stock: [],
+      discard: [c(2, 'spades'), c(4, 'spades'), c(9, 'hearts'), c(7, 'hearts')],
+    }));
+    expect(s.discard).toEqual([c(7, 'hearts')]);
+    expect(s.player.length).toBeGreaterThan(1);
+  });
+
+  it('plays a draw when both sides pass with nothing left to draw', () => {
+    const s0 = game({ player: [c(3, 'clubs')], bot: [c(4, 'clubs')], stock: [] });
+    const afterPlayer = drawForPlayer(s0);
+    expect(afterPlayer).toMatchObject({ turn: 'bot', passes: 1, status: 'playing' });
+    const afterBot = botTurn(afterPlayer);
+    expect(afterBot.status).toBe('draw');
+    expect(returnedFor(afterBot)).toBe(10);
+  });
+
+  it('has the bot play ordinary cards before its 8s', () => {
+    const s = botTurn(game({ turn: 'bot', bot: [c(8, 'clubs'), c(13, 'hearts'), c(3, 'spades')] }));
+    expect(s.discard[s.discard.length - 1]).toEqual(c(13, 'hearts'));
+    expect(s.bot).toHaveLength(2);
+    expect(s.turn).toBe('player');
+  });
+
+  it('has the bot use an 8 as a last resort and choose the suit it holds most of', () => {
+    const s = botTurn(game({
+      turn: 'bot', suit: 'hearts', discard: [c(7, 'hearts')],
+      bot: [c(8, 'clubs'), c(3, 'spades'), c(5, 'spades'), c(9, 'diamonds')],
+    }));
+    expect(s.discard[s.discard.length - 1]).toEqual(c(8, 'clubs'));
+    expect(s.suit).toBe('spades');
+  });
+
+  it('has the bot draw until it can play, and lose the round for the player when it goes out', () => {
+    const drew = botTurn(game({ turn: 'bot', bot: [c(3, 'clubs')], stock: [c(4, 'spades'), c(9, 'hearts')] }));
+    expect(drew.discard[drew.discard.length - 1]).toEqual(c(9, 'hearts'));
+    expect(drew.bot.map((x) => x.rank)).toEqual([3, 4]);
+
+    const out = botTurn(game({ turn: 'bot', bot: [c(9, 'hearts')], bet: 10 }));
+    expect(out.status).toBe('lost');
+    expect(returnedFor(out)).toBe(0);
   });
 });

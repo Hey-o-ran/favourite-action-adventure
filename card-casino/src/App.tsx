@@ -6,53 +6,73 @@ import { VideoPoker } from './games/VideoPoker';
 import { HigherLower } from './games/HigherLower';
 import { RedDog } from './games/RedDog';
 import { Baccarat } from './games/Baccarat';
+import { CrazyEights } from './games/CrazyEights';
+import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
 
 interface GameEntry {
   id: string;
   name: string;
+  /**
+   * Which group of tabs the game sits under. Categories show in the order they first appear below:
+   * Table Games (you against the house), Poker, Solo (just you and the deck) and Versus Bots.
+   */
+  category: string;
   blurb: string;
   Component: ComponentType;
 }
 
-/** Add new games here. Each one manages its own state and uses the shared wallet. */
+/** Add new games here, next to others of the same category. Each manages its own state and uses the shared wallet. */
 const GAMES: GameEntry[] = [
   {
     id: 'blackjack',
     name: 'Blackjack',
+    category: 'Table Games',
     blurb: 'Beat the dealer to 21 without going over. Blackjack pays 3 to 2.',
     Component: Blackjack,
   },
   {
-    id: 'klondike',
-    name: 'Klondike Solitaire',
-    blurb: 'Bet to deal. Build all four foundations to win 2× your bet. Give up or get stuck and you lose it.',
-    Component: Klondike,
-  },
-  {
-    id: 'video-poker',
-    name: 'Jacks or Better',
-    blurb: 'Five-card draw video poker. Hold your best cards, draw, and get paid for a winning hand.',
-    Component: VideoPoker,
-  },
-  {
-    id: 'higher-lower',
-    name: 'Higher or Lower',
-    blurb: 'Guess whether the next card is higher or lower. Each correct guess grows the pot. Cash out any time.',
-    Component: HigherLower,
+    id: 'baccarat',
+    name: 'Baccarat',
+    category: 'Table Games',
+    blurb: 'Bet on Player, Banker or a Tie. The hand closest to 9 wins. The cards play themselves out.',
+    Component: Baccarat,
   },
   {
     id: 'red-dog',
     name: 'Red Dog',
+    category: 'Table Games',
     blurb: 'Two cards are dealt. Bet that a third card lands between them. The tighter the gap, the bigger the payout.',
     Component: RedDog,
   },
   {
-    id: 'baccarat',
-    name: 'Baccarat',
-    blurb: 'Bet on Player, Banker or a Tie. The hand closest to 9 wins. The cards play themselves out.',
-    Component: Baccarat,
+    id: 'video-poker',
+    name: 'Jacks or Better',
+    category: 'Poker',
+    blurb: 'Five-card draw video poker. Hold your best cards, draw, and get paid for a winning hand.',
+    Component: VideoPoker,
+  },
+  {
+    id: 'klondike',
+    name: 'Klondike Solitaire',
+    category: 'Solo',
+    blurb: 'Bet to deal. Build all four foundations to win 2× your bet. Give up or get stuck and you lose it.',
+    Component: Klondike,
+  },
+  {
+    id: 'higher-lower',
+    name: 'Higher or Lower',
+    category: 'Solo',
+    blurb: 'Guess whether the next card is higher or lower. Each correct guess grows the pot. Cash out any time.',
+    Component: HigherLower,
+  },
+  {
+    id: 'crazy-eights',
+    name: 'Crazy Eights',
+    category: 'Versus Bots',
+    blurb: 'Match the top card by suit or rank. 8s are wild. Be first to empty your hand to win 2× your bet.',
+    Component: CrazyEights,
   },
 ];
 
@@ -107,17 +127,7 @@ export function App() {
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
       <div hidden={showRules}>
-        <nav>
-          {GAMES.map((g) => (
-            <button
-              key={g.id}
-              className={g.id === activeId ? 'active' : undefined}
-              onClick={() => setActiveId(g.id)}
-            >
-              {g.name}
-            </button>
-          ))}
-        </nav>
+        <GameNav games={GAMES} activeId={activeId} onSelect={setActiveId} />
 
         <p className="blurb">{active.blurb}</p>
 

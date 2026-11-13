@@ -302,3 +302,16 @@ button.primary {
 .side-picker small { opacity: 0.8; }
 .hand { margin-bottom: 8px; }
 .hand-label { margin: 6px 0; color: var(--muted); font-weight: 600; }
+
+.category-nav { margin-bottom: 0; }
+.category-nav button { font-weight: 700; }
+.game-nav { margin-top: 8px; }
+.game-nav button { padding: 6px 12px; font-size: 0.92rem; }
+
+.pile-row { display: flex; gap: 24px; justify-content: center; margin: 14px 0; }
+.pile { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.pile small { color: var(--muted); }
+.pile .suit { font-weight: 700; color: var(--ink); }
+.pile .suit.red { color: var(--loss); }
+.dim { opacity: 0.5; }
+.dim .card { pointer-events: none; }
