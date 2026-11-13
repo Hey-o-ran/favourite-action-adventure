@@ -7,6 +7,7 @@ import { HigherLower } from './games/HigherLower';
 import { RedDog } from './games/RedDog';
 import { Baccarat } from './games/Baccarat';
 import { CrazyEights } from './games/CrazyEights';
+import { Holdem } from './games/Holdem';
 import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
@@ -33,7 +34,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Beat the dealer',
     skill: 'Mix of both',
-    popularity: 2,
+    popularity: 3,
     Component: Blackjack,
   },
   {
@@ -45,7 +46,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Bet on a winner',
     skill: 'Mostly luck',
-    popularity: 3,
+    popularity: 4,
     Component: Baccarat,
   },
   {
@@ -57,7 +58,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Guess the card',
     skill: 'Mostly luck',
-    popularity: 7,
+    popularity: 8,
     Component: RedDog,
   },
   {
@@ -69,7 +70,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Poker',
     skill: 'Mix of both',
-    popularity: 4,
+    popularity: 5,
     Component: VideoPoker,
   },
   {
@@ -93,7 +94,7 @@ const GAMES: GameEntry[] = [
     players: 'Solo',
     type: 'Guess the card',
     skill: 'Mostly luck',
-    popularity: 6,
+    popularity: 7,
     Component: HigherLower,
   },
   {
@@ -105,8 +106,20 @@ const GAMES: GameEntry[] = [
     players: '2 players',
     type: 'Empty your hand',
     skill: 'Mix of both',
-    popularity: 5,
+    popularity: 6,
     Component: CrazyEights,
+  },
+  {
+    id: 'holdem',
+    name: "Texas Hold'em",
+    blurb: 'Poker against two bots. Make the best five-card hand from your two cards and the five shared ones.',
+    origin: 'United States',
+    originNote: "It's said to have started in Texas in the early 1900s, and is now the most famous poker game.",
+    players: '3+ players',
+    type: 'Poker',
+    skill: 'Mostly skill',
+    popularity: 2,
+    Component: Holdem,
   },
 ];
 
