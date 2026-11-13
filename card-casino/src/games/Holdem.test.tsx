@@ -5,6 +5,13 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/vitest';
 import { WalletProvider, useWallet } from '../wallet';
 import { Holdem } from './Holdem';
+import { legalActions } from './holdemRules';
+
+// These tests are about the screen, not the bots' strategy (that has its own tests), so the bots here
+// just check or call. That keeps every hand going to a showdown and makes the results predictable.
+vi.mock('./holdemBots', () => ({
+  botAction: (s: Parameters<typeof legalActions>[0]) => (legalActions(s).check ? 'check' : 'call'),
+}));
 
 function Balance() {
   return <p data-testid="balance">{useWallet().balance}</p>;

@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { GameNav, type NavGame } from './GameNav';
 import type { Filters, SortOrder } from '../gameFilters';
 import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
+import { BIG_BLIND, BUY_IN, MAX_RAISES, SMALL_BLIND, betSize } from '../games/holdemRules';
+import { CATEGORY_NAMES } from '../games/pokerHands';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
 import { SPREAD_PAYOUTS, THREE_OF_A_KIND_PAYOUT, WIDE_SPREAD_PAYOUT } from '../games/redDogRules';
@@ -158,6 +160,27 @@ function CrazyEightsDiagram() {
       <Note x={210} y={128}>Play a card that matches the suit or the number of the top card.</Note>
       <Note x={210} y={148}>An 8 matches anything, and you choose the suit that comes next.</Note>
       <Note x={210} y={166}>Can't play? Draw until you can.</Note>
+    </svg>
+  );
+}
+
+function HoldemDiagram() {
+  return (
+    <svg viewBox="0 0 420 160" role="img" aria-label="Two private cards, A of spades and K of hearts, plus five shared cards K, 7, 2, 9, K make three kings">
+      <Note x={10} y={16} anchor="start">Your 2 cards</Note>
+      <MiniCard x={10} y={24} label="A♠" />
+      <MiniCard x={54} y={24} label="K♥" red />
+      <Note x={130} y={16} anchor="start">The 5 shared cards</Note>
+      <MiniCard x={130} y={24} label="K♦" red />
+      <MiniCard x={174} y={24} label="7♣" />
+      <MiniCard x={218} y={24} label="2♠" />
+      <MiniCard x={262} y={24} label="9♥" red />
+      <MiniCard x={306} y={24} label="K♣" />
+      <Note x={174} y={96}>Flop</Note>
+      <Note x={281} y={96}>Turn</Note>
+      <Note x={325} y={96}>River</Note>
+      <Note x={210} y={126}>Your best 5 of the 7 cards: K K K A 9</Note>
+      <Note x={210} y={146}>That's Three of a Kind.</Note>
     </svg>
   );
 }
@@ -357,6 +380,59 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
           <li>When you play an 8, choose the suit you hold the most cards of.</li>
           <li>Get rid of awkward cards, such as the only one you have in a suit, while you can.</li>
           <li>Watch the bot's card count. When it gets low, stop saving your 8s and go out.</li>
+        </ul>
+      </Section>
+    ),
+    holdem: (
+      <Section title="Texas Hold'em" diagram={<HoldemDiagram />}>
+        <h3>How to play</h3>
+        <ul>
+          <li>Press <b>Sit down</b> to put {BUY_IN} coins on the table. You play against two bots, and they start with {BUY_IN} too. The coins you have left when you <b>Leave table</b> go back to your balance.</li>
+          <li>Everyone gets 2 private cards. Five more are turned face up in the middle for everyone to share, a few at a time: the <b>flop</b> (3 cards), the <b>turn</b> (1) and the <b>river</b> (1).</li>
+          <li>The marked <b>D</b> is the dealer. The next player puts in a small forced bet ({SMALL_BLIND}) and the next one a bigger one ({BIG_BLIND}). These are the <b>blinds</b>, so there's always something to win.</li>
+          <li>There's a round of betting before the flop and after each new card. On your turn you can:
+            <ul>
+              <li><b>Fold</b> to give up the hand. You lose what you've already put in, but nothing more.</li>
+              <li><b>Check</b> if nobody has bet, to pass without paying.</li>
+              <li><b>Call</b> to match the bet.</li>
+              <li><b>Bet or Raise</b> to make the bet bigger.</li>
+            </ul>
+          </li>
+          <li>Bets are a fixed size: {betSize('preflop')} coins before the flop and on the flop, and {betSize('turn')} coins on the turn and river. There can be at most {MAX_RAISES} raises in a round.</li>
+          <li>When the betting is done, players still in show their cards. Your hand is the <b>best five cards</b> you can make from your 2 plus the 5 shared ones. The best hand wins all the coins in the middle. A tie splits them.</li>
+          <li>If everyone else folds, you win the middle without showing your cards.</li>
+          <li>Nobody can bet more than the player with the fewest coins can match, so there are no side pots. If someone runs out, the rest of the cards are just dealt.</li>
+        </ul>
+        <h3>Best hands, from strongest to weakest</h3>
+        <table className="paytable">
+          <tbody>
+            {[
+              ['Royal Flush', 'A K Q J 10, all one suit'],
+              [CATEGORY_NAMES[8], 'five in a row, all one suit'],
+              [CATEGORY_NAMES[7], 'four cards of one rank'],
+              [CATEGORY_NAMES[6], 'three of one rank and two of another'],
+              [CATEGORY_NAMES[5], 'five cards of one suit'],
+              [CATEGORY_NAMES[4], 'five in a row'],
+              [CATEGORY_NAMES[3], 'three cards of one rank'],
+              [CATEGORY_NAMES[2], 'two different pairs'],
+              [CATEGORY_NAMES[1], 'two cards of one rank'],
+              [CATEGORY_NAMES[0], 'none of the above: the highest card plays'],
+            ].map(([name, what]) => (
+              <tr key={name}>
+                <td>{name}</td>
+                <td>{what}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <h3>Tips</h3>
+        <ul>
+          <li>Be choosy before the flop. Pairs, two high cards (A, K, Q, J) and two cards of the same suit are good starts. Hands like 7 and 2 are worth folding.</li>
+          <li>Folding isn't losing. A hand you don't play costs you nothing more.</li>
+          <li>Don't chase. Calling bet after bet for one lucky card usually costs more than it wins.</li>
+          <li>The bots never bluff. If a bot raises, it has a good hand. If it only calls, it's usually not that strong.</li>
+          <li>Look at the shared cards for what others might have: three of one suit, or cards in a row, could mean a flush or a straight.</li>
+          <li>When you have a strong hand, bet and raise so the pot grows.</li>
         </ul>
       </Section>
     ),
