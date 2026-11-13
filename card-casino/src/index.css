@@ -331,3 +331,10 @@ button.primary {
 .facts { margin: -8px 0 16px; color: var(--muted); font-size: 0.85rem; }
 .origin-note { display: block; margin-top: 2px; font-style: italic; }
 .filter.sort { margin-left: auto; }
+
+.admin-panel { background: var(--felt-dark); border-radius: 12px; padding: 16px; }
+.admin-panel h2 { margin: 0 0 8px; color: var(--gold); }
+.admin-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.admin-table th { text-align: left; color: var(--muted); font-weight: 600; padding: 6px 12px 6px 0; }
+.admin-table td { padding: 8px 12px 8px 0; border-top: 1px solid #ffffff1a; word-break: break-word; }
+.admin-table td:last-child { text-align: right; padding-right: 0; }
