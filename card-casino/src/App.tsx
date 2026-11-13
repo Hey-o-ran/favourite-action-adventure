@@ -10,6 +10,8 @@ import { CrazyEights } from './games/CrazyEights';
 import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
+import { AdminPanel } from './components/AdminPanel';
+import { useSession } from './session';
 import { NO_FILTERS, UNCLEAR_ORIGIN, originLabel, type Filters, type GameFacts } from './gameFilters';
 
 interface GameEntry extends GameFacts {
@@ -103,24 +105,15 @@ const GAMES: GameEntry[] = [
   },
 ];
 
-/** Clears the unlock flag and reloads, so the password gate shows again. */
-function logout() {
-  try {
-    window.sessionStorage.removeItem('card-casino.unlocked');
-  } catch {
-    // Storage unavailable: the reload below still shows the gate if the flag was never set.
-  }
-  window.location.reload();
-}
-
 export function App() {
   const { balance, refill } = useWallet();
+  const { session, logout } = useSession();
   const [activeId, setActiveId] = useState(GAMES[0].id);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
-  const [view, setView] = useState<'game' | 'rules' | 'updates'>('game');
+  const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin'>('game');
   const showRules = view !== 'game';
   /** Clicking the button for the page you're already on takes you back to the games. */
-  const toggleView = (target: 'rules' | 'updates') => setView((v) => (v === target ? 'game' : target));
+  const toggleView = (target: 'rules' | 'updates' | 'admin') => setView((v) => (v === target ? 'game' : target));
   const active = GAMES.find((g) => g.id === activeId)!;
 
   return (
@@ -137,6 +130,11 @@ export function App() {
           <button onClick={() => toggleView('rules')} aria-pressed={view === 'rules'}>
             {view === 'rules' ? 'Back to game' : 'Rules'}
           </button>
+          {session.user.isAdmin && (
+            <button onClick={() => toggleView('admin')} aria-pressed={view === 'admin'}>
+              {view === 'admin' ? 'Back to game' : 'ADMIN ONLY'}
+            </button>
+          )}
           <button onClick={logout}>Log out</button>
         </div>
       </header>
@@ -154,6 +152,7 @@ export function App() {
         <Rules games={GAMES} gameId={activeId} onSelect={setActiveId} filters={filters} onFiltersChange={setFilters} />
       )}
       {view === 'updates' && <UpdateLog />}
+      {view === 'admin' && session.user.isAdmin && <AdminPanel />}
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
       <div hidden={showRules}>

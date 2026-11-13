@@ -1,4 +1,4 @@
-/** Client for the account registration API (battle-bricks-backliners). */
+/** Client for the account API (battle-bricks-backliners). */
 const BASE_URL: string = import.meta.env.VITE_API_URL ?? 'https://absent-attackers-api.haoran.cloud';
 
 export class ApiError extends Error {
@@ -32,34 +32,73 @@ export interface ConfirmResponse {
   email: string;
   status: 'CONFIRMED';
 }
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+export interface LoginResponse {
+  idToken: string;
+  /** Seconds until the token expires. */
+  expiresIn: number;
+  user: { userId: string; email: string; displayName: string; isAdmin: boolean };
+}
+export interface PendingUser {
+  userId: string;
+  email: string;
+  displayName: string;
+  createdAt: string;
+}
 
-async function post<T>(path: string, body: unknown): Promise<T | undefined> {
+interface ErrorBody {
+  error?: { code?: string; message?: string; fields?: Record<string, string>; details?: Record<string, unknown> };
+}
+
+async function request<T>(method: 'GET' | 'POST', path: string, body?: unknown, token?: string): Promise<T | undefined> {
+  const headers: Record<string, string> = {};
+  if (body !== undefined) headers['content-type'] = 'application/json';
+  if (token) headers.authorization = `Bearer ${token}`;
+
   let res: Response;
   try {
     res = await fetch(`${BASE_URL}${path}`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body),
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
     throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server');
   }
+
   const text = await res.text();
-  let data: { error?: { code?: string; message?: string; fields?: Record<string, string>; details?: Record<string, unknown> } } | undefined;
+  let data: unknown;
   try {
     data = text ? JSON.parse(text) : undefined;
   } catch {
     data = undefined;
   }
   if (!res.ok) {
-    const err = data?.error;
-    throw new ApiError(res.status, err?.code ?? 'UNKNOWN', err?.message ?? 'Request failed', err?.fields, err?.details);
+    const err = (data as ErrorBody | undefined)?.error;
+    // API Gateway rejects a missing/expired token itself, with a body that has no `error`.
+    const code = err?.code ?? (res.status === 401 ? 'UNAUTHORIZED' : 'UNKNOWN');
+    throw new ApiError(res.status, code, err?.message ?? 'Request failed', err?.fields, err?.details);
   }
   return data as T | undefined;
 }
 
-export const registerUser = async (req: RegisterRequest) => (await post<RegisterResponse>('/v1/users', req))!;
-export const confirmUser = async (req: ConfirmRequest) => (await post<ConfirmResponse>('/v1/users/confirm', req))!;
+export const registerUser = async (req: RegisterRequest) => (await request<RegisterResponse>('POST', '/v1/users', req))!;
+export const confirmUser = async (req: ConfirmRequest) =>
+  (await request<ConfirmResponse>('POST', '/v1/users/confirm', req))!;
 export const resendCode = async (req: { email: string }) => {
-  await post('/v1/users/resend-code', req);
+  await request('POST', '/v1/users/resend-code', req);
 };
+export const login = async (req: LoginRequest) => (await request<LoginResponse>('POST', '/v1/auth/login', req))!;
+
+export const listPendingUsers = async (token: string) =>
+  (await request<{ users: PendingUser[] }>('GET', '/v1/admin/users', undefined, token))!;
+export const approveUser = async (token: string, userId: string) =>
+  (await request<{ userId: string; status: 'ACTIVE' }>(
+    'POST',
+    `/v1/admin/users/${encodeURIComponent(userId)}/approve`,
+    undefined,
+    token,
+  ))!;
