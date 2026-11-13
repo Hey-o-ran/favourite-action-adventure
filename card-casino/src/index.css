@@ -405,3 +405,18 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .abuse-confirm { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
 .abuse-started { color: var(--gain); }
 .abuse-live { margin: 6px 0 0; padding-left: 18px; }
+
+/* Leaderboard */
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.leaderboard h2 { margin: 0 0 4px; color: var(--gold); }
+.leaderboard-table { width: 100%; max-width: 520px; border-collapse: collapse; margin: 12px 0; }
+.leaderboard-table th { text-align: left; color: var(--muted); font-weight: 600; font-size: 0.85rem; padding: 6px 10px; }
+.leaderboard-table td { padding: 8px 10px; border-top: 1px solid #ffffff1a; }
+.leaderboard-table .coins { text-align: right; font-variant-numeric: tabular-nums; }
+.leaderboard-table .rank-1 td:first-child { color: var(--gold); font-weight: 800; }
+.leaderboard-table .rank-2 td:first-child { color: #d1d5db; font-weight: 800; }
+.leaderboard-table .rank-3 td:first-child { color: #d9a066; font-weight: 800; }
+.leaderboard-table tr.me { background: #f5c54226; font-weight: 700; }
+.you-tag { color: var(--gold); font-weight: 600; }
+.leaderboard-you { margin: 8px 0; padding: 10px 14px; border-radius: 10px; background: #ffffff14; max-width: 520px; }
+.leaderboard-foot { margin-top: 8px; }

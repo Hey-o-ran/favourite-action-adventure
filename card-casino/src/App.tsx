@@ -12,6 +12,7 @@ import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
 import { AdminPanel } from './components/AdminPanel';
+import { Leaderboard } from './components/Leaderboard';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { SaveStatus } from './components/SaveStatus';
 import { useSession } from './session';
@@ -141,10 +142,10 @@ export function App() {
   const [activeId, setActiveId] = useState(GAMES[0].id);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [sort, setSort] = useState<SortOrder>('default');
-  const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin'>('game');
+  const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin' | 'leaderboard'>('game');
   const showRules = view !== 'game';
   /** Clicking the button for the page you're already on takes you back to the games. */
-  const toggleView = (target: 'rules' | 'updates' | 'admin') => setView((v) => (v === target ? 'game' : target));
+  const toggleView = (target: 'rules' | 'updates' | 'admin' | 'leaderboard') => setView((v) => (v === target ? 'game' : target));
   const active = GAMES.find((g) => g.id === activeId)!;
 
   return (
@@ -158,6 +159,9 @@ export function App() {
           </div>
           <button onClick={() => toggleView('updates')} aria-pressed={view === 'updates'}>
             {view === 'updates' ? 'Back to game' : "What's new"}
+          </button>
+          <button onClick={() => toggleView('leaderboard')} aria-pressed={view === 'leaderboard'}>
+            {view === 'leaderboard' ? 'Back to game' : 'Leaderboard'}
           </button>
           <button onClick={() => toggleView('rules')} aria-pressed={view === 'rules'}>
             {view === 'rules' ? 'Back to game' : 'Rules'}
@@ -194,6 +198,7 @@ export function App() {
         />
       )}
       {view === 'updates' && <UpdateLog />}
+      {view === 'leaderboard' && <Leaderboard />}
       {view === 'admin' && session.user.isAdmin && <AdminPanel />}
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}

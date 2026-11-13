@@ -152,3 +152,21 @@ export const getBalance = async (token: string) =>
   (await request<BalanceResponse>('GET', '/v1/me/balance', undefined, token))!;
 export const saveBalance = async (token: string, req: BalanceResponse, options?: RequestOptions) =>
   (await request<BalanceResponse>('PUT', '/v1/me/balance', req, token, options))!;
+
+/** One line of the leaderboard: a player's rank, name and coins. Never an email or account id. */
+export interface LeaderboardEntry {
+  rank: number;
+  displayName: string;
+  coins: number;
+}
+export interface LeaderboardResponse {
+  /** The top players, best first. */
+  entries: LeaderboardEntry[];
+  /** The caller's own place, even outside the top. Absent if the caller is not an approved player. */
+  you?: LeaderboardEntry;
+  /** How many approved players there are in all. */
+  total: number;
+}
+
+export const getLeaderboard = async (token: string) =>
+  (await request<LeaderboardResponse>('GET', '/v1/leaderboard', undefined, token))!;

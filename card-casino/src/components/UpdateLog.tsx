@@ -8,6 +8,16 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: 'The Leaderboard!',
+    points: [
+      'There is a new Leaderboard button at the top. Press it to see the 10 players with the most coins, from the richest at number 1.',
+      'Your own name is highlighted if you are on the list. If you are not in the top 10 yet, it tells you which place you are in and how many coins you have, so you know how far there is to climb.',
+      'If two players have exactly the same number of coins, they share the same place.',
+      'Only names and coins are shown. Nobody else can see your email.',
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: 'ADMIN ABUSE!',
     points: [
       'Surprise events are here! Sometimes the admin will start an ADMIN ABUSE event, and a bright banner will pop up at the very top of your screen to tell you what is happening.',
