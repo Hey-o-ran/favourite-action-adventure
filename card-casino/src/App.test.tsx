@@ -18,6 +18,7 @@ vi.mock('./api', async (orig) => {
     getBalance: vi.fn(),
     saveBalance: vi.fn(),
     listActiveEvents: vi.fn(),
+    getLeaderboard: vi.fn(),
     claimEvent: vi.fn(),
   };
 });
@@ -140,5 +141,36 @@ describe('admin abuse announcements', () => {
     );
     await vi.waitFor(() => expect(api.listActiveEvents).toHaveBeenCalled());
     expect(screen.queryByText('ADMIN ABUSE')).not.toBeInTheDocument();
+  });
+});
+
+describe('leaderboard button', () => {
+  it('is there for every player, opens the leaderboard, and goes back to the game', async () => {
+    vi.mocked(api.getLeaderboard).mockResolvedValue({
+      entries: [{ rank: 1, displayName: 'Ada', coins: 1000 }],
+      you: { rank: 1, displayName: 'Ada', coins: 1000 },
+      total: 1,
+    });
+    const user = userEvent.setup();
+    await renderApp(false);
+    await user.click(screen.getByRole('button', { name: 'Leaderboard' }));
+    expect(await screen.findByRole('heading', { name: /leaderboard/i })).toBeInTheDocument();
+    expect(await screen.findByRole('table')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /back to game/i }));
+    expect(screen.queryByRole('heading', { name: /leaderboard/i })).not.toBeInTheDocument();
+  });
+
+  it('is also there for admins, and switching to another page replaces it', async () => {
+    vi.mocked(api.getLeaderboard).mockResolvedValue({ entries: [], total: 0 });
+    vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
+    const user = userEvent.setup();
+    await renderApp(true);
+    await user.click(screen.getByRole('button', { name: 'Leaderboard' }));
+    expect(await screen.findByRole('heading', { name: /leaderboard/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: "What's new" }));
+    // The update log mentions the leaderboard in a heading of its own, so look for the page itself.
+    expect(document.querySelector('.leaderboard')).toBeNull();
+    expect(screen.getByRole('heading', { name: /the leaderboard!/i })).toBeInTheDocument();
   });
 });

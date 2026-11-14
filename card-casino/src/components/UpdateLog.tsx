@@ -8,6 +8,16 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: 'The Leaderboard!',
+    points: [
+      'There is a new Leaderboard button at the top. Press it to see the 10 players with the most coins, from the richest at number 1.',
+      'Your own name is highlighted if you are on the list. If you are not in the top 10 yet, it tells you which place you are in and how many coins you have, so you know how far there is to climb.',
+      'If two players have exactly the same number of coins, they share the same place.',
+      'Only names and coins are shown. Nobody else can see your email.',
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: 'No more accidental moves',
     points: [
       'We found a sneaky problem in Blackjack, Red Dog and Higher or Lower. If you clicked the Deal, Deal again or Start button twice quickly, the second click landed on a new button in the same spot (like Stand) and played your hand before you could even look at your cards.',
