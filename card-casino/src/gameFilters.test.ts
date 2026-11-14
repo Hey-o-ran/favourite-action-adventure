@@ -11,6 +11,7 @@ import {
 } from './gameFilters';
 
 const game = (over: Partial<GameFacts> = {}): GameFacts => ({
+  category: 'Card games',
   origin: 'France',
   players: 'Vs the house',
   type: 'Beat the dealer',
@@ -55,6 +56,15 @@ describe('game filters', () => {
     ];
     expect(filterOptions('players', games)).toEqual(['Solo', 'Vs the house', '2 players']);
     expect(filterOptions('skill', games)).toEqual(['Mostly luck', 'Mix of both', 'Mostly skill']);
+  });
+
+  it('filters by category, with card games first in the list', () => {
+    const cards = game({ category: 'Card games' });
+    const wheel = game({ category: 'Non-card games' });
+    expect(matchesFilters(wheel, { ...NO_FILTERS, category: 'Non-card games' })).toBe(true);
+    expect(matchesFilters(cards, { ...NO_FILTERS, category: 'Non-card games' })).toBe(false);
+    expect(filterOptions('category', [wheel, cards])).toEqual(['Card games', 'Non-card games']);
+    expect(filterOptions('category', [cards])).toEqual(['Card games']); // nothing to choose until a non-card game exists
   });
 
   it('words the origin, saying so when it is unclear', () => {
