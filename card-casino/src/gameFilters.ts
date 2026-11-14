@@ -1,3 +1,5 @@
+import { factText, translate, type Translate } from './i18n';
+
 /** How many people are at the table. "Vs the house" means you play against a dealer or bank, not other players. */
 export const PLAYER_OPTIONS = ['Solo', 'Vs the house', '2 players', '3+ players'] as const;
 export const SKILL_OPTIONS = ['Mostly luck', 'Mix of both', 'Mostly skill'] as const;
@@ -64,5 +66,8 @@ export function filterOptions(key: FilterKey, games: readonly GameFacts[]): stri
   return values.sort((a, b) => Number(a === UNCLEAR_ORIGIN) - Number(b === UNCLEAR_ORIGIN) || a.localeCompare(b));
 }
 
-export const originLabel = (facts: GameFacts) =>
-  facts.origin === UNCLEAR_ORIGIN ? 'Origin unclear' : `From ${facts.origin}`;
+const english: Translate = (key, values) => translate('en-GB', key, values);
+
+/** "From Spain" or "Origin unclear", in the language of `t` (British English when none is given). */
+export const originLabel = (facts: GameFacts, t: Translate = english) =>
+  facts.origin === UNCLEAR_ORIGIN ? t('facts.unclear') : t('facts.from', { country: factText(t, facts.origin) });

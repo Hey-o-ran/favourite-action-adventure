@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { checkAdminPassword } from '../adminGate';
+import { useI18n } from '../i18n';
 
 interface AdminGateProps {
   onUnlock: () => void;
@@ -9,6 +10,7 @@ interface AdminGateProps {
 
 /** A full-screen page, like the login page, that asks for the admin password. Covers the casino without closing it. */
 export function AdminGate({ onUnlock, onCancel }: AdminGateProps) {
+  const { t } = useI18n();
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -30,11 +32,11 @@ export function AdminGate({ onUnlock, onCancel }: AdminGateProps) {
   }
 
   return (
-    <div className="login admin-gate" role="dialog" aria-modal="true" aria-label="Admin access">
+    <div className="login admin-gate" role="dialog" aria-modal="true" aria-label={t('adminGate.title')}>
       <form className="login-card" onSubmit={submit} noValidate>
-        <h1>Admin access</h1>
+        <h1>{t('adminGate.title')}</h1>
         <label>
-          Password
+          {t('login.password')}
           <input
             type="password"
             autoComplete="off"
@@ -48,14 +50,14 @@ export function AdminGate({ onUnlock, onCancel }: AdminGateProps) {
         </label>
         {error && (
           <p role="alert" className="login-error">
-            That password is not right.
+            {t('adminGate.wrong')}
           </p>
         )}
         <button className="primary" type="submit" disabled={busy}>
-          {busy ? 'Checking…' : 'Enter'}
+          {busy ? t('adminGate.checking') : t('adminGate.enter')}
         </button>
         <button type="button" onClick={onCancel}>
-          Back to game
+          {t('menu.back')}
         </button>
       </form>
     </div>

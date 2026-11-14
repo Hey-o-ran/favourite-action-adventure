@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Fragment, createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { enGB, type MessageKey } from './en-GB';
 import { zhCN } from './zh-CN';
 
@@ -45,14 +45,46 @@ function initialLanguage(): Language {
   return typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-GB';
 }
 
+/** Like `translate`, for a sentence with something rich inside it (a bold name, say): each {name} becomes the given node. */
+export function translateRich(lang: Language, key: MessageKey, parts: Record<string, ReactNode>): ReactNode[] {
+  return MESSAGES[lang][key].split(/(\{\w+\})/).map((piece, i) => {
+    const name = piece.match(/^\{(\w+)\}$/)?.[1];
+    return name !== undefined && parts[name] !== undefined ? <Fragment key={i}>{parts[name]}</Fragment> : piece;
+  });
+}
+
+export type TranslateRich = (key: MessageKey, parts: Record<string, ReactNode>) => ReactNode[];
+
+/**
+ * The words for a fact about a game (a country, "Solo", "Poker"…). The English word is what the filters match on,
+ * so it stays as the value, and this gives the word to show. An unknown word is shown as it is.
+ */
+export function factText(t: Translate, value: string): string {
+  const key = `fact.${value}`;
+  return key in enGB ? t(key as MessageKey) : value;
+}
+
+/** A game's name, blurb or history in the chosen language. A game with no translation yet shows its English text. */
+export function gameText(t: Translate, id: string, part: 'name' | 'blurb' | 'note', fallback: string): string {
+  const key = `game.${id}.${part}`;
+  return key in enGB ? t(key as MessageKey) : fallback;
+}
+
 export interface I18nValue {
   lang: Language;
   setLang: (lang: Language) => void;
   t: Translate;
+  /** For a sentence with a bold name or the like inside it. */
+  tx: TranslateRich;
 }
 
 // Without a provider (in tests of a single component) the text is simply British English.
-const DEFAULT: I18nValue = { lang: 'en-GB', setLang: () => {}, t: (key, values) => translate('en-GB', key, values) };
+const DEFAULT: I18nValue = {
+  lang: 'en-GB',
+  setLang: () => {},
+  t: (key, values) => translate('en-GB', key, values),
+  tx: (key, parts) => translateRich('en-GB', key, parts),
+};
 const I18nContext = createContext<I18nValue>(DEFAULT);
 
 export const useI18n = () => useContext(I18nContext);
@@ -76,6 +108,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback<Translate>((key, values) => translate(lang, key, values), [lang]);
-  const value = useMemo<I18nValue>(() => ({ lang, setLang, t }), [lang, setLang, t]);
+  const tx = useCallback<TranslateRich>((key, parts) => translateRich(lang, key, parts), [lang]);
+  const value = useMemo<I18nValue>(() => ({ lang, setLang, t, tx }), [lang, setLang, t, tx]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

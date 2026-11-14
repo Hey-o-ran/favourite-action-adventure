@@ -19,7 +19,7 @@ import { AnnouncementBar } from './components/AnnouncementBar';
 import { SaveStatus } from './components/SaveStatus';
 import { HeaderMenu, type MenuItem } from './components/HeaderMenu';
 import { useSession } from './session';
-import { LANGUAGES, useI18n } from './i18n';
+import { LANGUAGES, factText, gameText, useI18n } from './i18n';
 import { NO_FILTERS, UNCLEAR_ORIGIN, originLabel, type Filters, type GameFacts, type SortOrder } from './gameFilters';
 
 interface GameEntry extends GameFacts {
@@ -165,7 +165,14 @@ export function App() {
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   /** Clicking the button for the page you're already on takes you back to the games. */
   const toggleView = (target: 'rules' | 'updates' | 'admin' | 'leaderboard') => setView((v) => (v === target ? 'game' : target));
-  const active = GAMES.find((g) => g.id === activeId)!;
+  /** The games with their names, blurbs and history in the chosen language. The facts stay as they are: filters match on them. */
+  const games = GAMES.map((g) => ({
+    ...g,
+    name: gameText(t, g.id, 'name', g.name),
+    blurb: gameText(t, g.id, 'blurb', g.blurb),
+    originNote: g.originNote === undefined ? undefined : gameText(t, g.id, 'note', g.originNote),
+  }));
+  const active = games.find((g) => g.id === activeId)!;
 
   /** Everything that used to sit along the top of the screen. The page you're on turns into "Back to game". */
   const page = (target: 'updates' | 'leaderboard' | 'rules' | 'admin', label: string): MenuItem => ({
@@ -208,7 +215,7 @@ export function App() {
 
       {view === 'rules' && (
         <Rules
-          games={GAMES}
+          games={games}
           gameId={activeId}
           onSelect={setActiveId}
           filters={filters}
@@ -224,7 +231,7 @@ export function App() {
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
       <div hidden={showRules}>
         <GameNav
-          games={GAMES}
+          games={games}
           activeId={activeId}
           onSelect={setActiveId}
           filters={filters}
@@ -235,7 +242,7 @@ export function App() {
 
         <p className="blurb">{active.blurb}</p>
         <p className="facts">
-          {[originLabel(active), active.players, active.type, active.skill].join(' · ')}
+          {[originLabel(active, t), factText(t, active.players), factText(t, active.type), factText(t, active.skill)].join(' · ')}
           {active.originNote && <span className="origin-note"> {active.originNote}</span>}
         </p>
 

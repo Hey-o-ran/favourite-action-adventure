@@ -1,3 +1,5 @@
+import { useI18n } from '../i18n';
+
 interface BetPanelProps {
   value: number;
   onChange: (value: number) => void;
@@ -9,12 +11,13 @@ interface BetPanelProps {
 const PRESETS = [10, 25, 50, 100];
 
 export function BetPanel({ value, onChange, max, disabled = false }: BetPanelProps) {
+  const { t } = useI18n();
   const clamp = (n: number) => Math.max(1, Math.min(Math.max(max, 1), Math.floor(n) || 1));
 
   return (
     <div className="bet-panel">
       <label>
-        Bet{' '}
+        {t('common.bet')}{' '}
         <input
           type="number"
           min={1}
@@ -31,7 +34,7 @@ export function BetPanel({ value, onChange, max, disabled = false }: BetPanelPro
           </button>
         ))}
         <button disabled={disabled || max < 1} onClick={() => onChange(max)}>
-          Max
+          {t('common.max')}
         </button>
       </div>
     </div>
