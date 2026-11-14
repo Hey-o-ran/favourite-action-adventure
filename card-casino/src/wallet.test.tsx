@@ -20,16 +20,17 @@ const session: Session = {
   user: { userId: 'u1', email: 'ada@example.com', displayName: 'Ada', isAdmin: false },
 };
 const logout = vi.fn();
+let captured: ReturnType<typeof useWallet> | undefined;
 
 function Probe() {
   const w = useWallet();
+  captured = w;
   return (
     <div>
       <p data-testid="balance">{w.balance}</p>
       <button onClick={() => w.wager(100)}>wager 100</button>
       <button onClick={() => w.wager(5000)}>wager 5000</button>
       <button onClick={() => w.settle(250)}>settle 250</button>
-      <button onClick={() => w.refill()}>refill</button>
       <button onClick={() => void w.flush()}>flush</button>
       <SaveStatus />
     </div>
@@ -112,21 +113,11 @@ describe('using coins', () => {
     expect(screen.getByTestId('balance')).toHaveTextContent('1250');
   });
 
-  it('only refills when the balance is zero', async () => {
+  it('has no way to top itself up at zero', async () => {
     vi.mocked(api.getBalance).mockResolvedValue({ balance: 0, version: 2 });
-    const user = userEvent.setup();
     renderWallet();
-    await screen.findByTestId('balance');
-    await user.click(screen.getByRole('button', { name: 'refill' }));
-    expect(screen.getByTestId('balance')).toHaveTextContent('500');
-  });
-
-  it('does not refill when there are coins left', async () => {
-    const user = userEvent.setup();
-    renderWallet();
-    await screen.findByTestId('balance');
-    await user.click(screen.getByRole('button', { name: 'refill' }));
-    expect(screen.getByTestId('balance')).toHaveTextContent('1000');
+    expect(await screen.findByTestId('balance')).toHaveTextContent('0');
+    expect('refill' in (captured ?? {})).toBe(false);
   });
 
   it('flush saves straight away', async () => {

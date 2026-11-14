@@ -14,7 +14,6 @@ import { useSession } from './session';
 
 /** What a new account starts with. The server applies it; this is only shown in the rules text. */
 export const STARTING_BALANCE = 1000;
-export const REFILL_AMOUNT = 500;
 
 /** The balance used to live here, shared by every account on the browser. It now lives on the server. */
 const LEGACY_STORAGE_KEY = 'card-casino.balance';
@@ -25,8 +24,6 @@ export interface WalletValue {
   wager(amount: number): boolean;
   /** Credits coins returned from a settled wager. Pass 0 for a loss. */
   settle(returned: number): void;
-  /** Gives the player a fresh stake when they are out of coins. */
-  refill(): void;
   /** Saves any change to the server right now. */
   flush(): Promise<void>;
   /** `failed` while the latest balance has not reached the server yet. */
@@ -104,10 +101,6 @@ export function WalletProvider({ children, saveDelayMs }: { children: ReactNode;
     const sync = syncRef.current;
     if (sync) sync.set(sync.state.balance + Math.max(0, Math.floor(returned)));
   }, []);
-  const refill = useCallback(() => {
-    const sync = syncRef.current;
-    if (sync && sync.state.balance === 0) sync.set(REFILL_AMOUNT);
-  }, []);
   const flush = useCallback(() => syncRef.current?.flush() ?? Promise.resolve(), []);
   const dismissNotice = useCallback(() => syncRef.current?.clearNotice(), []);
 
@@ -116,13 +109,12 @@ export function WalletProvider({ children, saveDelayMs }: { children: ReactNode;
       balance: state.balance,
       wager,
       settle,
-      refill,
       flush,
       status: state.status,
       notice: state.notice,
       dismissNotice,
     }),
-    [state.balance, state.status, state.notice, wager, settle, refill, flush, dismissNotice],
+    [state.balance, state.status, state.notice, wager, settle, flush, dismissNotice],
   );
 
   if (!state.loaded) {

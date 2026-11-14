@@ -1,5 +1,5 @@
 import { useState, type ComponentType } from 'react';
-import { REFILL_AMOUNT, useWallet } from './wallet';
+import { useWallet } from './wallet';
 import { Blackjack } from './games/Blackjack';
 import { Klondike } from './games/Klondike';
 import { VideoPoker } from './games/VideoPoker';
@@ -142,7 +142,7 @@ const GAMES: GameEntry[] = [
 ];
 
 export function App() {
-  const { balance, refill, flush } = useWallet();
+  const { balance, flush } = useWallet();
   const { session, logout: endSession } = useSession();
   /** Saves any unsaved coin change first, so logging out never loses it. */
   const logout = async () => {
@@ -189,15 +189,6 @@ export function App() {
       </header>
 
       <SaveStatus />
-
-      {balance === 0 && (
-        <div className="banner">
-          You're out of coins.{' '}
-          <button className="primary" onClick={refill}>
-            Claim {REFILL_AMOUNT} coins
-          </button>
-        </div>
-      )}
 
       {view === 'rules' && (
         <Rules
