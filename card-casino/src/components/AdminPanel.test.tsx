@@ -36,6 +36,12 @@ beforeEach(() => vi.resetAllMocks());
 afterEach(() => cleanup());
 
 describe('admin panel', () => {
+  it('has a section for finding players and giving coins', async () => {
+    vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
+    renderPanel();
+    expect(screen.getByRole('heading', { name: /give or take coins/i })).toBeInTheDocument();
+  });
+
   it('lists the users waiting for approval', async () => {
     vi.mocked(api.listPendingUsers).mockResolvedValue({ users: pending });
     renderPanel();
