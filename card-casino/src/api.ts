@@ -149,6 +149,8 @@ export interface AbuseEvent {
   amount?: number;
   startedAt: string;
   expiresAt: string;
+  /** The admin who started it. The screen shows a blue check next to the name. Absent on older events. */
+  announcedBy?: { displayName: string; verified: true };
 }
 export interface StartEventRequest {
   type: AbuseEventType;
@@ -181,6 +183,8 @@ export interface LeaderboardEntry {
   rank: number;
   displayName: string;
   coins: number;
+  /** True for admins, who get a blue check next to their name. */
+  verified?: boolean;
 }
 export interface LeaderboardResponse {
   /** The top players, best first. */

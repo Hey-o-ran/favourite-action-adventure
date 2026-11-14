@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/vitest';
 import { AbuseEventsProvider, POLL_MS } from './abuseEvents';
@@ -161,6 +161,26 @@ describe('free coins', () => {
   it('shows nothing when no event is on', async () => {
     await start([]);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+describe('who started it', () => {
+  it('shows the admin\'s name with a blue check, so nobody can pass themselves off as the admin', async () => {
+    await start([freeCoins({ announcedBy: { displayName: 'boss', verified: true } })]);
+    const from = screen.getByText(/^from/);
+    expect(from).toHaveTextContent('from boss');
+    expect(within(from).getByRole('img', { name: /verified admin/i })).toBeInTheDocument();
+  });
+
+  it('shows no name or check on an event that has no admin recorded', async () => {
+    await start([freeCoins()]);
+    expect(screen.queryByText(/^from/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /verified admin/i })).not.toBeInTheDocument();
+  });
+
+  it('shows it on an unloseable event too', async () => {
+    await start([unloseable({ announcedBy: { displayName: 'boss', verified: true } })]);
+    expect(screen.getByRole('img', { name: /verified admin/i })).toBeInTheDocument();
   });
 });
 

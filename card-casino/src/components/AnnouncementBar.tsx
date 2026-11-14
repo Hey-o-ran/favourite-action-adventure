@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { isLive } from '../abuse';
 import { useAbuseEvents, type EventOutcome } from '../abuseEvents';
 import type { AbuseEvent } from '../api';
+import { VerifiedBadge } from './VerifiedBadge';
 
 /** What the event did for this player, once it has been claimed. */
 function outcomeText(event: AbuseEvent, outcome: EventOutcome | undefined): string {
@@ -25,6 +26,12 @@ export function AnnouncementBar() {
         <div key={event.eventId} className="abuse-bar" role="status">
           <span className="abuse-title">{event.title}</span>
           <span className="abuse-message">{event.message}</span>
+          {event.announcedBy && (
+            <span className="abuse-from">
+              from <b>{event.announcedBy.displayName}</b>
+              {event.announcedBy.verified && <VerifiedBadge />}
+            </span>
+          )}
           <span className="abuse-outcome">{outcomeText(event, outcomes[event.eventId])}</span>
           <button
             className="abuse-dismiss"

@@ -8,6 +8,15 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '14 November 2026',
+    title: 'The blue check',
+    points: [
+      'Admins now have a little blue check next to their name, like the verified mark on lots of websites.',
+      'You will see it on the Leaderboard, and on the ADMIN ABUSE banner that shows who started it.',
+      'If somebody tells you they are an admin but has no blue check, they are not!',
+    ],
+  },
+  {
+    date: '14 November 2026',
     title: 'A tidy menu',
     points: [
       'All the buttons that used to sit along the top are now in one Menu button, right next to your coins.',
