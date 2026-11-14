@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/vitest';
 import { WalletContext, type WalletValue } from '../wallet';
+import { DEAL_LOCK_MS } from '../useDealLock';
 import { HigherLower } from './HigherLower';
 import { Klondike } from './Klondike';
 
@@ -25,10 +26,22 @@ const wallet = (): WalletValue => ({
 const renderGame = (game: JSX.Element) => render(<WalletContext.Provider value={wallet()}>{game}</WalletContext.Provider>);
 
 beforeEach(() => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
   vi.resetAllMocks();
   wager.mockReturnValue(true);
 });
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
+
+/** Presses Start, then waits out the short pause before the guess buttons switch on. */
+const startHigherLower = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole('button', { name: /start/i }));
+  await act(async () => {
+    vi.advanceTimersByTime(DEAL_LOCK_MS);
+  });
+};
 
 /*
  * Every wager must be followed by exactly one settle: with the coins paid back, or 0 for a loss.
@@ -36,9 +49,9 @@ afterEach(() => cleanup());
  */
 describe('a lost game tells the wallet it is over', () => {
   it('Higher or Lower: a wrong guess settles for 0', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
     renderGame(<HigherLower />);
-    await user.click(screen.getByRole('button', { name: /start/i })); // the ace (high) is showing
+    await startHigherLower(user); // the ace (high) is showing
     expect(wager).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole('button', { name: /higher/i })); // next card is a 2, so higher is wrong
     expect(settle).toHaveBeenCalledTimes(1);
@@ -47,18 +60,18 @@ describe('a lost game tells the wallet it is over', () => {
   });
 
   it('Higher or Lower: a missed jackpot settles for 0', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
     renderGame(<HigherLower />);
-    await user.click(screen.getByRole('button', { name: /start/i }));
+    await startHigherLower(user);
     await user.click(screen.getByRole('button', { name: /jackpot/i })); // ace then 2: not the same rank
     expect(settle).toHaveBeenCalledTimes(1);
     expect(settle).toHaveBeenCalledWith(0);
   });
 
   it('Higher or Lower: a correct guess does not settle yet, and cashing out pays the pot once', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
     renderGame(<HigherLower />);
-    await user.click(screen.getByRole('button', { name: /start/i }));
+    await startHigherLower(user);
     await user.click(screen.getByRole('button', { name: /lower/i })); // ace is high, so a 2 is lower: correct
     expect(settle).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: /cash out/i }));
@@ -67,7 +80,7 @@ describe('a lost game tells the wallet it is over', () => {
   });
 
   it('Klondike: giving up settles for 0', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
     renderGame(<Klondike />);
     await user.click(screen.getByRole('button', { name: /^deal$/i }));
     expect(wager).toHaveBeenCalledTimes(1);

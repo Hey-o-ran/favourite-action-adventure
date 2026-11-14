@@ -18,10 +18,10 @@ const UPDATES: Update[] = [
   },
   {
     date: '13 November 2026',
-    title: 'Blackjack no longer stands by accident',
+    title: 'No more accidental moves',
     points: [
-      'We found a sneaky problem in Blackjack. If you clicked Deal again twice quickly, the second click landed on the Stand button and ended your hand before you could even look at your cards.',
-      'Now Hit, Stand and Double stay switched off for a tiny moment after each new hand, just long enough for that extra click to do nothing. Then they switch on and you are in charge again.',
+      'We found a sneaky problem in Blackjack, Red Dog and Higher or Lower. If you clicked the Deal, Deal again or Start button twice quickly, the second click landed on a new button in the same spot (like Stand) and played your hand before you could even look at your cards.',
+      'Now the buttons for your next move stay switched off for a tiny moment after each new hand is dealt, just long enough for that extra click to do nothing. Then they switch on and you are in charge again.',
     ],
   },
   {
