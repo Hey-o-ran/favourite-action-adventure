@@ -148,15 +148,16 @@ describe('save status', () => {
   });
 
   it('tells the player when the balance was refreshed from another device, and can be dismissed', async () => {
-    vi.mocked(api.saveBalance).mockRejectedValue(
-      new ApiError(409, 'VERSION_CONFLICT', 'x', undefined, { balance: 300, version: 7 }),
-    );
+    vi.mocked(api.saveBalance)
+      .mockRejectedValueOnce(new ApiError(409, 'VERSION_CONFLICT', 'x', undefined, { balance: 300, version: 7 }))
+      .mockImplementation(async (_t, req) => ({ balance: req.balance, version: req.version + 1 }));
     const user = userEvent.setup();
     renderWallet();
     await screen.findByTestId('balance');
     await user.click(screen.getByRole('button', { name: 'wager 100' }));
     expect(await screen.findByText(/changed on another device/i)).toBeInTheDocument();
-    expect(screen.getByTestId('balance')).toHaveTextContent('300');
+    // The server holds 300 now, and the 100 that was just bet still comes off it.
+    expect(screen.getByTestId('balance')).toHaveTextContent('200');
     await user.click(screen.getByRole('button', { name: /dismiss/i }));
     expect(screen.queryByText(/changed on another device/i)).not.toBeInTheDocument();
   });
