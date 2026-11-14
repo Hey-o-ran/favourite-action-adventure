@@ -138,6 +138,20 @@ export const giveCoins = async (token: string, userId: string, amount: number) =
     token,
   ))!;
 
+/** A message to the player, such as "250 coins have been sent to you by <admin>". */
+export interface CoinNotice {
+  noticeId: string;
+  /** Positive when coins were sent, negative when they were removed. */
+  amount: number;
+  senderDisplayName: string;
+  createdAt: string;
+}
+export const listNotices = async (token: string) =>
+  (await request<{ notices: CoinNotice[] }>('GET', '/v1/me/notices', undefined, token))!;
+export const dismissNotice = async (token: string, noticeId: string) => {
+  await request('POST', `/v1/me/notices/${encodeURIComponent(noticeId)}/dismiss`, undefined, token);
+};
+
 /** An "admin abuse" event: the admin starts it and every player is told about it. */
 export type AbuseEventType = 'FREE_COINS' | 'UNLOSEABLE';
 export interface AbuseEvent {

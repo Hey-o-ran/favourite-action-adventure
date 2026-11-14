@@ -26,6 +26,8 @@ export interface WalletValue {
   settle(returned: number): void;
   /** Saves any change to the server right now. */
   flush(): Promise<void>;
+  /** Saves any change, then shows the balance the server holds, for when it was changed from outside (an admin gift). */
+  refresh(): Promise<void>;
   /** `failed` while the latest balance has not reached the server yet. */
   status: SyncState['status'];
   /** A short message to show the player, e.g. after the server corrected the balance. */
@@ -102,6 +104,17 @@ export function WalletProvider({ children, saveDelayMs }: { children: ReactNode;
     if (sync) sync.set(sync.state.balance + Math.max(0, Math.floor(returned)));
   }, []);
   const flush = useCallback(() => syncRef.current?.flush() ?? Promise.resolve(), []);
+  const refresh = useCallback(async () => {
+    const sync = syncRef.current;
+    if (!sync) return;
+    try {
+      await sync.flush();
+      await sync.load();
+    } catch (err) {
+      // A rejected login means logging in again. Anything else is quiet: the next save or refresh corrects it.
+      if (err instanceof ApiError && err.status === 401) logout();
+    }
+  }, [logout]);
   const dismissNotice = useCallback(() => syncRef.current?.clearNotice(), []);
 
   const value = useMemo<WalletValue>(
@@ -110,11 +123,12 @@ export function WalletProvider({ children, saveDelayMs }: { children: ReactNode;
       wager,
       settle,
       flush,
+      refresh,
       status: state.status,
       notice: state.notice,
       dismissNotice,
     }),
-    [state.balance, state.status, state.notice, wager, settle, flush, dismissNotice],
+    [state.balance, state.status, state.notice, wager, settle, flush, refresh, dismissNotice],
   );
 
   if (!state.loaded) {
