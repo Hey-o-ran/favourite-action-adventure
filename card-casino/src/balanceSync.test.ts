@@ -124,15 +124,88 @@ describe('saving', () => {
 });
 
 describe('when the server disagrees', () => {
-  it('takes the server value on a version conflict and tells the player', async () => {
-    const save = vi.fn().mockRejectedValue(new ApiError(409, 'VERSION_CONFLICT', 'x', undefined, { balance: 750, version: 4 }));
+  it('starts again from the server balance and version on a conflict, and tells the player', async () => {
+    const save = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError(409, 'VERSION_CONFLICT', 'x', undefined, { balance: 750, version: 4 }))
+      .mockImplementation(async (balance: number, version: number) => ({ balance, version: version + 1 }));
     const { sync } = setup({ save } as never);
     await sync.load();
-    sync.set(5000);
+    sync.set(1200); // won 200 here
     await vi.advanceTimersByTimeAsync(500);
-    expect(sync.state).toMatchObject({ balance: 750, version: 4, status: 'saved', notice: CONFLICT_NOTICE });
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(save).toHaveBeenCalledTimes(1); // no retry
+    expect(sync.state).toMatchObject({ balance: 950, version: 4, notice: CONFLICT_NOTICE }); // 750 + 200
+    await vi.advanceTimersByTimeAsync(500);
+    expect(save).toHaveBeenLastCalledWith(950, 4, undefined); // saved on top of the server's version
+    expect(sync.state.status).toBe('saved');
+  });
+
+  describe('what the player did here is kept when the server moved on', () => {
+    it('keeps a bet on top of coins an admin gave in the meantime', async () => {
+      // The player had 1000. An admin gave 1000 more (server: 2000, version 1). The player then bets it all.
+      const save = vi
+        .fn()
+        .mockRejectedValueOnce(new ApiError(409, 'VERSION_CONFLICT', 'x', undefined, { balance: 2000, version: 1 }))
+        .mockImplementation(async (balance: number, version: number) => ({ balance, version: version + 1 }));
+      const { sync } = setup({ save } as never);
+      await sync.load();
+      sync.set(0); // all in
+      await vi.advanceTimersByTimeAsync(500);
+      // The gift arrives and the bet still counts: 2000 - 1000.
+      expect(sync.state).toMatchObject({ balance: 1000, version: 1, notice: CONFLICT_NOTICE });
+      await vi.advanceTimersByTimeAsync(500);
+      expect(save).toHaveBeenLastCalledWith(1000, 1, undefined);
+      expect(sync.state).toMatchObject({ balance: 1000, version: 2, status: 'saved' });
+    });
+
+    it('never goes below zero', async () => {
+      const save = vi.fn().mockRejectedValueOnce(new ApiError(409, 'VERSION_CONFLICT', 'x', undefined, { balance: 300, version: 1 }));
+      const { sync } = setup({ save } as never);
+      await sync.load();
+      sync.set(0); // bet 1000, but an admin has since taken the balance down to 300
+      await vi.advanceTimersByTimeAsync(500);
+      expect(sync.state.balance).toBe(0);
+    });
+
+    it('does not keep a balance the server rejected as invalid', async () => {
+      const save = vi.fn().mockRejectedValue(new ApiError(400, 'VALIDATION_ERROR', 'x'));
+      const get = vi.fn().mockResolvedValueOnce({ balance: 1000, version: 0 }).mockResolvedValue({ balance: 800, version: 5 });
+      const { sync } = setup({ save, get } as never);
+      await sync.load();
+      sync.set(5000);
+      await vi.advanceTimersByTimeAsync(500);
+      expect(sync.state).toMatchObject({ balance: 800, version: 5, notice: RESET_NOTICE });
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(save).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps a change made while the balance is being reloaded', async () => {
+      let answer!: (v: { balance: number; version: number }) => void;
+      const get = vi
+        .fn()
+        .mockResolvedValueOnce({ balance: 1000, version: 0 })
+        .mockImplementationOnce(() => new Promise((resolve) => (answer = resolve)));
+      const { sync, api } = setup({ get } as never);
+      await sync.load();
+
+      const reloading = sync.load(); // for example after a coin message
+      sync.set(0); // the player bets everything while the answer is on its way
+      answer({ balance: 2000, version: 1 }); // the server says an admin gave 1000
+      await reloading;
+
+      expect(sync.state.balance).toBe(1000); // 2000 - 1000, not 2000
+      await vi.advanceTimersByTimeAsync(500);
+      expect(api.save).toHaveBeenLastCalledWith(1000, 1, undefined);
+    });
+
+    it('does not make a change out of nothing when reloading with nothing unsaved', async () => {
+      const get = vi.fn().mockResolvedValueOnce({ balance: 1000, version: 0 }).mockResolvedValue({ balance: 2000, version: 1 });
+      const { sync, api } = setup({ get } as never);
+      await sync.load();
+      await sync.load();
+      expect(sync.state).toMatchObject({ balance: 2000, version: 1 });
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(api.save).not.toHaveBeenCalled();
+    });
   });
 
   it('can clear the notice', async () => {
