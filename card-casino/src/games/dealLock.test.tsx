@@ -22,7 +22,6 @@ const wallet = (): WalletValue => ({
   balance: 1000,
   wager,
   settle,
-  refill: vi.fn(),
   flush: async () => {},
   status: 'saved',
   dismissNotice: vi.fn(),

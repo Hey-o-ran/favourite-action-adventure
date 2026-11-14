@@ -85,12 +85,12 @@ describe('coins', () => {
     expect(screen.getByText(/4,321 coins/i)).toBeInTheDocument();
   });
 
-  it('offers a refill when the account is out of coins', async () => {
+  it('does not offer a free refill when the account is out of coins', async () => {
     vi.mocked(api.getBalance).mockResolvedValue({ balance: 0, version: 3 });
-    const user = userEvent.setup();
     await renderApp(false);
-    await user.click(screen.getByRole('button', { name: /claim 500 coins/i }));
-    expect(screen.getByText(/500 coins/i)).toBeInTheDocument();
+    expect(screen.getByText(/^0\s*coins$/i, { selector: '.balance' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /claim/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/out of coins/i)).not.toBeInTheDocument();
   });
 });
 
