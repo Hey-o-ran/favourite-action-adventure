@@ -13,6 +13,7 @@ import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
 import { AdminPanel } from './components/AdminPanel';
+import { AdminGate } from './components/AdminGate';
 import { Leaderboard } from './components/Leaderboard';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { SaveStatus } from './components/SaveStatus';
@@ -158,6 +159,8 @@ export function App() {
   const [sort, setSort] = useState<SortOrder>('default');
   const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin' | 'leaderboard'>('game');
   const showRules = view !== 'game';
+  /** Set once the admin password has been entered. It lasts until the page is reloaded or you log out. */
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
   /** Clicking the button for the page you're already on takes you back to the games. */
   const toggleView = (target: 'rules' | 'updates' | 'admin' | 'leaderboard') => setView((v) => (v === target ? 'game' : target));
   const active = GAMES.find((g) => g.id === activeId)!;
@@ -205,7 +208,7 @@ export function App() {
       )}
       {view === 'updates' && <UpdateLog />}
       {view === 'leaderboard' && <Leaderboard />}
-      {view === 'admin' && session.user.isAdmin && <AdminPanel />}
+      {view === 'admin' && session.user.isAdmin && (adminUnlocked ? <AdminPanel /> : <AdminGate onUnlock={() => setAdminUnlocked(true)} onCancel={() => setView('game')} />)}
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
       <div hidden={showRules}>

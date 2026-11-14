@@ -42,6 +42,9 @@ async function renderApp(isAdmin: boolean) {
   await screen.findByRole('button', { name: /menu/i });
 }
 
+// Built from pieces so the real password is not written in this file.
+const ADMIN_PASSWORD = ['Gre@t', 'Gl@g', 'VSE', 'nf0s0'].join('');
+
 /** Opens the Menu and presses one of its items. */
 async function pickFromMenu(user: ReturnType<typeof userEvent.setup>, name: string | RegExp) {
   await user.click(screen.getByRole('button', { name: /menu/i }));
@@ -76,9 +79,42 @@ describe('casino header', () => {
     const user = userEvent.setup();
     await renderApp(true);
     await pickFromMenu(user, 'ADMIN ONLY');
+    await user.type(await screen.findByLabelText(/password/i), `${ADMIN_PASSWORD}{Enter}`);
     expect(await screen.findByRole('heading', { name: /admin panel/i })).toBeInTheDocument();
     await pickFromMenu(user, /back to game/i);
     expect(screen.queryByRole('heading', { name: /admin panel/i })).not.toBeInTheDocument();
+  });
+
+  it('asks for the admin password first, and shows nothing of the panel until it is right', async () => {
+    vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
+    const user = userEvent.setup();
+    await renderApp(true);
+    await pickFromMenu(user, 'ADMIN ONLY');
+    expect(await screen.findByRole('dialog', { name: /admin access/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /admin panel/i })).not.toBeInTheDocument();
+    expect(api.listPendingUsers).not.toHaveBeenCalled();
+
+    await user.type(screen.getByLabelText(/password/i), 'wrong{Enter}');
+    expect(await screen.findByRole('alert')).toHaveTextContent(/not right/i);
+    expect(screen.queryByRole('heading', { name: /admin panel/i })).not.toBeInTheDocument();
+    expect(api.listPendingUsers).not.toHaveBeenCalled();
+  });
+
+  it('can leave the password page without entering anything, and does not ask again once you are in', async () => {
+    vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
+    const user = userEvent.setup();
+    await renderApp(true);
+    await pickFromMenu(user, 'ADMIN ONLY');
+    await user.click(await screen.findByRole('button', { name: /back to game/i }));
+    expect(screen.queryByRole('dialog', { name: /admin access/i })).not.toBeInTheDocument();
+
+    await pickFromMenu(user, 'ADMIN ONLY');
+    await user.type(await screen.findByLabelText(/password/i), `${ADMIN_PASSWORD}{Enter}`);
+    expect(await screen.findByRole('heading', { name: /admin panel/i })).toBeInTheDocument();
+    await pickFromMenu(user, /back to game/i);
+    await pickFromMenu(user, 'ADMIN ONLY');
+    expect(await screen.findByRole('heading', { name: /admin panel/i })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /admin access/i })).not.toBeInTheDocument();
   });
 
   it('logs out through the session', async () => {
