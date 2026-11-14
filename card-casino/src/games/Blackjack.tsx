@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useWallet } from '../wallet';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
@@ -13,10 +13,21 @@ const OUTCOME_TEXT: Record<Outcome, string> = {
   bust: 'Bust! Dealer wins.',
 };
 
+/**
+ * How long Hit, Stand and Double stay switched off after a hand is dealt. They appear right where the
+ * Deal button was, so the second click of a double-click on Deal would otherwise land on one of them
+ * (usually Stand) before the player has even seen their cards. This is longer than a double-click gap.
+ */
+export const DEAL_LOCK_MS = 600;
+
 export function Blackjack() {
   const { balance, wager, settle } = useWallet();
   const [bet, setBet] = useState(50);
   const [round, setRound] = useState<Round | null>(null);
+  const [locked, setLocked] = useState(false);
+  const lockTimer = useRef<number>();
+
+  useEffect(() => () => window.clearTimeout(lockTimer.current), []);
 
   const inRound = round !== null && !round.over;
 
@@ -27,11 +38,22 @@ export function Blackjack() {
 
   const deal = () => {
     if (!wager(bet)) return;
-    apply(dealRound(round?.deck ?? shuffle(newDeck()), bet));
+    const next = dealRound(round?.deck ?? shuffle(newDeck()), bet);
+    apply(next);
+    if (!next.over) {
+      setLocked(true);
+      window.clearTimeout(lockTimer.current);
+      lockTimer.current = window.setTimeout(() => setLocked(false), DEAL_LOCK_MS);
+    }
+  };
+
+  const act = (next: (r: Round) => Round) => {
+    if (locked || !round) return;
+    apply(next(round));
   };
 
   const double = () => {
-    if (!round || round.player.length !== 2 || round.doubled) return;
+    if (locked || !round || round.player.length !== 2 || round.doubled) return;
     if (!wager(round.bet)) return;
     apply(doubleDown(round));
   };
@@ -80,11 +102,13 @@ export function Blackjack() {
         )}
         {inRound && round && (
           <>
-            <button className="primary" onClick={() => apply(hit(round))}>
+            <button className="primary" onClick={() => act(hit)} disabled={locked}>
               Hit
             </button>
-            <button onClick={() => apply(stand(round))}>Stand</button>
-            <button onClick={double} disabled={round.player.length !== 2 || balance < round.bet}>
+            <button onClick={() => act(stand)} disabled={locked}>
+              Stand
+            </button>
+            <button onClick={double} disabled={locked || round.player.length !== 2 || balance < round.bet}>
               Double
             </button>
           </>

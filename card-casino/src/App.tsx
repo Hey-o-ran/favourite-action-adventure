@@ -152,7 +152,7 @@ export function App() {
     <div className="app">
       <AnnouncementBar />
       <header>
-        <h1>Card Casino</h1>
+        <h1>Bintarland Bank - Bibergly Betting Business</h1>
         <div className="header-actions">
           <div className="balance" aria-live="polite">
             {balance.toLocaleString()} coins

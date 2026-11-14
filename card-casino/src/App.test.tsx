@@ -122,7 +122,7 @@ describe('admin abuse announcements', () => {
     );
 
     const announcement = await screen.findByText('Everyone gets 1,000 coins!');
-    const title = screen.getByRole('heading', { name: /card casino/i });
+    const title = screen.getByRole('heading', { name: /bintarland bank - bibergly betting business/i });
     // The announcement comes before the page title in the document.
     expect(announcement.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(await screen.findByText(/2,000 coins/)).toBeInTheDocument(); // 1,000 to start plus the 1,000 gift

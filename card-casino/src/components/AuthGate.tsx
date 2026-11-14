@@ -73,7 +73,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   return (
     <div className="login">
       <form className="login-card" onSubmit={submit} noValidate>
-        <h1>Card Casino</h1>
+        <h1>Bintarland Bank - Bibergly Betting Business</h1>
         <label>
           Email
           <input
