@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ApiError, getLeaderboard, type LeaderboardResponse } from '../api';
 import { useSession } from '../session';
 import { useWallet } from '../wallet';
+import { VerifiedBadge } from './VerifiedBadge';
 
 const coins = (n: number) => n.toLocaleString('en-US');
 
@@ -72,6 +73,7 @@ export function Leaderboard() {
                   <td>{e.rank}</td>
                   <td>
                     {e.displayName}
+                    {e.verified && <VerifiedBadge />}
                     {mine && <span className="you-tag"> (you)</span>}
                   </td>
                   <td className="coins">{coins(e.coins)}</td>

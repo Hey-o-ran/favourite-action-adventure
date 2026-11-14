@@ -416,6 +416,11 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .abuse-title { font-weight: 800; letter-spacing: 0.06em; font-size: 0.8rem; background: #0004; padding: 2px 8px; border-radius: 999px; }
 .abuse-bar.saved .abuse-title { background: #1a130022; }
 .abuse-message { font-weight: 700; }
+.abuse-from { display: inline-flex; align-items: center; gap: 4px; font-size: 0.9rem; opacity: 0.95; }
+
+/* The blue check beside an admin's name. The white ring keeps it visible on coloured bars. */
+.verified-badge { display: inline-block; vertical-align: -0.2em; margin-left: 4px; flex: none; border-radius: 50%; box-shadow: 0 0 0 1.5px #fff; }
+.abuse-from .verified-badge { margin-left: 0; }
 .abuse-outcome { opacity: 0.95; font-size: 0.9rem; }
 .abuse-dismiss { margin-left: auto; padding: 0 10px; background: #0003; border-color: transparent; color: inherit; font-size: 1.2rem; line-height: 1.6; }
 

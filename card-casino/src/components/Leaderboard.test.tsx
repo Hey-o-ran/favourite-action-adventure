@@ -89,6 +89,29 @@ describe('leaderboard page', () => {
     expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
   });
 
+  it('puts a blue check next to admins, and only admins', async () => {
+    vi.mocked(api.getLeaderboard).mockResolvedValue(
+      board({
+        entries: [{ ...entry(1, 'bob', 5000), verified: true }, entry(2, 'ada', 4000), entry(3, 'cleo', 1200)],
+      }),
+    );
+    renderBoard();
+    await screen.findByRole('table');
+    const checks = screen.getAllByRole('img', { name: /verified admin/i });
+    expect(checks).toHaveLength(1);
+    const row = checks[0].closest('tr')!;
+    expect(row).toHaveTextContent('bob');
+    // The check sits right beside the name, not in some other row.
+    expect(screen.getByText('ada').closest('tr')!.querySelector('.verified-badge')).toBeNull();
+  });
+
+  it('shows no checks when nobody is verified, such as when the server cannot tell', async () => {
+    vi.mocked(api.getLeaderboard).mockResolvedValue(board());
+    renderBoard();
+    await screen.findByRole('table');
+    expect(screen.queryByRole('img', { name: /verified admin/i })).not.toBeInTheDocument();
+  });
+
   it('highlights your own line, and only yours', async () => {
     vi.mocked(api.getLeaderboard).mockResolvedValue(board());
     renderBoard();
