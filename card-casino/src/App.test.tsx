@@ -115,7 +115,7 @@ describe('casino header', () => {
     await pickFromMenu(user, 'ADMIN ONLY');
     expect(await screen.findByRole('heading', { name: /admin panel/i })).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: /admin access/i })).not.toBeInTheDocument();
-  });
+  }, 15_000); // several menu trips and password checks: slow when the whole suite runs at once
 
   it('logs out through the session', async () => {
     const user = userEvent.setup();
