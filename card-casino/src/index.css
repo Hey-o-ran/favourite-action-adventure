@@ -472,3 +472,5 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .coins-search label, .coins-form label { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 180px; }
 .coins-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .admin-table tr.chosen td { background: #ffffff12; }
+
+.abuse-bar.removed { background: linear-gradient(135deg, #b91c1c, #ef4444); }
