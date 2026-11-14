@@ -115,6 +115,29 @@ export const approveUser = async (token: string, userId: string) =>
     token,
   ))!;
 
+/** An active player the admin can give coins to. */
+export interface FoundUser {
+  userId: string;
+  email: string;
+  displayName: string;
+  balance: number;
+}
+export const searchUsers = async (token: string, term: string) =>
+  (await request<{ users: FoundUser[]; truncated: boolean }>(
+    'GET',
+    `/v1/admin/users/search?q=${encodeURIComponent(term)}`,
+    undefined,
+    token,
+  ))!;
+/** A positive amount gives coins, a negative one takes them away. */
+export const giveCoins = async (token: string, userId: string, amount: number) =>
+  (await request<{ userId: string; amount: number; balance: number; version: number }>(
+    'POST',
+    `/v1/admin/users/${encodeURIComponent(userId)}/coins`,
+    { amount },
+    token,
+  ))!;
+
 /** An "admin abuse" event: the admin starts it and every player is told about it. */
 export type AbuseEventType = 'FREE_COINS' | 'UNLOSEABLE';
 export interface AbuseEvent {

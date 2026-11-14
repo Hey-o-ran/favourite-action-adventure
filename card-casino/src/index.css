@@ -427,3 +427,21 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .you-tag { color: var(--gold); font-weight: 600; }
 .leaderboard-you { margin: 8px 0; padding: 10px 14px; border-radius: 10px; background: #ffffff14; max-width: 520px; }
 .leaderboard-foot { margin-top: 8px; }
+
+/* Admin: give or take coins */
+.admin-coins { margin-top: 28px; padding-top: 16px; border-top: 1px solid #ffffff22; }
+.admin-coins h3, .admin-coins h4 { margin: 0 0 6px; }
+.admin-coins h4 { margin-top: 18px; }
+.coins-search { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin-top: 10px; }
+.coins-search label, .coins-form label { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 180px; }
+.coins-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.admin-table tr.chosen td { background: #ffffff12; }
+
+/* Admin: give or take coins */
+.admin-coins { margin-top: 28px; padding-top: 16px; border-top: 1px solid #ffffff22; }
+.admin-coins h3, .admin-coins h4 { margin: 0 0 6px; }
+.admin-coins h4 { margin-top: 18px; }
+.coins-search { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin-top: 10px; }
+.coins-search label, .coins-form label { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 180px; }
+.coins-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.admin-table tr.chosen td { background: #ffffff12; }
