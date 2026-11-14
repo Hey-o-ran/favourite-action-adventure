@@ -3,6 +3,7 @@ import { GameNav, type NavGame } from './GameNav';
 import type { Filters, SortOrder } from '../gameFilters';
 import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
 import { BIG_BLIND, BUY_IN, MAX_RAISES, SMALL_BLIND, betSize } from '../games/holdemRules';
+import { GIN_BONUS, HAND_BONUS, HAND_SIZE as GIN_HAND_SIZE, KNOCK_LIMIT, MATCH_BONUS, MATCH_TARGET, STOCK_FLOOR, UNDERCUT_BONUS, WIN_PAYOUT as GIN_WIN_PAYOUT } from '../games/ginRules';
 import { CATEGORY_NAMES } from '../games/pokerHands';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
@@ -137,6 +138,30 @@ function BaccaratDiagram() {
       <Note x={292} y={100}>4 + 5 = 9 → 9</Note>
       <Note x={210} y={126}>Only the last digit counts. Closest to 9 wins, so Banker wins here.</Note>
       <Note x={210} y={144}>J, Q, K and 10 are worth 0. Aces are 1.</Note>
+    </svg>
+  );
+}
+
+function GinDiagram() {
+  return (
+    <svg viewBox="0 0 420 190" role="img" aria-label="A hand with a set of three sevens, a run of 4, 5 and 6 of clubs, and two loose cards, a king and a 3, which count 13 points of deadwood">
+      <Note x={62} y={16}>Set</Note>
+      <MiniCard x={10} y={24} label="7♥" red />
+      <MiniCard x={42} y={24} label="7♠" />
+      <MiniCard x={74} y={24} label="7♦" red />
+      <Note x={190} y={16}>Run</Note>
+      <MiniCard x={140} y={24} label="4♣" />
+      <MiniCard x={172} y={24} label="5♣" />
+      <MiniCard x={204} y={24} label="6♣" />
+      <Note x={330} y={16}>Deadwood</Note>
+      <MiniCard x={300} y={24} label="K♠" />
+      <MiniCard x={340} y={24} label="3♦" red />
+      <Note x={62} y={96}>same number</Note>
+      <Note x={190} y={96}>in a row, same suit</Note>
+      <Note x={330} y={96}>10 + 3 = 13</Note>
+      <Note x={210} y={128}>Group your cards into sets and runs. What's left over is deadwood.</Note>
+      <Note x={210} y={148}>Aces count 1, face cards 10, other cards their number.</Note>
+      <Note x={210} y={168}>Get your deadwood down to 10 or fewer, then knock.</Note>
     </svg>
   );
 }
@@ -380,6 +405,32 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
           <li>When you play an 8, choose the suit you hold the most cards of.</li>
           <li>Get rid of awkward cards, such as the only one you have in a suit, while you can.</li>
           <li>Watch the bot's card count. When it gets low, stop saving your 8s and go out.</li>
+        </ul>
+      </Section>
+    ),
+    'gin-rummy': (
+      <Section title="Gin Rummy" diagram={<GinDiagram />}>
+        <h3>How to play</h3>
+        <ul>
+          <li>You and the bot get {GIN_HAND_SIZE} cards each, and one card is turned up to start the pile. A match is played over several hands. The first player to reach {MATCH_TARGET} points wins it.</li>
+          <li>Make <b>melds</b>. A <b>set</b> is 3 or 4 cards with the same number. A <b>run</b> is 3 or more cards in a row of the same suit, like 4♣ 5♣ 6♣. Aces are low, so A-2-3 is a run, but Q-K-A is not.</li>
+          <li>Cards that aren't in a meld are <b>deadwood</b>. Aces count 1, face cards 10, and the rest their number. The game always groups your best melds for you and shows your deadwood total.</li>
+          <li>To start, the player who isn't dealing may take the turned-up card or pass. Then the dealer may take it or pass. If both pass, the player who went first draws from the stock.</li>
+          <li>Each turn, <b>draw</b> a card from the stock or take the top card of the pile, then <b>discard</b> one card. You can't throw back the card you just took from the pile.</li>
+          <li>When you've got {KNOCK_LIMIT} or fewer deadwood points, you can <b>knock</b>. Click the card you want to discard, then press <b>Knock</b>. The game tells you how many points you would have left over.</li>
+          <li>After a knock, the other player may <b>lay off</b> cards onto your sets and runs, like adding a 5♣ to 2♣ 3♣ 4♣. The game does this for them automatically, in the best way. Then both sides count their leftover deadwood, and you score the difference.</li>
+          <li><b>Gin</b> means no deadwood at all. You score the other player's deadwood plus {GIN_BONUS}, and they can't lay anything off.</li>
+          <li>An <b>undercut</b> is when the other player has the same or less deadwood than you after laying off. They score the difference plus {UNDERCUT_BONUS}, so be careful when you knock with a lot left over.</li>
+          <li>If only {STOCK_FLOOR} cards are left in the stock, the hand is a draw and nobody scores. The dealer swaps each hand.</li>
+          <li>When someone reaches {MATCH_TARGET}, the match ends. Both players get {HAND_BONUS} for each hand they won, and the winner gets {MATCH_BONUS} extra.</li>
+          <li>You bet once for the whole match. Win it to get your bet back plus {GIN_WIN_PAYOUT}× your bet. Lose, or press <b>Forfeit match</b>, and you lose your bet. Switching to another game doesn't forfeit, but reloading the page does.</li>
+        </ul>
+        <h3>Tips</h3>
+        <ul>
+          <li>Take a card from the pile only when it fits a meld. Otherwise draw from the stock, because the pile shows the bot what you want.</li>
+          <li>Throw away high cards that don't fit anything first. A king stuck in your hand costs 10 points.</li>
+          <li>Don't rush to knock with 10. If the bot has little deadwood, you could be undercut. Knocking low is much safer.</li>
+          <li>Watch what the bot picks up from the pile. It's collecting that number or suit, so don't feed it.</li>
         </ul>
       </Section>
     ),

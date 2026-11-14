@@ -8,6 +8,7 @@ import { RedDog } from './games/RedDog';
 import { Baccarat } from './games/Baccarat';
 import { CrazyEights } from './games/CrazyEights';
 import { Holdem } from './games/Holdem';
+import { Gin } from './games/Gin';
 import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
@@ -63,7 +64,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Guess the card',
     skill: 'Mostly luck',
-    popularity: 8,
+    popularity: 9,
     Component: RedDog,
   },
   {
@@ -99,7 +100,7 @@ const GAMES: GameEntry[] = [
     players: 'Solo',
     type: 'Guess the card',
     skill: 'Mostly luck',
-    popularity: 7,
+    popularity: 8,
     Component: HigherLower,
   },
   {
@@ -111,7 +112,7 @@ const GAMES: GameEntry[] = [
     players: '2 players',
     type: 'Empty your hand',
     skill: 'Mix of both',
-    popularity: 6,
+    popularity: 7,
     Component: CrazyEights,
   },
   {
@@ -125,6 +126,18 @@ const GAMES: GameEntry[] = [
     skill: 'Mostly skill',
     popularity: 2,
     Component: Holdem,
+  },
+  {
+    id: 'gin-rummy',
+    name: 'Gin Rummy',
+    blurb: 'Match cards into sets and runs, then knock. Play hands against the bot until one of you reaches 100 points.',
+    origin: 'United States',
+    originNote: 'It was invented in New York around 1909 by a card teacher named Elwood Baker, and was hugely popular in the 1930s and 40s.',
+    players: '2 players',
+    type: 'Make sets and runs',
+    skill: 'Mostly skill',
+    popularity: 6,
+    Component: Gin,
   },
 ];
 
