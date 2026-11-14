@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { isLive } from '../abuse';
 import { useAbuseEvents, type EventOutcome } from '../abuseEvents';
+import { useCoinNotices } from '../coinNotices';
 import type { AbuseEvent } from '../api';
+import { VerifiedBadge } from './VerifiedBadge';
 
 /** What the event did for this player, once it has been claimed. */
 function outcomeText(event: AbuseEvent, outcome: EventOutcome | undefined): string {
@@ -14,17 +16,40 @@ function outcomeText(event: AbuseEvent, outcome: EventOutcome | undefined): stri
 /** The announcements at the very top of the screen: events that are on, plus any protection you are carrying. */
 export function AnnouncementBar() {
   const { events, outcomes, protectedNext, lastSaved, dismissSaved } = useAbuseEvents();
+  const { notices, dismiss: dismissNotice } = useCoinNotices();
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
 
   const shown = events.filter((e) => isLive(e) && !dismissed.has(e.eventId));
-  if (shown.length === 0 && !protectedNext && lastSaved === null) return null;
+  if (shown.length === 0 && !protectedNext && lastSaved === null && notices.length === 0) return null;
 
   return (
     <div className="abuse-bars">
+      {notices.map((n) => {
+        const sent = n.amount >= 0;
+        const text = sent
+          ? `${n.amount.toLocaleString('en-US')} coins have been sent to you by ${n.senderDisplayName}`
+          : `${Math.abs(n.amount).toLocaleString('en-US')} coins have been removed from you by ${n.senderDisplayName}`;
+        return (
+          <div key={n.noticeId} className={`abuse-bar ${sent ? 'saved' : 'removed'}`} role="status">
+            <span className="abuse-title">{sent ? 'COINS SENT' : 'COINS REMOVED'}</span>
+            <span className="abuse-message">{text}</span>
+            <button className="abuse-dismiss" onClick={() => dismissNotice(n.noticeId)} aria-label={`Dismiss: ${text}`}>
+              ×
+            </button>
+          </div>
+        );
+      })}
+
       {shown.map((event) => (
         <div key={event.eventId} className="abuse-bar" role="status">
           <span className="abuse-title">{event.title}</span>
           <span className="abuse-message">{event.message}</span>
+          {event.announcedBy && (
+            <span className="abuse-from">
+              from <b>{event.announcedBy.displayName}</b>
+              {event.announcedBy.verified && <VerifiedBadge />}
+            </span>
+          )}
           <span className="abuse-outcome">{outcomeText(event, outcomes[event.eventId])}</span>
           <button
             className="abuse-dismiss"

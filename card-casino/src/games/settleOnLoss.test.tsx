@@ -19,6 +19,7 @@ const wallet = (): WalletValue => ({
   wager,
   settle,
   flush: async () => {},
+  refresh: async () => {},
   status: 'saved',
   dismissNotice: vi.fn(),
 });

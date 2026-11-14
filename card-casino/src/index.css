@@ -271,6 +271,14 @@ button.primary {
 }
 .login-error { color: var(--loss); margin: 0; font-size: 0.9rem; }
 
+/* The admin password page covers the casino, without closing it, so an unfinished game isn't lost. */
+.admin-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: radial-gradient(circle at top, #0f7a4d, #06291b 70%);
+}
+
 .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .menu { position: relative; }
@@ -408,6 +416,11 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .abuse-title { font-weight: 800; letter-spacing: 0.06em; font-size: 0.8rem; background: #0004; padding: 2px 8px; border-radius: 999px; }
 .abuse-bar.saved .abuse-title { background: #1a130022; }
 .abuse-message { font-weight: 700; }
+.abuse-from { display: inline-flex; align-items: center; gap: 4px; font-size: 0.9rem; opacity: 0.95; }
+
+/* The blue check beside an admin's name. The white ring keeps it visible on coloured bars. */
+.verified-badge { display: inline-block; vertical-align: -0.2em; margin-left: 4px; flex: none; border-radius: 50%; box-shadow: 0 0 0 1.5px #fff; }
+.abuse-from .verified-badge { margin-left: 0; }
 .abuse-outcome { opacity: 0.95; font-size: 0.9rem; }
 .abuse-dismiss { margin-left: auto; padding: 0 10px; background: #0003; border-color: transparent; color: inherit; font-size: 1.2rem; line-height: 1.6; }
 
@@ -468,3 +481,4 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 /* Menu: language choice */
 .menu-heading { padding: 8px 12px 2px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); border-top: 1px solid #ffffff22; margin-top: 4px; }
 .menu-list button.checked::after { content: ' ✓'; }
+.abuse-bar.removed { background: linear-gradient(135deg, #b91c1c, #ef4444); }
