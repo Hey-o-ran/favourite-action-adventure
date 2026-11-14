@@ -271,6 +271,14 @@ button.primary {
 }
 .login-error { color: var(--loss); margin: 0; font-size: 0.9rem; }
 
+/* The admin password page covers the casino, without closing it, so an unfinished game isn't lost. */
+.admin-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: radial-gradient(circle at top, #0f7a4d, #06291b 70%);
+}
+
 .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .menu { position: relative; }

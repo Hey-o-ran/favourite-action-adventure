@@ -26,7 +26,6 @@ const wallet: WalletValue = {
   balance: 1000,
   wager: () => true,
   settle: () => {},
-  refill: () => {},
   flush: () => flush(),
   status: 'saved',
   dismissNotice: () => {},
