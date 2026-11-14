@@ -1,5 +1,6 @@
 import type { MouseEvent } from 'react';
 import { SUIT_SYMBOL, isRed, rankLabel, type Card } from '../cards';
+import { useI18n } from '../i18n';
 
 interface CardViewProps {
   card?: Card;
@@ -9,6 +10,7 @@ interface CardViewProps {
 }
 
 export function CardView({ card, faceDown, selected, onClick }: CardViewProps) {
+  const { t } = useI18n();
   const clickable = onClick !== undefined;
 
   if (!card || faceDown) {
@@ -18,7 +20,7 @@ export function CardView({ card, faceDown, selected, onClick }: CardViewProps) {
         role={clickable ? 'button' : undefined}
         tabIndex={clickable ? 0 : undefined}
         onClick={onClick}
-        aria-label="Face-down card"
+        aria-label={t('card.faceDown')}
       />
     );
   }
@@ -30,7 +32,7 @@ export function CardView({ card, faceDown, selected, onClick }: CardViewProps) {
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
       onClick={onClick}
-      aria-label={`${rankLabel(card.rank)} of ${card.suit}`}
+      aria-label={t('card.of', { rank: rankLabel(card.rank), suit: t(`suit.${card.suit}`) })}
     >
       <span className="corner">
         {rankLabel(card.rank)}

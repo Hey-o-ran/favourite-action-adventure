@@ -249,4 +249,93 @@ export const zhCN: Record<MessageKey, string> = {
   'game.gin-rummy.name': '金拉米',
   'game.gin-rummy.blurb': '把牌配成组合与顺子，然后敲牌。与机器人对战多局，先到 100 分者获胜。',
   'game.gin-rummy.note': '约 1909 年由纽约一位名叫埃尔伍德·贝克的纸牌教师发明，在 20 世纪 30 至 40 年代非常流行。',
+
+  // Cards
+  'card.faceDown': '背面朝上的牌',
+  'card.of': '{suit}{rank}',
+  'suit.clubs': '梅花',
+  'suit.diamonds': '方块',
+  'suit.hearts': '红桃',
+  'suit.spades': '黑桃',
+
+  // Shared by the games
+  'game.deal': '发牌',
+  'game.dealAgain': '再发一局',
+  'game.playAgain': '再玩一次',
+  'game.start': '开始',
+  'game.gain': '+{amount} 枚金币',
+  'game.loss': '-{amount} 枚金币',
+  'game.coins': '{amount} 枚金币',
+
+  // Poker hands
+  'hand.Royal Flush': '皇家同花顺',
+  'hand.Straight Flush': '同花顺',
+  'hand.Four of a Kind': '四条',
+  'hand.Full House': '葫芦',
+  'hand.Flush': '同花',
+  'hand.Straight': '顺子',
+  'hand.Three of a Kind': '三条',
+  'hand.Two Pair': '两对',
+  'hand.One Pair': '一对',
+  'hand.High Card': '高牌',
+  'hand.Jacks or Better': '一对 J 或更大',
+  'hand.No win': '未中奖',
+
+  // Blackjack
+  'blackjack.dealer': '庄家',
+  'blackjack.you': '你',
+  'blackjack.hit': '要牌',
+  'blackjack.stand': '停牌',
+  'blackjack.double': '加倍',
+  'blackjack.blackjack': '黑杰克！赔率 3 比 2。',
+  'blackjack.win': '你赢了！',
+  'blackjack.push': '平局，退还你的赌注。',
+  'blackjack.lose': '庄家获胜。',
+  'blackjack.bust': '爆牌！庄家获胜。',
+
+  // Baccarat
+  'baccarat.betOn': '选择下注方',
+  'baccarat.player': '闲家',
+  'baccarat.banker': '庄家',
+  'baccarat.tie': '和局',
+  'baccarat.paysPlayer': '1 比 1',
+  'baccarat.paysBanker': '0.95 比 1',
+  'baccarat.paysTie': '8 比 1',
+  'baccarat.wins': '获胜',
+  'baccarat.tieResult': '和局。',
+  'baccarat.winsResult': '{side}获胜。',
+  'baccarat.natural': '天生赢牌，不再补牌。',
+  'baccarat.returned': '退还赌注。',
+
+  // Red Dog
+  'reddog.betweenOne': '中间隔着 {count} 张牌 · 赔率 {pays}。下一张牌会落在它们之间吗？',
+  'reddog.betweenMany': '中间隔着 {count} 张牌 · 赔率 {pays}。下一张牌会落在它们之间吗？',
+  'reddog.ratio': '{n} 比 1',
+  'reddog.consecutive': '两张牌相连：中间放不下任何牌。退还你的赌注。',
+  'reddog.pair': '两张牌是一对，而第三张牌与它们不同。退还你的赌注。',
+  'reddog.threeKind': '三条！{gain}',
+  'reddog.between': '落在中间！{gain}',
+  'reddog.lost': '没有落在中间。你输了 {loss}。',
+  'reddog.third': '发第三张牌',
+  'reddog.raise': '加注 +{amount}',
+
+  // Higher or Lower
+  'hilo.streak': '连胜 {streak} · 奖池 {pot}',
+  'hilo.keepOrGuess': ' · 现在提现可保住奖池，或继续猜以达到 {next}',
+  'hilo.lost': '猜错了（或点数相同）。你输了 {loss}。',
+  'hilo.cashed': '已提现 {won}。',
+  'hilo.jackpotWin': '大奖！点数相同。{gain}',
+  'hilo.higher': '更大 ▲',
+  'hilo.lower': '更小 ▼',
+  'hilo.cashOut': '提现',
+  'hilo.jackpot': '大奖！（点数相同，{multiplier}×）',
+  'hilo.jackpotHint': '下一张牌点数相同。赔付奖池的 {multiplier} 倍。',
+
+  // Jacks or Better
+  'poker.hold': '保留',
+  'poker.held': '已保留',
+  'poker.draw': '换牌',
+  'poker.hand': '牌型',
+  'poker.pays': '赔率',
+  'poker.multiplier': '{n}×',
 };

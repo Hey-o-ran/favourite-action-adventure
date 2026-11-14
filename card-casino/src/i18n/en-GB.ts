@@ -260,6 +260,95 @@ export const enGB = {
     'Match cards into sets and runs, then knock. Play hands against the bot until one of you reaches 100 points.',
   'game.gin-rummy.note':
     'It was invented in New York around 1909 by a card teacher named Elwood Baker, and was hugely popular in the 1930s and 40s.',
+
+  // Cards
+  'card.faceDown': 'Face-down card',
+  'card.of': '{rank} of {suit}',
+  'suit.clubs': 'clubs',
+  'suit.diamonds': 'diamonds',
+  'suit.hearts': 'hearts',
+  'suit.spades': 'spades',
+
+  // Shared by the games
+  'game.deal': 'Deal',
+  'game.dealAgain': 'Deal again',
+  'game.playAgain': 'Play again',
+  'game.start': 'Start',
+  'game.gain': '+{amount} coins',
+  'game.loss': '-{amount} coins',
+  'game.coins': '{amount} coins',
+
+  // Poker hands (the English name is also what the pay table matches on)
+  'hand.Royal Flush': 'Royal Flush',
+  'hand.Straight Flush': 'Straight Flush',
+  'hand.Four of a Kind': 'Four of a Kind',
+  'hand.Full House': 'Full House',
+  'hand.Flush': 'Flush',
+  'hand.Straight': 'Straight',
+  'hand.Three of a Kind': 'Three of a Kind',
+  'hand.Two Pair': 'Two Pair',
+  'hand.One Pair': 'One Pair',
+  'hand.High Card': 'High Card',
+  'hand.Jacks or Better': 'Jacks or Better',
+  'hand.No win': 'No win',
+
+  // Blackjack
+  'blackjack.dealer': 'Dealer',
+  'blackjack.you': 'You',
+  'blackjack.hit': 'Hit',
+  'blackjack.stand': 'Stand',
+  'blackjack.double': 'Double',
+  'blackjack.blackjack': 'Blackjack! Pays 3 to 2.',
+  'blackjack.win': 'You win!',
+  'blackjack.push': 'Push. Your bet is returned.',
+  'blackjack.lose': 'Dealer wins.',
+  'blackjack.bust': 'Bust! Dealer wins.',
+
+  // Baccarat
+  'baccarat.betOn': 'Place your bet on',
+  'baccarat.player': 'Player',
+  'baccarat.banker': 'Banker',
+  'baccarat.tie': 'Tie',
+  'baccarat.paysPlayer': '1 to 1',
+  'baccarat.paysBanker': '0.95 to 1',
+  'baccarat.paysTie': '8 to 1',
+  'baccarat.wins': 'wins',
+  'baccarat.tieResult': 'Tie.',
+  'baccarat.winsResult': '{side} wins.',
+  'baccarat.natural': 'Natural, so no more cards.',
+  'baccarat.returned': 'Bet returned.',
+
+  // Red Dog
+  'reddog.betweenOne': '{count} card in between · pays {pays}. Will the next card land between them?',
+  'reddog.betweenMany': '{count} cards in between · pays {pays}. Will the next card land between them?',
+  'reddog.ratio': '{n} to 1',
+  'reddog.consecutive': 'Consecutive cards: nothing can fit between them. Your bet is returned.',
+  'reddog.pair': "A pair, and the third card didn't match. Your bet is returned.",
+  'reddog.threeKind': 'Three of a kind! {gain}',
+  'reddog.between': 'Between them! {gain}',
+  'reddog.lost': 'Not between. You lost {loss}.',
+  'reddog.third': 'Deal third card',
+  'reddog.raise': 'Raise +{amount}',
+
+  // Higher or Lower
+  'hilo.streak': 'Streak {streak} · pot {pot}',
+  'hilo.keepOrGuess': ' · cash out to keep it, or guess again to reach {next}',
+  'hilo.lost': 'Wrong (or tie). You lost {loss}.',
+  'hilo.cashed': 'Cashed out {won}.',
+  'hilo.jackpotWin': 'JACKPOT! Same rank. {gain}',
+  'hilo.higher': 'Higher ▲',
+  'hilo.lower': 'Lower ▼',
+  'hilo.cashOut': 'Cash out',
+  'hilo.jackpot': 'JACKPOT! (same rank, {multiplier}×)',
+  'hilo.jackpotHint': 'Next card has the same rank. Pays {multiplier}× the pot.',
+
+  // Jacks or Better
+  'poker.hold': 'Hold',
+  'poker.held': 'Held',
+  'poker.draw': 'Draw',
+  'poker.hand': 'Hand',
+  'poker.pays': 'Pays',
+  'poker.multiplier': '{n}×',
 } as const;
 
 export type MessageKey = keyof typeof enGB;
