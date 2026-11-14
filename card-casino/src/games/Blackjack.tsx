@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { useDealLock } from '../useDealLock';
 import { useWallet } from '../wallet';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
@@ -13,21 +14,13 @@ const OUTCOME_TEXT: Record<Outcome, string> = {
   bust: 'Bust! Dealer wins.',
 };
 
-/**
- * How long Hit, Stand and Double stay switched off after a hand is dealt. They appear right where the
- * Deal button was, so the second click of a double-click on Deal would otherwise land on one of them
- * (usually Stand) before the player has even seen their cards. This is longer than a double-click gap.
- */
-export const DEAL_LOCK_MS = 600;
+export { DEAL_LOCK_MS } from '../useDealLock';
 
 export function Blackjack() {
   const { balance, wager, settle } = useWallet();
   const [bet, setBet] = useState(50);
   const [round, setRound] = useState<Round | null>(null);
-  const [locked, setLocked] = useState(false);
-  const lockTimer = useRef<number>();
-
-  useEffect(() => () => window.clearTimeout(lockTimer.current), []);
+  const { locked, lock } = useDealLock();
 
   const inRound = round !== null && !round.over;
 
@@ -40,11 +33,7 @@ export function Blackjack() {
     if (!wager(bet)) return;
     const next = dealRound(round?.deck ?? shuffle(newDeck()), bet);
     apply(next);
-    if (!next.over) {
-      setLocked(true);
-      window.clearTimeout(lockTimer.current);
-      lockTimer.current = window.setTimeout(() => setLocked(false), DEAL_LOCK_MS);
-    }
+    if (!next.over) lock();
   };
 
   const act = (next: (r: Round) => Round) => {
