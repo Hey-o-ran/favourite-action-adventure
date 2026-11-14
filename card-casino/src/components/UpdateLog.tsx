@@ -8,6 +8,14 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '13 November 2026',
+    title: 'Blackjack no longer stands by accident',
+    points: [
+      'We found a sneaky problem in Blackjack. If you clicked Deal again twice quickly, the second click landed on the Stand button and ended your hand before you could even look at your cards.',
+      'Now Hit, Stand and Double stay switched off for a tiny moment after each new hand, just long enough for that extra click to do nothing. Then they switch on and you are in charge again.',
+    ],
+  },
+  {
+    date: '13 November 2026',
     title: 'ADMIN ABUSE!',
     points: [
       'Surprise events are here! Sometimes the admin will start an ADMIN ABUSE event, and a bright banner will pop up at the very top of your screen to tell you what is happening.',
