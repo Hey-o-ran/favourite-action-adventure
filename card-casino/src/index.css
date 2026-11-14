@@ -464,3 +464,7 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .coins-search label, .coins-form label { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 180px; }
 .coins-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 .admin-table tr.chosen td { background: #ffffff12; }
+
+/* Menu: language choice */
+.menu-heading { padding: 8px 12px 2px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); border-top: 1px solid #ffffff22; margin-top: 4px; }
+.menu-list button.checked::after { content: ' ✓'; }

@@ -4,16 +4,19 @@ import { App } from './App';
 import { WalletProvider } from './wallet';
 import { AbuseEventsProvider } from './abuseEvents';
 import { AuthGate } from './components/AuthGate';
+import { LanguageProvider } from './i18n';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthGate>
-      <WalletProvider>
-        <AbuseEventsProvider>
-          <App />
-        </AbuseEventsProvider>
-      </WalletProvider>
-    </AuthGate>
+    <LanguageProvider>
+      <AuthGate>
+        <WalletProvider>
+          <AbuseEventsProvider>
+            <App />
+          </AbuseEventsProvider>
+        </WalletProvider>
+      </AuthGate>
+    </LanguageProvider>
   </StrictMode>,
 );

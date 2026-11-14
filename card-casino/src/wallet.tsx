@@ -11,6 +11,7 @@ import {
 import { ApiError, getBalance, saveBalance } from './api';
 import { BalanceSync, type SyncState } from './balanceSync';
 import { useSession } from './session';
+import { useI18n } from './i18n';
 
 /** What a new account starts with. The server applies it; this is only shown in the rules text. */
 export const STARTING_BALANCE = 1000;
@@ -40,6 +41,7 @@ const INITIAL: SyncState = { balance: 0, version: 0, loaded: false, status: 'sav
 
 export function WalletProvider({ children, saveDelayMs }: { children: ReactNode; saveDelayMs?: number }) {
   const { session, logout } = useSession();
+  const { t } = useI18n();
   const token = session.idToken;
   const [state, setState] = useState<SyncState>(INITIAL);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -121,18 +123,18 @@ export function WalletProvider({ children, saveDelayMs }: { children: ReactNode;
     return (
       <div className="login">
         <div className="login-card">
-          <h1>Bintarland Bank - Bibergly Betting Business</h1>
+          <h1>{t('header.title')}</h1>
           {loadFailed ? (
             <>
               <p role="alert" className="login-error">
-                Could not load your balance. Check your connection and try again.
+                {t('wallet.loadError')}
               </p>
               <button className="primary" onClick={() => setAttempt((n) => n + 1)}>
-                Try again
+                {t('wallet.tryAgain')}
               </button>
             </>
           ) : (
-            <p className="hint">Loading your balance…</p>
+            <p className="hint">{t('wallet.loading')}</p>
           )}
         </div>
       </div>

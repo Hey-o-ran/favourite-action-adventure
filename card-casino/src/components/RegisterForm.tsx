@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { ApiError, confirmUser, registerUser, resendCode } from '../api';
+import { useI18n, type Translate } from '../i18n';
 import { validateRegistration, type FieldErrors } from '../validate';
 
 type Step = 'form' | 'confirm' | 'done';
@@ -10,32 +11,34 @@ interface Outcome {
   canResend?: boolean;
 }
 
-function describe(err: unknown): Outcome {
-  if (!(err instanceof ApiError)) return { general: 'Something went wrong. Please try again.' };
+function describe(err: unknown, t: Translate): Outcome {
+  if (!(err instanceof ApiError)) return { general: t('error.generic') };
   switch (err.code) {
     case 'VALIDATION_ERROR':
+      // The server's own wording is English, so it is shown as it comes only when it names a field we have no text for.
       return { fields: (err.fields ?? {}) as FieldErrors, general: err.fields ? undefined : err.message };
     case 'EMAIL_TAKEN':
       return {
-        fields: { email: 'An account with this email already exists.' },
+        fields: { email: t('register.emailTaken') },
         canResend: err.details?.canResendCode === true,
       };
     case 'DISPLAY_NAME_TAKEN':
-      return { fields: { displayName: 'That display name is already taken.' } };
+      return { fields: { displayName: t('register.nameTaken') } };
     case 'CODE_INVALID':
-      return { fields: { code: 'The confirmation code is incorrect.' } };
+      return { fields: { code: t('register.codeWrong') } };
     case 'CODE_EXPIRED':
-      return { fields: { code: 'That code has expired. Request a new one.' } };
+      return { fields: { code: t('register.codeExpired') } };
     case 'RATE_LIMITED':
-      return { general: 'Too many requests. Please wait a moment and try again.' };
+      return { general: t('error.rateLimited') };
     case 'NETWORK_ERROR':
-      return { general: 'Could not reach the server. Check your connection and try again.' };
+      return { general: t('error.network') };
     default:
-      return { general: 'Something went wrong. Please try again.' };
+      return { general: t('error.generic') };
   }
 }
 
 export function RegisterForm({ onBack }: { onBack: () => void }) {
+  const { t } = useI18n();
   const [step, setStep] = useState<Step>('form');
   const [form, setForm] = useState({ displayName: '', email: '', password: '' });
   const [code, setCode] = useState('');
@@ -52,7 +55,7 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
     setInfo(undefined);
   };
   const fail = (err: unknown) => {
-    const outcome = describe(err);
+    const outcome = describe(err, t);
     setErrors(outcome.fields ?? {});
     setGeneral(outcome.general);
     setCanResend(outcome.canResend ?? false);
@@ -70,7 +73,7 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
       email: form.email.trim().toLowerCase(),
       password: form.password,
     };
-    const local = validateRegistration(payload);
+    const local = validateRegistration(payload, t);
     if (Object.keys(local).length) return setErrors(local);
     setBusy(true);
     try {
@@ -87,7 +90,7 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
   async function onConfirm(e: FormEvent) {
     e.preventDefault();
     clear();
-    if (!/^\d{6}$/.test(code)) return setErrors({ code: 'Enter the 6-digit code from your email.' });
+    if (!/^\d{6}$/.test(code)) return setErrors({ code: t('register.codeFormat') });
     setBusy(true);
     try {
       await confirmUser({ email: form.email, code });
@@ -105,7 +108,7 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
     try {
       await resendCode({ email: form.email.trim().toLowerCase() });
       setStep('confirm');
-      setInfo('We sent you a new code.');
+      setInfo(t('register.newCodeSent'));
     } catch (err) {
       fail(err);
     } finally {
@@ -117,12 +120,10 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
     return (
       <div className="login">
         <div className="login-card">
-          <h1>Account pending approval</h1>
-          <p className="hint">
-            Thanks, your email is confirmed. An admin will review your account, and you can log in once it is approved.
-          </p>
+          <h1>{t('register.pendingTitle')}</h1>
+          <p className="hint">{t('register.pendingText')}</p>
           <button className="primary" type="button" onClick={onBack}>
-            Back to login
+            {t('register.backToLogin')}
           </button>
         </div>
       </div>
@@ -130,17 +131,21 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
   }
 
   if (step === 'confirm') {
+    // The email address is shown in bold inside the sentence, so the sentence is split around it.
+    const [before, after] = t('register.confirmIntro', { email: '\u0000' }).split('\u0000');
     return (
       <div className="login">
         <form className="login-card" onSubmit={onConfirm} noValidate>
-          <h1>Check your email</h1>
+          <h1>{t('register.confirmTitle')}</h1>
           <p className="hint">
-            We sent a 6-digit code to <strong>{form.email}</strong>. Enter it to confirm your email address.
+            {before}
+            <strong>{form.email}</strong>
+            {after}
           </p>
           {info && <p role="status">{info}</p>}
           {general && <p role="alert" className="login-error">{general}</p>}
           <label>
-            Confirmation code
+            {t('register.code')}
             <input
               inputMode="numeric"
               autoComplete="one-time-code"
@@ -153,10 +158,10 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
           </label>
           {errors.code && <p className="login-error">{errors.code}</p>}
           <button className="primary" type="submit" disabled={busy}>
-            Confirm
+            {t('register.confirm')}
           </button>
           <button type="button" onClick={onResend} disabled={busy}>
-            Resend code
+            {t('register.resend')}
           </button>
         </form>
       </div>
@@ -166,11 +171,11 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
   return (
     <div className="login">
       <form className="login-card" onSubmit={onRegister} noValidate>
-        <h1>Create your account</h1>
+        <h1>{t('register.title')}</h1>
         {general && <p role="alert" className="login-error">{general}</p>}
 
         <label>
-          Display name
+          {t('register.displayName')}
           <input
             autoComplete="nickname"
             autoFocus
@@ -182,11 +187,11 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
         {errors.displayName ? (
           <p className="login-error">{errors.displayName}</p>
         ) : (
-          <p className="hint">3–20 characters. This is the name other players see.</p>
+          <p className="hint">{t('register.displayNameHint')}</p>
         )}
 
         <label>
-          Email
+          {t('login.email')}
           <input
             type="email"
             autoComplete="email"
@@ -198,12 +203,12 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
         {errors.email && <p className="login-error">{errors.email}</p>}
         {canResend && (
           <button type="button" onClick={onResend} disabled={busy}>
-            Resend the code to confirm this account
+            {t('register.resendToConfirm')}
           </button>
         )}
 
         <label>
-          Password
+          {t('login.password')}
           <input
             type="password"
             autoComplete="new-password"
@@ -215,14 +220,14 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
         {errors.password ? (
           <p className="login-error">{errors.password}</p>
         ) : (
-          <p className="hint">At least 8 characters, with a letter and a number.</p>
+          <p className="hint">{t('register.passwordHint')}</p>
         )}
 
         <button className="primary" type="submit" disabled={busy}>
-          {busy ? 'Creating account…' : 'Create account'}
+          {busy ? t('register.busy') : t('register.submit')}
         </button>
         <button type="button" onClick={onBack}>
-          Back to login
+          {t('register.backToLogin')}
         </button>
       </form>
     </div>
