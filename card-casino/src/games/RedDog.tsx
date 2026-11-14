@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useWallet } from '../wallet';
+import { useDealLock } from '../useDealLock';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
@@ -9,6 +10,7 @@ export function RedDog() {
   const { balance, wager, settle } = useWallet();
   const [bet, setBet] = useState(10);
   const [game, setGame] = useState<RedDogState | null>(null);
+  const { locked, lock } = useDealLock();
 
   const deciding = game?.status === 'decide';
   const halfRaise = Math.floor(bet / 2);
@@ -20,10 +22,11 @@ export function RedDog() {
     setGame(next);
     // Consecutive cards and pairs finish on the spot.
     if (next.status !== 'decide') settle(next.returned);
+    else lock();
   };
 
   const draw = (raise: number) => {
-    if (!game || game.status !== 'decide') return;
+    if (locked || !game || game.status !== 'decide') return;
     if (raise > 0 && !wager(raise)) return;
     const next = dealThird(game, raise);
     setGame(next);
@@ -77,13 +80,13 @@ export function RedDog() {
       <div className="actions">
         {deciding ? (
           <>
-            <button className="primary" onClick={() => draw(0)}>
+            <button className="primary" onClick={() => draw(0)} disabled={locked}>
               Deal third card
             </button>
-            <button onClick={() => draw(halfRaise)} disabled={halfRaise < 1 || balance < halfRaise}>
+            <button onClick={() => draw(halfRaise)} disabled={locked || halfRaise < 1 || balance < halfRaise}>
               Raise +{halfRaise}
             </button>
-            <button onClick={() => draw(game.bet)} disabled={balance < game.bet}>
+            <button onClick={() => draw(game.bet)} disabled={locked || balance < game.bet}>
               Raise +{game.bet}
             </button>
           </>
