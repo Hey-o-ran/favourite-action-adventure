@@ -7,6 +7,16 @@ interface Update {
 /** Newest first. Written for kids, so keep it short, friendly and jargon-free. Add new updates at the top. */
 const UPDATES: Update[] = [
   {
+    date: '14 November 2026',
+    title: 'Gin Rummy is here!',
+    points: [
+      'There is a new card game called Gin Rummy. You play against the bot, hand after hand, and the first one to reach 100 points wins the match.',
+      'Collect your cards into sets (like three 7s) and runs (like 4, 5 and 6 of the same suit). The game groups them for you and shows how many points are left over.',
+      'When you only have 10 points or fewer left over, you can knock to end the hand. Even better, use up every card and go gin for a big bonus!',
+      'You bet once for the whole match. Win it and you get your bet back plus the same again. You can also read all the rules on the Rules page.',
+    ],
+  },
+  {
     date: '13 November 2026',
     title: 'No more accidental moves',
     points: [

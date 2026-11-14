@@ -312,6 +312,13 @@ button.primary {
 .pile .suit { font-weight: 700; color: var(--ink); }
 .pile .suit.red { color: var(--loss); }
 .dim { opacity: 0.5; }
+
+.scoreboard { margin: 4px 0 8px; color: var(--muted); }
+.scoreboard b { color: var(--ink); }
+.final-score { margin: 0 0 8px; color: var(--muted); font-size: 0.9rem; }
+.gin-hand { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; min-height: calc(var(--card-w) * 1.4); }
+.gin-hand .meld, .gin-hand .loose { display: flex; gap: 6px; }
+.gin-hand .meld { padding: 6px; border: 1px solid #ffffff44; border-radius: 10px; background: #ffffff0d; }
 .dim .card { pointer-events: none; }
 
 .filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin: 12px 0 4px; }
