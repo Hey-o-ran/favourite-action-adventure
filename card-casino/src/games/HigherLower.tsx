@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useWallet } from '../wallet';
+import { useDealLock } from '../useDealLock';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
@@ -17,16 +18,18 @@ export function HigherLower() {
   const { balance, wager, settle } = useWallet();
   const [bet, setBet] = useState(10);
   const [game, setGame] = useState<HigherLowerState | null>(null);
+  const { locked, lock } = useDealLock();
 
   const playing = game?.status === 'playing';
 
   const start = () => {
     if (!wager(bet)) return;
     setGame(startHigherLower(game?.deck ?? shuffle(newDeck()), bet));
+    lock();
   };
 
   const guess = (direction: 'higher' | 'lower') => {
-    if (!game) return;
+    if (locked || !game) return;
     const next = guessHigherLower(game, direction);
     setGame(next);
     // A wrong guess ends the round. The wallet expects a settle for every wager, with 0 for a loss.
@@ -34,7 +37,7 @@ export function HigherLower() {
   };
 
   const cashOut = () => {
-    if (!game) return;
+    if (locked || !game) return;
     const next = cashOutHigherLower(game);
     if (next.status !== 'cashed') return;
     setGame(next);
@@ -42,7 +45,7 @@ export function HigherLower() {
   };
 
   const jackpot = () => {
-    if (!game) return;
+    if (locked || !game) return;
     const next = guessJackpot(game);
     if (next.status !== 'jackpot') {
       setGame(next);
@@ -89,16 +92,16 @@ export function HigherLower() {
       <div className="actions">
         {playing ? (
           <>
-            <button className="primary" onClick={() => guess('higher')}>
+            <button className="primary" onClick={() => guess('higher')} disabled={locked}>
               Higher ▲
             </button>
-            <button className="primary" onClick={() => guess('lower')}>
+            <button className="primary" onClick={() => guess('lower')} disabled={locked}>
               Lower ▼
             </button>
-            <button onClick={cashOut} disabled={game.streak === 0}>
+            <button onClick={cashOut} disabled={locked || game.streak === 0}>
               Cash out
             </button>
-            <button className="jackpot" onClick={jackpot} title={`Next card has the same rank. Pays ${JACKPOT_MULTIPLIER}× the pot.`}>
+            <button className="jackpot" onClick={jackpot} disabled={locked} title={`Next card has the same rank. Pays ${JACKPOT_MULTIPLIER}× the pot.`}>
               JACKPOT! (same rank, {JACKPOT_MULTIPLIER}×)
             </button>
           </>
