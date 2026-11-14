@@ -41,7 +41,7 @@ async function logIn(user: ReturnType<typeof userEvent.setup>, email = 'Ada@Exam
 describe('login page', () => {
   it('asks for email and password and offers Register', () => {
     renderGate();
-    expect(screen.getByRole('heading', { name: /card casino/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /bintarland bank - bibergly betting business/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();

@@ -129,7 +129,7 @@ export function WalletProvider({ children, saveDelayMs }: { children: ReactNode;
     return (
       <div className="login">
         <div className="login-card">
-          <h1>Card Casino</h1>
+          <h1>Bintarland Bank - Bibergly Betting Business</h1>
           {loadFailed ? (
             <>
               <p role="alert" className="login-error">
