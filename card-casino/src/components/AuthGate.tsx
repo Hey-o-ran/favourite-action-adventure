@@ -2,27 +2,29 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNo
 import { ApiError, login } from '../api';
 import { clearSession, loadSession, saveSession, SessionContext, type Session } from '../session';
 import { RegisterForm } from './RegisterForm';
+import { useI18n, type Translate } from '../i18n';
 
-function loginMessage(err: unknown): string {
-  if (!(err instanceof ApiError)) return 'Something went wrong. Please try again.';
+function loginMessage(err: unknown, t: Translate): string {
+  if (!(err instanceof ApiError)) return t('error.generic');
   switch (err.code) {
     case 'INVALID_CREDENTIALS':
-      return 'Incorrect email or password.';
+      return t('login.invalid');
     case 'ACCOUNT_PENDING':
-      return 'Your account is waiting for admin approval. You can log in once it is approved.';
+      return t('login.pending');
     case 'EMAIL_NOT_CONFIRMED':
-      return 'Confirm your email address first. Use Register to get a new confirmation code.';
+      return t('login.notConfirmed');
     case 'RATE_LIMITED':
-      return 'Too many requests. Please wait a moment and try again.';
+      return t('error.rateLimited');
     case 'NETWORK_ERROR':
-      return 'Could not reach the server. Check your connection and try again.';
+      return t('error.network');
     default:
-      return 'Something went wrong. Please try again.';
+      return t('error.generic');
   }
 }
 
 /** Shows the login (or registration) until the player has a valid session, then renders the casino. */
 export function AuthGate({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const [session, setSession] = useState<Session | null>(() => loadSession());
   const [view, setView] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -54,7 +56,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     e.preventDefault();
     setError(undefined);
     const trimmed = email.trim().toLowerCase();
-    if (!trimmed || !password) return setError('Enter your email and password.');
+    if (!trimmed || !password) return setError(t('login.enterBoth'));
     setBusy(true);
     try {
       const res = await login({ email: trimmed, password });
@@ -63,7 +65,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
       setPassword('');
       setSession(next);
     } catch (err) {
-      setError(loginMessage(err));
+      setError(loginMessage(err, t));
       setPassword('');
     } finally {
       setBusy(false);
@@ -73,9 +75,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
   return (
     <div className="login">
       <form className="login-card" onSubmit={submit} noValidate>
-        <h1>Bintarland Bank - Bibergly Betting Business</h1>
+        <h1>{t('header.title')}</h1>
         <label>
-          Email
+          {t('login.email')}
           <input
             type="email"
             autoComplete="email"
@@ -88,7 +90,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
           />
         </label>
         <label>
-          Password
+          {t('login.password')}
           <input
             type="password"
             autoComplete="current-password"
@@ -105,10 +107,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
           </p>
         )}
         <button className="primary" type="submit" disabled={busy}>
-          {busy ? 'Logging in…' : 'Log in'}
+          {busy ? t('login.busy') : t('login.submit')}
         </button>
         <button type="button" onClick={() => setView('register')} disabled={busy}>
-          Register
+          {t('login.register')}
         </button>
       </form>
     </div>

@@ -5,18 +5,21 @@ import { WalletProvider } from './wallet';
 import { AbuseEventsProvider } from './abuseEvents';
 import { CoinNoticesProvider } from './coinNotices';
 import { AuthGate } from './components/AuthGate';
+import { LanguageProvider } from './i18n';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthGate>
-      <WalletProvider>
-        <AbuseEventsProvider>
-          <CoinNoticesProvider>
-            <App />
-          </CoinNoticesProvider>
-        </AbuseEventsProvider>
-      </WalletProvider>
-    </AuthGate>
+    <LanguageProvider>
+      <AuthGate>
+        <WalletProvider>
+          <AbuseEventsProvider>
+            <CoinNoticesProvider>
+              <App />
+            </CoinNoticesProvider>
+          </AbuseEventsProvider>
+        </WalletProvider>
+      </AuthGate>
+    </LanguageProvider>
   </StrictMode>,
 );

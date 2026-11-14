@@ -19,6 +19,7 @@ import { AnnouncementBar } from './components/AnnouncementBar';
 import { SaveStatus } from './components/SaveStatus';
 import { HeaderMenu, type MenuItem } from './components/HeaderMenu';
 import { useSession } from './session';
+import { LANGUAGES, useI18n } from './i18n';
 import { NO_FILTERS, UNCLEAR_ORIGIN, originLabel, type Filters, type GameFacts, type SortOrder } from './gameFilters';
 
 interface GameEntry extends GameFacts {
@@ -146,6 +147,7 @@ const GAMES: GameEntry[] = [
 export function App() {
   const { balance, flush } = useWallet();
   const { session, logout: endSession } = useSession();
+  const { t, lang, setLang } = useI18n();
   /** Saves any unsaved coin change first, so logging out never loses it. */
   const logout = async () => {
     try {
@@ -168,28 +170,37 @@ export function App() {
   /** Everything that used to sit along the top of the screen. The page you're on turns into "Back to game". */
   const page = (target: 'updates' | 'leaderboard' | 'rules' | 'admin', label: string): MenuItem => ({
     id: target,
-    label: view === target ? 'Back to game' : label,
+    label: view === target ? t('menu.back') : label,
     current: view === target,
     onSelect: () => toggleView(target),
   });
   const menuItems: MenuItem[] = [
-    page('updates', "What's new"),
-    page('leaderboard', 'Leaderboard'),
-    page('rules', 'Rules'),
-    ...(session.user.isAdmin ? [page('admin', 'ADMIN ONLY')] : []),
-    { id: 'logout', label: 'Log out', onSelect: logout },
+    page('updates', t('menu.whatsNew')),
+    page('leaderboard', t('menu.leaderboard')),
+    page('rules', t('menu.rules')),
+    ...(session.user.isAdmin ? [page('admin', t('menu.admin'))] : []),
+    ...LANGUAGES.map(
+      ({ id, label }, i): MenuItem => ({
+        id: `language-${id}`,
+        label,
+        checked: lang === id,
+        heading: i === 0 ? t('menu.language') : undefined,
+        onSelect: () => setLang(id),
+      }),
+    ),
+    { id: 'logout', label: t('menu.logout'), onSelect: logout },
   ];
 
   return (
     <div className="app">
       <AnnouncementBar />
       <header>
-        <h1>Bintarland Bank - Bibergly Betting Business</h1>
+        <h1>{t('header.title')}</h1>
         <div className="header-actions">
           <div className="balance" aria-live="polite">
-            {balance.toLocaleString()} coins
+            {t('header.coins', { amount: balance })}
           </div>
-          <HeaderMenu items={menuItems} />
+          <HeaderMenu items={menuItems} menuLabel={t('menu.menu')} />
         </div>
       </header>
 
