@@ -39,7 +39,13 @@ async function renderApp(isAdmin: boolean) {
     </SessionContext.Provider>,
   );
   // The casino only appears once the balance has loaded from the server.
-  await screen.findByRole('button', { name: /log out/i });
+  await screen.findByRole('button', { name: /menu/i });
+}
+
+/** Opens the Menu and presses one of its items. */
+async function pickFromMenu(user: ReturnType<typeof userEvent.setup>, name: string | RegExp) {
+  await user.click(screen.getByRole('button', { name: /menu/i }));
+  await user.click(screen.getByRole('menuitem', { name }));
 }
 
 beforeEach(() => {
@@ -51,30 +57,34 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('casino header', () => {
-  it('shows the ADMIN ONLY button to admins', async () => {
+  it('shows the ADMIN ONLY item to admins', async () => {
+    const user = userEvent.setup();
     await renderApp(true);
-    expect(screen.getByRole('button', { name: 'ADMIN ONLY' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /menu/i }));
+    expect(screen.getByRole('menuitem', { name: 'ADMIN ONLY' })).toBeInTheDocument();
   });
 
-  it('hides the ADMIN ONLY button from regular users', async () => {
+  it('hides the ADMIN ONLY item from regular users', async () => {
+    const user = userEvent.setup();
     await renderApp(false);
-    expect(screen.queryByRole('button', { name: 'ADMIN ONLY' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /menu/i }));
+    expect(screen.queryByRole('menuitem', { name: 'ADMIN ONLY' })).not.toBeInTheDocument();
   });
 
   it('opens the admin panel from ADMIN ONLY and returns to the game', async () => {
     vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
     const user = userEvent.setup();
     await renderApp(true);
-    await user.click(screen.getByRole('button', { name: 'ADMIN ONLY' }));
+    await pickFromMenu(user, 'ADMIN ONLY');
     expect(await screen.findByRole('heading', { name: /admin panel/i })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /back to game/i }));
+    await pickFromMenu(user, /back to game/i);
     expect(screen.queryByRole('heading', { name: /admin panel/i })).not.toBeInTheDocument();
   });
 
   it('logs out through the session', async () => {
     const user = userEvent.setup();
     await renderApp(false);
-    await user.click(screen.getByRole('button', { name: /log out/i }));
+    await pickFromMenu(user, /log out/i);
     await vi.waitFor(() => expect(logout).toHaveBeenCalled());
   });
 });
@@ -153,11 +163,11 @@ describe('leaderboard button', () => {
     });
     const user = userEvent.setup();
     await renderApp(false);
-    await user.click(screen.getByRole('button', { name: 'Leaderboard' }));
+    await pickFromMenu(user, 'Leaderboard');
     expect(await screen.findByRole('heading', { name: /leaderboard/i })).toBeInTheDocument();
     expect(await screen.findByRole('table')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /back to game/i }));
+    await pickFromMenu(user, /back to game/i);
     expect(screen.queryByRole('heading', { name: /leaderboard/i })).not.toBeInTheDocument();
   });
 
@@ -166,9 +176,9 @@ describe('leaderboard button', () => {
     vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
     const user = userEvent.setup();
     await renderApp(true);
-    await user.click(screen.getByRole('button', { name: 'Leaderboard' }));
+    await pickFromMenu(user, 'Leaderboard');
     expect(await screen.findByRole('heading', { name: /leaderboard/i })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: "What's new" }));
+    await pickFromMenu(user, "What's new");
     // The update log mentions the leaderboard in a heading of its own, so look for the page itself.
     expect(document.querySelector('.leaderboard')).toBeNull();
     expect(screen.getByRole('heading', { name: /the leaderboard!/i })).toBeInTheDocument();

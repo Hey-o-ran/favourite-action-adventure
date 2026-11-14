@@ -8,6 +8,14 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '14 November 2026',
+    title: 'A tidy menu',
+    points: [
+      'All the buttons that used to sit along the top are now in one Menu button, right next to your coins.',
+      'Press Menu to see What\'s new, the Leaderboard, the Rules and Log out. Press it again, or press anywhere else, to close it.',
+    ],
+  },
+  {
+    date: '14 November 2026',
     title: 'Gin Rummy is here!',
     points: [
       'There is a new card game called Gin Rummy. You play against the bot, hand after hand, and the first one to reach 100 points wins the match.',

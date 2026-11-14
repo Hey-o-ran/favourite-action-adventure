@@ -16,6 +16,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { Leaderboard } from './components/Leaderboard';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { SaveStatus } from './components/SaveStatus';
+import { HeaderMenu, type MenuItem } from './components/HeaderMenu';
 import { useSession } from './session';
 import { NO_FILTERS, UNCLEAR_ORIGIN, originLabel, type Filters, type GameFacts, type SortOrder } from './gameFilters';
 
@@ -161,6 +162,21 @@ export function App() {
   const toggleView = (target: 'rules' | 'updates' | 'admin' | 'leaderboard') => setView((v) => (v === target ? 'game' : target));
   const active = GAMES.find((g) => g.id === activeId)!;
 
+  /** Everything that used to sit along the top of the screen. The page you're on turns into "Back to game". */
+  const page = (target: 'updates' | 'leaderboard' | 'rules' | 'admin', label: string): MenuItem => ({
+    id: target,
+    label: view === target ? 'Back to game' : label,
+    current: view === target,
+    onSelect: () => toggleView(target),
+  });
+  const menuItems: MenuItem[] = [
+    page('updates', "What's new"),
+    page('leaderboard', 'Leaderboard'),
+    page('rules', 'Rules'),
+    ...(session.user.isAdmin ? [page('admin', 'ADMIN ONLY')] : []),
+    { id: 'logout', label: 'Log out', onSelect: logout },
+  ];
+
   return (
     <div className="app">
       <AnnouncementBar />
@@ -170,21 +186,7 @@ export function App() {
           <div className="balance" aria-live="polite">
             {balance.toLocaleString()} coins
           </div>
-          <button onClick={() => toggleView('updates')} aria-pressed={view === 'updates'}>
-            {view === 'updates' ? 'Back to game' : "What's new"}
-          </button>
-          <button onClick={() => toggleView('leaderboard')} aria-pressed={view === 'leaderboard'}>
-            {view === 'leaderboard' ? 'Back to game' : 'Leaderboard'}
-          </button>
-          <button onClick={() => toggleView('rules')} aria-pressed={view === 'rules'}>
-            {view === 'rules' ? 'Back to game' : 'Rules'}
-          </button>
-          {session.user.isAdmin && (
-            <button onClick={() => toggleView('admin')} aria-pressed={view === 'admin'}>
-              {view === 'admin' ? 'Back to game' : 'ADMIN ONLY'}
-            </button>
-          )}
-          <button onClick={logout}>Log out</button>
+          <HeaderMenu items={menuItems} />
         </div>
       </header>
 
