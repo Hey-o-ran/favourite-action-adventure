@@ -2,11 +2,14 @@ import { factText, translate, type Translate } from './i18n';
 
 /** How many people are at the table. "Vs the house" means you play against a dealer or bank, not other players. */
 export const PLAYER_OPTIONS = ['Solo', 'Vs the house', '2 players', '3+ players'] as const;
+/** Whether the game is played with playing cards. */
+export const CATEGORY_OPTIONS = ['Card games', 'Non-card games'] as const;
 export const SKILL_OPTIONS = ['Mostly luck', 'Mix of both', 'Mostly skill'] as const;
 /** Use this origin when the history is disputed or unknown. It sorts last in the filter. */
 export const UNCLEAR_ORIGIN = 'Unclear';
 
 export interface GameFacts {
+  category: (typeof CATEGORY_OPTIONS)[number];
   /** A country, or UNCLEAR_ORIGIN. Games like Blackjack have disputed histories, so say what's best supported. */
   origin: string;
   players: (typeof PLAYER_OPTIONS)[number];
@@ -35,19 +38,20 @@ export function sortGames<T extends { popularity: number }>(games: readonly T[],
   return sorted;
 }
 
-export type FilterKey = 'origin' | 'players' | 'type' | 'skill';
+export type FilterKey = 'category' | 'origin' | 'players' | 'type' | 'skill';
 /** One chosen value per filter. An empty string means "Any". */
 export type Filters = Record<FilterKey, string>;
 
 /** Add a filter here and in GameFacts to give every game a new way to be found. */
-export const FILTER_KEYS: FilterKey[] = ['origin', 'players', 'type', 'skill'];
+export const FILTER_KEYS: FilterKey[] = ['category', 'origin', 'players', 'type', 'skill'];
 export const FILTER_LABELS: Record<FilterKey, string> = {
+  category: 'Category',
   origin: 'Country of origin',
   players: 'Players',
   type: 'Type of game',
   skill: 'Luck or skill',
 };
-export const NO_FILTERS: Filters = { origin: '', players: '', type: '', skill: '' };
+export const NO_FILTERS: Filters = { category: '', origin: '', players: '', type: '', skill: '' };
 
 /** A game passes if it matches every filter that is set. */
 export const matchesFilters = (facts: GameFacts, filters: Filters) =>
@@ -55,7 +59,7 @@ export const matchesFilters = (facts: GameFacts, filters: Filters) =>
 
 export const activeFilterCount = (filters: Filters) => FILTER_KEYS.filter((key) => filters[key] !== '').length;
 
-const ORDERED: Partial<Record<FilterKey, readonly string[]>> = { players: PLAYER_OPTIONS, skill: SKILL_OPTIONS };
+const ORDERED: Partial<Record<FilterKey, readonly string[]>> = { category: CATEGORY_OPTIONS, players: PLAYER_OPTIONS, skill: SKILL_OPTIONS };
 
 /** The choices for a filter: only values some game really has, in a sensible order. */
 export function filterOptions(key: FilterKey, games: readonly GameFacts[]): string[] {

@@ -3,6 +3,8 @@ import { GameNav, type NavGame } from './GameNav';
 import type { Filters, SortOrder } from '../gameFilters';
 import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
 import { BIG_BLIND, BUY_IN, MAX_RAISES, SMALL_BLIND, betSize } from '../games/holdemRules';
+import { HIT_RATE, RETURN_TO_PLAYER, SYMBOL_EMOJI, THREE_OF_A_KIND, TWO_CHERRIES } from '../games/slotsRules';
+import { CHIPS, evenMoneySpot, payoutOdds, columnSpot, cornerSpot, sixLineSpot, splitSpot, straightSpot, streetSpot } from '../games/rouletteRules';
 import { GIN_BONUS, HAND_BONUS, HAND_SIZE as GIN_HAND_SIZE, KNOCK_LIMIT, MATCH_BONUS, MATCH_TARGET, STOCK_FLOOR, UNDERCUT_BONUS, WIN_PAYOUT as GIN_WIN_PAYOUT } from '../games/ginRules';
 import { CATEGORY_NAMES } from '../games/pokerHands';
 import { PAYTABLE } from '../games/videoPokerRules';
@@ -138,6 +140,46 @@ function BaccaratDiagram() {
       <Note x={292} y={100}>4 + 5 = 9 → 9</Note>
       <Note x={210} y={126}>Only the last digit counts. Closest to 9 wins, so Banker wins here.</Note>
       <Note x={210} y={144}>J, Q, K and 10 are worth 0. Aces are 1.</Note>
+    </svg>
+  );
+}
+
+function SlotsDiagram() {
+  return (
+    <svg viewBox="0 0 420 170" role="img" aria-label="Three reels with three sevens on the middle line, which is the biggest win, and a cherry, a bell and a lemon above and below">
+      <rect x="110" y="8" width="200" height="104" rx="10" fill="#3a2412" stroke="#e5c07b" strokeWidth="3" />
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <rect x={120 + i * 63} y="16" width="56" height="88" rx="6" fill="#fff" />
+          <text x={148 + i * 63} y="38" textAnchor="middle" fontSize="20" opacity="0.5">{['🍒', '🔔', '🍋'][i]}</text>
+          <text x={148 + i * 63} y="68" textAnchor="middle" fontSize="24">7️⃣</text>
+          <text x={148 + i * 63} y="96" textAnchor="middle" fontSize="20" opacity="0.5">{['🍇', '🍒', '🔔'][i]}</text>
+        </g>
+      ))}
+      <rect x="116" y="55" width="188" height="3" fill="#ef4444" />
+      <Note x={210} y={134}>Only the middle line pays.</Note>
+      <Note x={210} y={156}>Three 7s on it is the jackpot!</Note>
+    </svg>
+  );
+}
+
+function RouletteDiagram() {
+  return (
+    <svg viewBox="0 0 420 170" role="img" aria-label="Chips on the table: a single number pays 35 to 1, a split 17 to 1, red or black 1 to 1">
+      <MiniCard x={10} y={24} label="17" />
+      <Note x={29} y={96}>one number</Note>
+      <Note x={29} y={112}>35 to 1</Note>
+      <MiniCard x={110} y={24} label="5" red />
+      <MiniCard x={150} y={24} label="8" />
+      <Note x={149} y={96}>two touching</Note>
+      <Note x={149} y={112}>17 to 1</Note>
+      <MiniCard x={250} y={24} label="1-12" />
+      <Note x={269} y={96}>a dozen</Note>
+      <Note x={269} y={112}>2 to 1</Note>
+      <MiniCard x={350} y={24} label="Red" red />
+      <Note x={369} y={96}>a colour</Note>
+      <Note x={369} y={112}>1 to 1</Note>
+      <Note x={210} y={148}>The more numbers a bet covers, the less it pays.</Note>
     </svg>
   );
 }
@@ -405,6 +447,67 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
           <li>When you play an 8, choose the suit you hold the most cards of.</li>
           <li>Get rid of awkward cards, such as the only one you have in a suit, while you can.</li>
           <li>Watch the bot's card count. When it gets low, stop saving your 8s and go out.</li>
+        </ul>
+      </Section>
+    ),
+    slots: (
+      <Section title="Slots" diagram={<SlotsDiagram />}>
+        <h3>How to play</h3>
+        <ul>
+          <li>Choose how much to bet, then press <b>Spin</b>. Your bet is taken and the three reels spin, then stop one by one from left to right.</li>
+          <li>Only the <b>middle line</b>, marked in red, pays. The symbols above and below it are just for looks.</li>
+          <li>Three of the same symbol on the line pays like this. These numbers are how many coins come back for every coin you bet, so your bet is included:
+            <ul>
+              {(['seven', 'diamond', 'bell', 'grape', 'lemon', 'cherry'] as const).map((symbol) => (
+                <li key={symbol}>
+                  {SYMBOL_EMOJI[symbol].repeat(3)}: <b>{THREE_OF_A_KIND[symbol]}×</b> your bet
+                </li>
+              ))}
+              <li>
+                {SYMBOL_EMOJI.cherry}{SYMBOL_EMOJI.cherry} Exactly two cherries, anywhere on the line: <b>{TWO_CHERRIES}×</b> your bet
+              </li>
+            </ul>
+          </li>
+          <li>One cherry on its own pays nothing, and so does anything else.</li>
+        </ul>
+        <h3>The odds</h3>
+        <ul>
+          <li>Every symbol is shown by the same number of stops on each reel, so the rare ones (the 7 and the diamond) really are rare.</li>
+          <li>Over a very long time the machine pays back about <b>{Math.round(RETURN_TO_PLAYER * 100)} coins for every 100</b> you bet. The rest is the house's share.</li>
+          <li>A spin pays something about <b>1 time in {Math.round(1 / HIT_RATE)}</b>. Most of those are small wins.</li>
+        </ul>
+        <h3>Tips</h3>
+        <ul>
+          <li>It's all luck. Every spin starts fresh, so a machine is never "due" a win and never "hot".</li>
+          <li>A small bet makes your coins last longer, and a big bet chases the jackpot. Both pay back the same share over time.</li>
+        </ul>
+      </Section>
+    ),
+    roulette: (
+      <Section title="Roulette" diagram={<RouletteDiagram />}>
+        <h3>How to play</h3>
+        <ul>
+          <li>The wheel has 37 pockets: the numbers 1 to 36, which are red or black, and a green 0. The ball lands in one of them.</li>
+          <li>Choose a chip ({CHIPS.join(', ')} coins), then tap the table to put chips on the bets you like. Tap again to stack more chips. <b>Undo</b> takes back the last chip and <b>Clear</b> takes them all back.</li>
+          <li>When you're ready, press <b>Spin</b>. Your coins are taken, the wheel spins, and every bet that covers the winning number pays out. <b>Rebet</b> puts last round's bets back on the table.</li>
+          <li>Each bet covers some of the numbers, and the more it covers, the less it pays (your chips come back as well):
+            <ul>
+              <li><b>One number</b> (tap it): {payoutOdds(straightSpot(1).numbers)} to 1. Tap 0 for the green zero.</li>
+              <li><b>Split</b> (the line between two touching numbers): {payoutOdds(splitSpot(1, 2)!.numbers)} to 1.</li>
+              <li><b>Street</b> (the bottom edge of a column of three): {payoutOdds(streetSpot(0).numbers)} to 1.</li>
+              <li><b>Corner</b> (where four numbers meet): {payoutOdds(cornerSpot(0, 0).numbers)} to 1.</li>
+              <li><b>Six line</b> (the bottom corner between two columns): {payoutOdds(sixLineSpot(0).numbers)} to 1.</li>
+              <li><b>Dozens</b> (1-12, 13-24, 25-36) and <b>columns</b> (the 2:1 boxes): {payoutOdds(columnSpot(0).numbers)} to 1.</li>
+              <li><b>Red or Black, Odd or Even, 1-18 or 19-36</b>: {payoutOdds(evenMoneySpot('red').numbers)} to 1.</li>
+            </ul>
+          </li>
+          <li>When the ball lands on 0, every bet on red, black, odd, even, low or high loses. That green 0 is the house's edge.</li>
+        </ul>
+        <h3>Tips</h3>
+        <ul>
+          <li>It's all luck: the wheel has no memory, so a number that hasn't come up for ages is no more likely than any other.</li>
+          <li>Every bet is equally fair over time, so spread small chips for a longer game, or one big bet on a colour for a quick one.</li>
+          <li>Keep an eye on the total on the table. You can't put down more than you have.</li>
         </ul>
       </Section>
     ),

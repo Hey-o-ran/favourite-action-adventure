@@ -7,6 +7,24 @@ interface Update {
 /** Newest first. Written for kids, so keep it short, friendly and jargon-free. Add new updates at the top. */
 const UPDATES: Update[] = [
   {
+    date: '15 November 2026',
+    title: 'Slots!',
+    points: [
+      'A brand new Slots machine! Choose your bet, press Spin, and watch the three reels stop one by one.',
+      'Line up three of the same picture on the middle line to win. Three 7s is the jackpot and pays 100 times your bet!',
+      'Two cherries pays too. You can see everything it pays on the machine, and on the Rules page.',
+    ],
+  },
+  {
+    date: '14 November 2026',
+    title: 'Roulette, our first game without cards!',
+    points: [
+      'Roulette is here! Pick a chip, put it on the numbers and colours you like, then spin the wheel and watch where the ball lands.',
+      'A single number pays 35 to 1. Betting on red or black pays 1 to 1. You can put lots of different bets down at once!',
+      'There is also a new Category filter, so you can show just the card games or just the games without cards.',
+    ],
+  },
+  {
     date: '14 November 2026',
     title: 'The blue check',
     points: [
