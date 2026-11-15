@@ -3,8 +3,8 @@ import { useI18n, type MessageKey } from '../i18n';
 import type { SlotSymbol } from '../games/slotsRules';
 
 /**
- * The slot symbols are Glaggles, from Glagglepedia. These are our own simple drawings of them, made from what
- * the wiki says each one looks like (its colour, eyes and mouth), not copies of the wiki's pictures.
+ * The slot symbols are Glaggles, from Glagglepedia. These are our own simple drawings of them, in the same style
+ * as the wiki's family picture (soft shaded balls, small oval eyes, thin mouths), not copies of its pictures.
  */
 export type GlaggleName = 'giggler' | 'gazo' | 'gloober' | 'gembo' | 'gleeber' | 'glabber';
 
@@ -18,105 +18,99 @@ export const GLAGGLE_FOR: Record<SlotSymbol, GlaggleName> = {
   seven: 'glabber',
 };
 
-/**
- * The skin colour of each one.
- *  - Giggler: yellow. Gazo: indigo. Gembo: coral. Gleeber: purple. Glabber: orange. (All from the wiki.)
- *  - Gloober: green. This one is a guess: the wiki's Gloober page could not be read, and only an unofficial
- *    fan profile says "green".
- */
+/** The skin colour of each one, matched to the wiki's family picture. */
 export const GLAGGLE_COLOURS: Record<GlaggleName, string> = {
-  giggler: '#fde047',
-  gazo: '#6366f1',
-  gloober: '#4ade80',
-  gembo: '#ff7f6e',
-  gleeber: '#a855f7',
-  glabber: '#fb923c',
+  giggler: '#f7d84a', // yellow
+  gazo: '#3f45c8', // indigo
+  gloober: '#6ee04f', // green
+  gembo: '#ee7b6e', // coral
+  gleeber: '#a23fd8', // purple
+  glabber: '#eca468', // orange
 };
 
-const INK = '#1f2937';
-const stroke = { stroke: INK, strokeWidth: 4, fill: 'none' } as const;
+const INK = '#2a1f2d';
+
+/** Mixes a colour towards white (positive amount) or black (negative), for the soft shading of the ball. */
+function shade(hex: string, amount: number): string {
+  const channel = (i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  const mix = (c: number) => Math.round(amount >= 0 ? c + (255 - c) * amount : c * (1 + amount));
+  return `#${[0, 1, 2].map((i) => mix(channel(i)).toString(16).padStart(2, '0')).join('')}`;
+}
+
+const oval = (cx: number, cy: number, rx = 4.6, ry = 7.4) => <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={INK} />;
+const line = { stroke: INK, strokeWidth: 2.6, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
 
 /** The face itself, drawn in a 100 by 100 box so it can be placed inside any other picture. */
 export function GlaggleShapes({ name, gradientId }: { name: GlaggleName; gradientId: string }): ReactNode {
-  const body = <circle cx="50" cy="50" r="44" fill={GLAGGLE_COLOURS[name]} stroke={INK} strokeWidth="3" />;
-  const shine = <ellipse cx="34" cy="26" rx="12" ry="6" fill="#fff" opacity="0.28" />;
+  const colour = GLAGGLE_COLOURS[name];
+  const ball = (
+    <>
+      <defs>
+        <radialGradient id={gradientId} cx="0.38" cy="0.3" r="0.85">
+          <stop offset="0" stopColor={shade(colour, 0.5)} />
+          <stop offset="0.55" stopColor={colour} />
+          <stop offset="1" stopColor={shade(colour, -0.22)} />
+        </radialGradient>
+      </defs>
+      <circle cx="50" cy="50" r="46" fill={`url(#${gradientId})`} stroke={shade(colour, -0.4)} strokeWidth="1.5" />
+    </>
+  );
 
   switch (name) {
-    case 'giggler': // large oval eyes and a wide, curvy grin with little serifs at the ends
+    case 'giggler': // oval eyes and a wide curvy grin with little serifs at the ends
       return (
         <>
-          {body}
-          {shine}
-          <ellipse cx="36" cy="42" rx="8" ry="13" fill={INK} />
-          <ellipse cx="64" cy="42" rx="8" ry="13" fill={INK} />
-          <path d="M22 60 Q50 92 78 60 M22 60 L19 54 M78 60 L81 54" {...stroke} strokeLinecap="round" />
+          {ball}
+          {oval(37, 40)}
+          {oval(63, 40)}
+          <path d="M26 58 Q50 84 74 58 M26 58 L24 53 M74 58 L76 53" {...line} />
         </>
       );
-    case 'gazo': // short black beady eyes and a plain curved mouth with no ends to it
+    case 'gazo': // short black beady eyes and a plain small curved mouth with no ends to it
       return (
         <>
-          {body}
-          {shine}
-          <circle cx="38" cy="46" r="4.5" fill="#000" />
-          <circle cx="62" cy="46" r="4.5" fill="#000" />
-          <path d="M33 63 Q50 75 67 63" {...stroke} strokeLinecap="butt" />
+          {ball}
+          <circle cx="38" cy="45" r="3.6" fill="#000" />
+          <circle cx="62" cy="45" r="3.6" fill="#000" />
+          <path d="M37 63 Q50 72 63 63" {...line} strokeLinecap="butt" />
         </>
       );
-    case 'gloober': // round eyes and a big open smile
+    case 'gloober': // oval eyes and a friendly smile
       return (
         <>
-          {body}
-          {shine}
-          <circle cx="36" cy="44" r="9" fill="#fff" stroke={INK} strokeWidth="2" />
-          <circle cx="64" cy="44" r="9" fill="#fff" stroke={INK} strokeWidth="2" />
-          <circle cx="37" cy="45" r="4" fill={INK} />
-          <circle cx="63" cy="45" r="4" fill={INK} />
-          <path d="M30 62 Q50 88 70 62 Z" fill="#14532d" stroke={INK} strokeWidth="3" strokeLinejoin="round" />
+          {ball}
+          {oval(37, 41)}
+          {oval(63, 41)}
+          <path d="M33 59 Q50 74 67 59" {...line} />
         </>
       );
-    case 'gembo': // large oval eyes shading from dark to light coral, and a smirk
+    case 'gembo': // oval eyes and a straight mouth with curved corners, like a smirk
       return (
         <>
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#9a3412" />
-              <stop offset="1" stopColor="#fdba74" />
-            </linearGradient>
-          </defs>
-          {body}
-          {shine}
-          <ellipse cx="36" cy="42" rx="9" ry="14" fill={`url(#${gradientId})`} stroke={INK} strokeWidth="2" />
-          <ellipse cx="64" cy="42" rx="9" ry="14" fill={`url(#${gradientId})`} stroke={INK} strokeWidth="2" />
-          <path d="M30 66 H62 Q70 66 74 58" {...stroke} strokeLinecap="round" />
+          {ball}
+          {oval(37, 40, 4.8, 7.8)}
+          {oval(63, 40, 4.8, 7.8)}
+          <path d="M33 62 Q36 66 41 66 H59 Q64 66 67 62" {...line} />
         </>
       );
-    case 'gleeber': // calm, half-closed eyes and a gentle smile, in purple that fades
+    case 'gleeber': // small oval eyes and a smile, in a purple that fades from pink to blue
       return (
         <>
-          <defs>
-            <radialGradient id={gradientId} cx="0.35" cy="0.3" r="0.9">
-              <stop offset="0" stopColor="#e9d5ff" />
-              <stop offset="0.45" stopColor="#a855f7" />
-              <stop offset="1" stopColor="#7e22ce" />
-            </radialGradient>
-          </defs>
-          <circle cx="50" cy="50" r="44" fill={`url(#${gradientId})`} stroke={INK} strokeWidth="3" />
-          <path d="M26 44 Q36 34 46 44 M54 44 Q64 34 74 44" {...stroke} strokeLinecap="round" />
-          <circle cx="36" cy="46" r="4" fill={INK} />
-          <circle cx="64" cy="46" r="4" fill={INK} />
-          <path d="M32 64 Q50 78 68 64" {...stroke} strokeLinecap="round" />
+          {ball}
+          {oval(38, 43, 4, 6.4)}
+          {oval(62, 43, 4, 6.4)}
+          <path d="M36 61 Q50 72 64 61" {...line} />
         </>
       );
-    case 'glabber': // an orange smiley with two sharp teeth, like a vampire's
+    case 'glabber': // a smiley with two sharp teeth, like a vampire's
       return (
         <>
-          {body}
-          {shine}
-          <circle cx="36" cy="42" r="5.5" fill={INK} />
-          <circle cx="64" cy="42" r="5.5" fill={INK} />
-          <path d="M26 58 Q50 84 74 58" {...stroke} strokeLinecap="round" />
-          <polygon points="34,63 42,66 38,78" fill="#fff" stroke={INK} strokeWidth="1.5" strokeLinejoin="round" />
-          <polygon points="58,66 66,63 62,78" fill="#fff" stroke={INK} strokeWidth="1.5" strokeLinejoin="round" />
+          {ball}
+          {oval(37, 41)}
+          {oval(63, 41)}
+          <path d="M31 58 Q50 76 69 58" {...line} />
+          <polygon points="39,64 45,66 41.5,75" fill="#fff" stroke={INK} strokeWidth="1.3" strokeLinejoin="round" />
+          <polygon points="55,66 61,64 58.5,75" fill="#fff" stroke={INK} strokeWidth="1.3" strokeLinejoin="round" />
         </>
       );
   }
