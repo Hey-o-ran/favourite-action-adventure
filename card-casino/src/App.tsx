@@ -47,6 +47,7 @@ const GAMES: GameEntry[] = [
     type: 'Beat the dealer',
     skill: 'Mix of both',
     popularity: 5,
+    length: 1,
     Component: Blackjack,
   },
   {
@@ -60,6 +61,7 @@ const GAMES: GameEntry[] = [
     type: 'Bet on a winner',
     skill: 'Mostly luck',
     popularity: 6,
+    length: 0.5,
     Component: Baccarat,
   },
   {
@@ -73,6 +75,7 @@ const GAMES: GameEntry[] = [
     type: 'Guess the card',
     skill: 'Mostly luck',
     popularity: 11,
+    length: 1,
     Component: RedDog,
   },
   {
@@ -86,6 +89,7 @@ const GAMES: GameEntry[] = [
     type: 'Poker',
     skill: 'Mix of both',
     popularity: 7,
+    length: 0.5,
     Component: VideoPoker,
   },
   {
@@ -99,6 +103,7 @@ const GAMES: GameEntry[] = [
     type: 'Solitaire',
     skill: 'Mostly skill',
     popularity: 2,
+    length: 10,
     Component: Klondike,
   },
   {
@@ -112,6 +117,7 @@ const GAMES: GameEntry[] = [
     type: 'Guess the card',
     skill: 'Mostly luck',
     popularity: 10,
+    length: 1,
     Component: HigherLower,
   },
   {
@@ -125,6 +131,7 @@ const GAMES: GameEntry[] = [
     type: 'Empty your hand',
     skill: 'Mix of both',
     popularity: 9,
+    length: 5,
     Component: CrazyEights,
   },
   {
@@ -138,6 +145,7 @@ const GAMES: GameEntry[] = [
     type: 'Poker',
     skill: 'Mostly skill',
     popularity: 3,
+    length: 5,
     Component: Holdem,
   },
   {
@@ -151,6 +159,7 @@ const GAMES: GameEntry[] = [
     type: 'Make sets and runs',
     skill: 'Mostly skill',
     popularity: 8,
+    length: 15,
     Component: Gin,
   },
   {
@@ -164,6 +173,7 @@ const GAMES: GameEntry[] = [
     type: 'Spin the wheel',
     skill: 'Mostly luck',
     popularity: 4,
+    length: 0.5,
     Component: Roulette,
   },
   {
@@ -177,6 +187,7 @@ const GAMES: GameEntry[] = [
     type: 'Spin the reels',
     skill: 'Mostly luck',
     popularity: 1,
+    length: 0.2,
     Component: Slots,
   },
 ];

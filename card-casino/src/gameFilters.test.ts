@@ -18,6 +18,7 @@ const game = (over: Partial<GameFacts> = {}): GameFacts => ({
   type: 'Beat the dealer',
   skill: 'Mix of both',
   popularity: 1,
+  length: 5,
   ...over,
 });
 
@@ -141,6 +142,30 @@ describe('sorting games alphabetically', () => {
   });
 
   it('offers it in the Sort by choices, after the other two', () => {
-    expect(SORT_OPTIONS.map((o) => o.id)).toEqual(['default', 'popularity', 'alphabetical']);
+    expect(SORT_OPTIONS.map((o) => o.id)).toEqual(['default', 'popularity', 'alphabetical', 'length']);
+  });
+});
+
+describe('sorting games by how long one game takes', () => {
+  const timed = (...minutes: number[]) => minutes.map((length, i) => ({ name: 'G' + i, ...game({ length }) }));
+  const lengths = (list: { length: number }[]) => list.map((g) => g.length);
+
+  it('puts the shortest game first', () => {
+    expect(lengths(sortGames(timed(15, 0.5, 5, 10), 'length'))).toEqual([0.5, 5, 10, 15]);
+  });
+
+  it('keeps games that take equally long in their original order', () => {
+    const sorted = sortGames(timed(5, 1, 5, 1), 'length');
+    expect(sorted.map((g) => g.name)).toEqual(['G1', 'G3', 'G0', 'G2']);
+  });
+
+  it('leaves the original list untouched', () => {
+    const list = timed(9, 2);
+    sortGames(list, 'length');
+    expect(lengths(list)).toEqual([9, 2]);
+  });
+
+  it('says what the length means: the time for one game, in minutes', () => {
+    expect(game().length).toBeGreaterThan(0);
   });
 });

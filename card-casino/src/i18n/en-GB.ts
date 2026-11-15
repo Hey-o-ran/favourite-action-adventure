@@ -197,6 +197,7 @@ export const enGB = {
   'nav.sortDefault': 'Default order',
   'nav.sortPopular': 'Most popular first',
   'nav.sortAlphabetical': 'Alphabetical (A–Z)',
+  'nav.sortLength': 'Shortest game first',
   'nav.count': '{count} games',
   'nav.countMatching': '{matching} of {total} games match',
   'nav.games': 'Games',

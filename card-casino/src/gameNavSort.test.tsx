@@ -8,7 +8,7 @@ import { NO_FILTERS, type SortOrder } from './gameFilters';
 import { LanguageProvider, STORAGE_KEY, translate } from './i18n';
 
 const facts = { category: 'Card games', origin: 'France', players: 'Vs the house', type: 'Poker', skill: 'Mix of both' } as const;
-const games = (...names: string[]): NavGame[] => names.map((name, i) => ({ id: `g${i}`, name, popularity: i + 1, ...facts }));
+const games = (...names: string[]): NavGame[] => names.map((name, i) => ({ id: `g${i}`, name, popularity: i + 1, length: 10 - i, ...facts }));
 
 function renderNav(list: NavGame[], sort: SortOrder, onSortChange = vi.fn()) {
   render(
@@ -33,6 +33,7 @@ describe('the Sort by box, in British English', () => {
       'Default order',
       'Most popular first',
       'Alphabetical (A–Z)',
+      'Shortest game first',
     ]);
   });
 
@@ -45,6 +46,27 @@ describe('the Sort by box, in British English', () => {
   it('lines the games up A to Z', () => {
     renderNav(games('Red Dog', 'Blackjack', 'Gin Rummy', 'Baccarat'), 'alphabetical');
     expect(buttons()).toEqual(['Baccarat', 'Blackjack', 'Gin Rummy', 'Red Dog']);
+  });
+});
+
+describe('sorting by the length of a game', () => {
+  it('lines the games up from the shortest to the longest', () => {
+    // length is 10 - position, so the last game listed is the shortest
+    renderNav(games('Gin Rummy', 'Klondike', 'Slots'), 'length');
+    expect(buttons()).toEqual(['Slots', 'Klondike', 'Gin Rummy']);
+  });
+
+  it('tells the page when it is chosen', async () => {
+    const onSortChange = renderNav(games('Gin Rummy', 'Slots'), 'default');
+    await userEvent.setup().selectOptions(screen.getByRole('combobox', { name: 'Sort by' }), 'Shortest game first');
+    expect(onSortChange).toHaveBeenCalledWith('length');
+  });
+
+  it('is worded in Chinese in the Chinese version', () => {
+    window.localStorage.setItem(STORAGE_KEY, 'zh-CN');
+    renderNav(games('二十一点', '百家乐'), 'length');
+    const sort = screen.getByRole('combobox', { name: translate('zh-CN', 'nav.sortBy') });
+    expect(within(sort).getByRole('option', { name: translate('zh-CN', 'nav.sortLength') })).toBeInTheDocument();
   });
 });
 
