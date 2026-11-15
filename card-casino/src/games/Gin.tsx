@@ -4,6 +4,8 @@ import { newDeck, shuffle, type Card } from '../cards';
 import { useDealLock } from '../useDealLock';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
+import { useI18n, type Translate } from '../i18n';
+import { ginLog } from './gameLogs';
 import { botStep } from './ginBot';
 import {
   GIN_BONUS,
@@ -37,23 +39,33 @@ import {
 const BOT_DELAY_MS = 900;
 
 const cardKey = (c: Card) => `${c.rank}-${c.suit}`;
-const name = (who: Who) => (who === 'player' ? 'You' : 'The bot');
-
 /** Describes how a hand ended, for the screen. */
-function describeResult(r: HandResult): string {
-  if (r.kind === 'draw') return 'Nobody scores. The hand is a draw.';
+function describeResult(r: HandResult, t: Translate): string {
+  const name = (who: Who) => t(who === 'player' ? 'gin.name.you' : 'gin.name.bot');
+  if (r.kind === 'draw') return t('gin.res.draw');
   const knocker = r.knocker!;
   const them = other(knocker);
   if (r.kind === 'gin')
-    return `${name(knocker)} went gin! ${name(them)} had ${r.otherPoints} left over. ${name(knocker)} scores ${r.otherPoints} + ${GIN_BONUS} bonus = ${r.points}.`;
-  const laid = r.laidOff!.length > 0 ? ` ${name(them)} laid off ${r.laidOff!.map(cardName).join(' ')}.` : '';
+    return t('gin.res.gin', { knocker: name(knocker), other: name(them), otherPoints: r.otherPoints!, bonus: GIN_BONUS, points: r.points });
+  const laid =
+    r.laidOff!.length > 0 ? t('gin.res.laid', { other: name(them), cards: r.laidOff!.map(cardName).join(' ') }) : '';
   if (r.kind === 'undercut')
-    return `${name(knocker)} knocked with ${r.knockerPoints}.${laid} ${name(them)} only had ${r.otherPoints}, so it's an undercut! ${name(them)} scores ${r.knockerPoints! - r.otherPoints!} + ${UNDERCUT_BONUS} bonus = ${r.points}.`;
-  return `${name(knocker)} knocked with ${r.knockerPoints}.${laid} ${name(them)} had ${r.otherPoints}. ${name(knocker)} scores ${r.points}.`;
+    return t('gin.res.undercut', {
+      knocker: name(knocker),
+      knockerPoints: r.knockerPoints!,
+      laid,
+      other: name(them),
+      otherPoints: r.otherPoints!,
+      diff: r.knockerPoints! - r.otherPoints!,
+      bonus: UNDERCUT_BONUS,
+      points: r.points,
+    });
+  return t('gin.res.knock', { knocker: name(knocker), knockerPoints: r.knockerPoints!, laid, other: name(them), otherPoints: r.otherPoints!, points: r.points });
 }
 
 export function Gin() {
   const { balance, wager, settle } = useWallet();
+  const { t, tx, lang } = useI18n();
   const [bet, setBet] = useState(50);
   const [match, setMatch] = useState<GinMatch | null>(null);
   /** The card you've picked to discard. */
@@ -144,7 +156,7 @@ export function Gin() {
     return (
       <div className="gin-hand">
         {melds.map((meld, i) => (
-          <div className="meld" key={i} aria-label="Meld">
+          <div className="meld" key={i} aria-label={t('gin.meld')}>
             {meld.map(card)}
           </div>
         ))}
@@ -157,30 +169,37 @@ export function Gin() {
 
   return (
     <section className="table">
-      <h2>Gin Rummy</h2>
+      <h2>{t('game.gin-rummy.name')}</h2>
 
       {match && hand ? (
         <>
-          <p className="scoreboard" aria-label="Score">
-            Hand {match.handNumber} · You <b>{match.scores.player}</b> – Bot <b>{match.scores.bot}</b> · first to {MATCH_TARGET} wins · {hand.dealer === 'player' ? 'You deal' : 'Bot deals'}
+          <p className="scoreboard" aria-label={t('gin.scoreLabel')}>
+            {tx('gin.score', {
+              hand: match.handNumber,
+              you: <b>{match.scores.player}</b>,
+              bot: <b>{match.scores.bot}</b>,
+              target: MATCH_TARGET,
+              dealer: t(hand.dealer === 'player' ? 'gin.youDeal' : 'gin.botDeals'),
+            })}
           </p>
 
-          <p className="hand-label">Bot · {hand.bot.length} cards</p>
+          <p className="hand-label">{t('gin.botHand', { count: hand.bot.length })}</p>
           {renderGroups('bot', !handOver)}
 
           <div className="pile-row">
             <div className="pile">
               <CardView faceDown />
-              <small>{hand.stock.length} in stock</small>
+              <small>{t('gin.stock', { count: hand.stock.length })}</small>
             </div>
             <div className="pile">
               {hand.discard.length > 0 ? <CardView card={topDiscard(hand)} /> : <div className="slot" />}
-              <small>Pile</small>
+              <small>{t('gin.pile')}</small>
             </div>
           </div>
 
           <p className="hand-label">
-            You · {hand.player.length} cards{playerPoints !== null && <> · {playerPoints} loose points</>}
+            {t('gin.youHand', { count: hand.player.length })}
+            {playerPoints !== null && <>{t('gin.loose', { points: playerPoints })}</>}
           </p>
           {renderGroups('player', false)}
         </>
@@ -191,33 +210,43 @@ export function Gin() {
       )}
 
       <p className="result">
-        {hand && !handOver && <>{hand.log} </>}
-        {botTurn && <>The bot is thinking…</>}
+        {hand && !handOver && <>{ginLog(hand.log, lang, t)} </>}
+        {botTurn && <>{t('gin.thinking')}</>}
         {handOver && hand!.result && (
           <>
-            {hand!.result.kind === 'draw' && <>{hand!.log} </>}
-            {describeResult(hand!.result)}
+            {hand!.result.kind === 'draw' && <>{ginLog(hand!.log, lang, t)} </>}
+            {describeResult(hand!.result, t)}
           </>
         )}
         {match?.status === 'won' && (
           <>
             {' '}
-            You win the match! <span className="gain">+{returnedFor(match) - match.bet} coins</span>
+            {tx('gin.youWinMatch', { gain: <span className="gain">{t('game.gain', { amount: returnedFor(match) - match.bet })}</span> })}
           </>
         )}
         {match?.status === 'lost' && (
           <>
             {' '}
-            {match.forfeited ? 'You forfeited the match.' : 'The bot wins the match.'} <span className="loss">-{match.bet} coins</span>
+            {tx(match.forfeited ? 'gin.youForfeited' : 'gin.botWinsMatch', {
+              loss: <span className="loss">{t('game.loss', { amount: match.bet })}</span>,
+            })}
           </>
         )}
       </p>
 
       {match?.final && (
         <p className="final-score">
-          Final score: You {match.final.player} (hands {match.scores.player} + {HAND_BONUS} × {match.handsWon.player} hands won
-          {match.status === 'won' ? ` + ${MATCH_BONUS} for the match` : ''}) · Bot {match.final.bot} (hands {match.scores.bot} + {HAND_BONUS} × {match.handsWon.bot} hands won
-          {match.status === 'lost' ? ` + ${MATCH_BONUS} for the match` : ''})
+          {t('gin.final', {
+            youTotal: match.final.player,
+            youHands: match.scores.player,
+            handBonus: HAND_BONUS,
+            youWon: match.handsWon.player,
+            youMatch: match.status === 'won' ? t('gin.matchBonus', { bonus: MATCH_BONUS }) : '',
+            botTotal: match.final.bot,
+            botHands: match.scores.bot,
+            botWon: match.handsWon.bot,
+            botMatch: match.status === 'lost' ? t('gin.matchBonus', { bonus: MATCH_BONUS }) : '',
+          })}
         </p>
       )}
 
@@ -225,66 +254,70 @@ export function Gin() {
         {myTurn && hand!.phase === 'offer' && (
           <>
             <button className="primary" onClick={() => move(takeUpcard)} disabled={locked}>
-              Take the {cardName(topDiscard(hand!))}
+              {t('gin.take', { card: cardName(topDiscard(hand!)) })}
             </button>
             <button onClick={() => move(passUpcard)} disabled={locked}>
-              Pass
+              {t('gin.pass')}
             </button>
           </>
         )}
         {myTurn && hand!.phase === 'draw' && (
           <>
             <button className="primary" onClick={() => move(drawFromStock)} disabled={locked}>
-              Draw from the stock
+              {t('gin.drawStock')}
             </button>
             <button onClick={() => move(drawFromPile)} disabled={locked || mustDrawStock(hand!)}>
-              Take the {cardName(topDiscard(hand!))}
+              {t('gin.take', { card: cardName(topDiscard(hand!)) })}
             </button>
           </>
         )}
         {myTurn && hand!.phase === 'discard' && (
           <>
             <button className="primary" onClick={() => move((h) => discardCard(h, selectedIndex))} disabled={selectedIndex < 0}>
-              {selectedIndex >= 0 ? `Discard the ${cardName(hand!.player[selectedIndex])}` : 'Pick a card to discard'}
+              {selectedIndex >= 0 ? t('gin.discard', { card: cardName(hand!.player[selectedIndex]) }) : t('gin.pick')}
             </button>
             <button
               onClick={() => move((h) => knock(h, selectedIndex))}
               disabled={!knockInfo?.allowed}
-              title={knockInfo && !knockInfo.allowed ? `You'd have ${knockInfo.points} left over. You need 10 or fewer to knock.` : undefined}
+              title={knockInfo && !knockInfo.allowed ? t('gin.knockTitle', { points: knockInfo.points }) : undefined}
             >
-              {knockInfo?.allowed && knockInfo.points === 0 ? 'Gin!' : knockInfo ? `Knock (${knockInfo.points} left)` : 'Knock'}
+              {knockInfo?.allowed && knockInfo.points === 0
+                ? t('gin.gin')
+                : knockInfo
+                  ? t('gin.knock', { points: knockInfo.points })
+                  : t('gin.knockPlain')}
             </button>
           </>
         )}
         {playing && handOver && (
           <button className="primary" onClick={startNextHand} disabled={locked}>
-            Next hand
+            {t('gin.next')}
           </button>
         )}
         {!playing && (
           <button className="primary" onClick={deal} disabled={balance < bet}>
-            {match ? 'Deal again' : 'Deal'}
+            {match ? t('game.dealAgain') : t('game.deal')}
           </button>
         )}
       </div>
 
       {playing && !confirmingForfeit && (
         <div className="actions">
-          <button onClick={() => setConfirmingForfeit(true)}>Forfeit match</button>
+          <button onClick={() => setConfirmingForfeit(true)}>{t('gin.forfeit')}</button>
         </div>
       )}
       {playing && confirmingForfeit && (
-        <div className="actions" role="group" aria-label="Forfeit the match">
-          <span>Give up and lose your {match!.bet} coins?</span>
+        <div className="actions" role="group" aria-label={t('gin.forfeitGroup')}>
+          <span>{t('gin.forfeitAsk', { bet: match!.bet })}</span>
           <button
             onClick={() => {
               setMatch((m) => (m ? forfeit(m) : m));
               setConfirmingForfeit(false);
             }}
           >
-            Yes, forfeit
+            {t('gin.yesForfeit')}
           </button>
-          <button onClick={() => setConfirmingForfeit(false)}>Keep playing</button>
+          <button onClick={() => setConfirmingForfeit(false)}>{t('gin.keepPlaying')}</button>
         </div>
       )}
 

@@ -2,6 +2,7 @@ import { useState, type MouseEvent } from 'react';
 import { useWallet } from '../wallet';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
+import { useI18n } from '../i18n';
 import {
   drawFromStock,
   moveCards,
@@ -18,6 +19,7 @@ type Status = 'betting' | 'playing' | 'won' | 'lost';
 
 export function Klondike() {
   const { balance, wager, settle } = useWallet();
+  const { t, tx } = useI18n();
   const [bet, setBet] = useState(25);
   const [activeBet, setActiveBet] = useState(0);
   const [state, setState] = useState<KState | null>(null);
@@ -92,7 +94,7 @@ export function Klondike() {
 
   return (
     <section className="table klondike">
-      <h2>Klondike Solitaire</h2>
+      <h2>{t('game.klondike.name')}</h2>
 
       {state && (
         <>
@@ -101,7 +103,7 @@ export function Klondike() {
               {state.stock.length > 0 ? (
                 <CardView faceDown onClick={stop(draw)} />
               ) : (
-                <button className="slot" onClick={draw} disabled={!playing || state.recyclesLeft === 0 || state.waste.length === 0} aria-label="Recycle waste to stock">
+                <button className="slot" onClick={draw} disabled={!playing || state.recyclesLeft === 0 || state.waste.length === 0} aria-label={t('klondike.recycle')}>
                   ↻
                 </button>
               )}
@@ -128,7 +130,7 @@ export function Klondike() {
                     onClick={stop(() => clickSource({ from: 'foundation', pile: p }, target))}
                   />
                 ) : (
-                  <button key={p} className="slot" onClick={() => clickTarget(target)} aria-label={`Empty foundation ${p + 1}`}>
+                  <button key={p} className="slot" onClick={() => clickTarget(target)} aria-label={t('klondike.emptyFoundation', { n: p + 1 })}>
                     A
                   </button>
                 );
@@ -162,20 +164,12 @@ export function Klondike() {
           </div>
 
           <p className="result">
-            {status === 'playing' && (
-              <>
-                {state.stock.length} in stock · {state.recyclesLeft} stock recycles left
-              </>
-            )}
+            {status === 'playing' && <>{t('klondike.status', { stock: state.stock.length, recycles: state.recyclesLeft })}</>}
             {status === 'won' && (
-              <>
-                You won! <span className="gain">+{activeBet} coins</span>
-              </>
+              <>{tx('klondike.won', { gain: <span className="gain">{t('game.gain', { amount: activeBet })}</span> })}</>
             )}
             {status === 'lost' && (
-              <>
-                No more moves. <span className="loss">-{activeBet} coins</span>
-              </>
+              <>{tx('klondike.stuck', { loss: <span className="loss">{t('game.loss', { amount: activeBet })}</span> })}</>
             )}
           </p>
         </>
@@ -183,20 +177,17 @@ export function Klondike() {
 
       <div className="actions">
         {playing ? (
-          <button onClick={forfeit}>Give up (lose bet)</button>
+          <button onClick={forfeit}>{t('klondike.giveUp')}</button>
         ) : (
           <button className="primary" onClick={deal} disabled={balance < bet}>
-            {state ? 'Deal new game' : 'Deal'}
+            {state ? t('klondike.dealNew') : t('game.deal')}
           </button>
         )}
       </div>
 
       <BetPanel value={bet} onChange={setBet} max={balance} disabled={playing} />
 
-      <p className="hint">
-        Click a card to select it, then click a destination. Win pays 2× your bet; giving up or running out of
-        moves loses it. The stock can be recycled twice.
-      </p>
+      <p className="hint">{t('klondike.hint')}</p>
     </section>
   );
 }
