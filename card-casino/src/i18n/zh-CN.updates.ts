@@ -3,6 +3,15 @@
  * needs the same number of points as the English update (a test checks this).
  */
 export const ZH_UPDATES: Record<string, { date: string; title: string; points: string[] }> = {
+  glaggles: {
+    date: '2026年11月15日',
+    title: '老虎机里的格拉格！',
+    points: [
+      '老虎机换上了新面孔！水果和 7 不见了，取而代之的是来自格拉格百科的六个圆圆的格拉格：咯咯怪、嘎佐、咕噜伯、简博、格里伯和格拉伯。',
+      '中间那条线上出现三个格拉伯就是大奖！其他都没变。每个格拉格的奖金，和它替换掉的那张图案一模一样。',
+      '机器上和规则页面都能看到谁赔多少。',
+    ],
+  },
   slots: {
     date: '2026年11月15日',
     title: '老虎机来啦！',
