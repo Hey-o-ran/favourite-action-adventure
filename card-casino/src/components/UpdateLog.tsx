@@ -7,6 +7,15 @@ interface Update {
 /** Newest first. Written for kids, so keep it short, friendly and jargon-free. Add new updates at the top. */
 const UPDATES: Update[] = [
   {
+    date: '15 November 2026',
+    title: 'Slots!',
+    points: [
+      'A brand new Slots machine! Choose your bet, press Spin, and watch the three reels stop one by one.',
+      'Line up three of the same picture on the middle line to win. Three 7s is the jackpot and pays 100 times your bet!',
+      'Two cherries pays too. You can see everything it pays on the machine, and on the Rules page.',
+    ],
+  },
+  {
     date: '14 November 2026',
     title: 'Roulette, our first game without cards!',
     points: [
