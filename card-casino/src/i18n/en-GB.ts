@@ -210,6 +210,7 @@ export const enGB = {
   'filter.players': 'Players',
   'filter.type': 'Type of game',
   'filter.skill': 'Luck or skill',
+  'filter.difficulty': 'How hard to learn',
   'facts.from': 'From {country}',
   'facts.unclear': 'Origin unclear',
 
@@ -225,6 +226,9 @@ export const enGB = {
   'fact.Mostly luck': 'Mostly luck',
   'fact.Mix of both': 'Mix of both',
   'fact.Mostly skill': 'Mostly skill',
+  'fact.Easy': 'Easy',
+  'fact.Medium': 'Medium',
+  'fact.Hard': 'Hard',
   'fact.Beat the dealer': 'Beat the dealer',
   'fact.Bet on a winner': 'Bet on a winner',
   'fact.Guess the card': 'Guess the card',

@@ -17,6 +17,7 @@ const game = (over: Partial<GameFacts> = {}): GameFacts => ({
   players: 'Vs the house',
   type: 'Beat the dealer',
   skill: 'Mix of both',
+  difficulty: 'Easy',
   popularity: 1,
   length: 5,
   ...over,
@@ -167,5 +168,37 @@ describe('sorting games by how long one game takes', () => {
 
   it('says what the length means: the time for one game, in minutes', () => {
     expect(game().length).toBeGreaterThan(0);
+  });
+});
+
+describe('filtering by how hard a game is to learn', () => {
+  const games = [
+    game({ difficulty: 'Hard' }),
+    game({ difficulty: 'Easy' }),
+    game({ difficulty: 'Medium' }),
+    game({ difficulty: 'Easy' }),
+  ];
+
+  it('matches only games that are that hard to learn', () => {
+    const easy = { ...NO_FILTERS, difficulty: 'Easy' };
+    expect(games.filter((g) => matchesFilters(g, easy))).toHaveLength(2);
+    expect(games.filter((g) => matchesFilters(g, { ...NO_FILTERS, difficulty: 'Hard' }))).toHaveLength(1);
+  });
+
+  it('counts as an active filter, and clearing it matches everything', () => {
+    expect(activeFilterCount({ ...NO_FILTERS, difficulty: 'Medium' })).toBe(1);
+    expect(activeFilterCount(NO_FILTERS)).toBe(0);
+    expect(NO_FILTERS.difficulty).toBe('');
+  });
+
+  it('works together with the other filters', () => {
+    const both = { ...NO_FILTERS, difficulty: 'Easy', skill: 'Mostly luck' };
+    expect(matchesFilters(game({ difficulty: 'Easy', skill: 'Mostly luck' }), both)).toBe(true);
+    expect(matchesFilters(game({ difficulty: 'Easy', skill: 'Mostly skill' }), both)).toBe(false);
+  });
+
+  it('lists the choices from easiest to hardest, only those some game has', () => {
+    expect(filterOptions('difficulty', games)).toEqual(['Easy', 'Medium', 'Hard']);
+    expect(filterOptions('difficulty', [game({ difficulty: 'Hard' }), game({ difficulty: 'Easy' })])).toEqual(['Easy', 'Hard']);
   });
 });

@@ -33,6 +33,7 @@ const FILTER_NAME_KEYS: Record<(typeof FILTER_KEYS)[number], MessageKey> = {
   players: 'filter.players',
   type: 'filter.type',
   skill: 'filter.skill',
+  difficulty: 'filter.difficulty',
 };
 const SORT_NAME_KEYS: Record<SortOrder, MessageKey> = {
   default: 'nav.sortDefault',

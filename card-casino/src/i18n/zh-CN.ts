@@ -206,6 +206,7 @@ export const zhCN: Record<MessageKey, string> = {
   'filter.players': '玩家人数',
   'filter.type': '游戏类型',
   'filter.skill': '运气或技巧',
+  'filter.difficulty': '上手难度',
   'facts.from': '起源于{country}',
   'facts.unclear': '起源不明',
 
@@ -221,6 +222,9 @@ export const zhCN: Record<MessageKey, string> = {
   'fact.Mostly luck': '主要靠运气',
   'fact.Mix of both': '运气与技巧各半',
   'fact.Mostly skill': '主要靠技巧',
+  'fact.Easy': '简单',
+  'fact.Medium': '中等',
+  'fact.Hard': '困难',
   'fact.Beat the dealer': '击败庄家',
   'fact.Bet on a winner': '押注赢家',
   'fact.Guess the card': '猜牌',
