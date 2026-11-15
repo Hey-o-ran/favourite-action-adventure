@@ -28,6 +28,7 @@ interface GameNavProps {
 }
 
 const FILTER_NAME_KEYS: Record<(typeof FILTER_KEYS)[number], MessageKey> = {
+  category: 'filter.category',
   origin: 'filter.origin',
   players: 'filter.players',
   type: 'filter.type',

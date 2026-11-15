@@ -52,10 +52,21 @@ export class BalanceSync {
     return this.current;
   }
 
+  /**
+   * Coins won or spent here that the server has not confirmed yet. A bet is taken off the balance straight away,
+   * so until it is saved this is negative; a payout makes it positive.
+   */
+  private get unsaved(): number {
+    return this.current.balance - this.savedBalance;
+  }
+
+  /**
+   * Starts from what the server holds. Anything the player did here that is not saved yet stays on top of it,
+   * so a bet is never forgotten (and then refunded or paid out as if it had not been placed).
+   */
   async load(): Promise<void> {
     const server = await this.api.get();
-    this.savedBalance = server.balance;
-    this.update({ balance: server.balance, version: server.version, loaded: true, status: 'saved' });
+    this.adopt(server.balance, server.version, this.unsaved);
   }
 
   set(balance: number): void {
@@ -138,7 +149,7 @@ export class BalanceSync {
       if (err.status === 400) {
         try {
           const server = await this.api.get();
-          this.takeServerValue(server.balance, server.version, RESET_NOTICE);
+          this.resetToServerValue(server.balance, server.version, RESET_NOTICE);
           return;
         } catch {
           // Fall through and treat it like any other failure.
@@ -149,11 +160,30 @@ export class BalanceSync {
     this.update({ status: 'failed' });
   }
 
-  private takeServerValue(balance: number, version: number, notice: string): void {
+  /** The server holds `balance` at `version`, and the player still has `unsaved` coins of play here on top of it. */
+  private adopt(balance: number, version: number, unsaved: number, notice?: string): void {
     this.failures = 0;
     this.savedBalance = balance;
     this.clearTimers();
-    this.update({ balance, version, status: 'saved', notice });
+    this.update({
+      // Never below zero, even if an admin took coins off while a bet was in play.
+      balance: Math.max(0, balance + unsaved),
+      version,
+      loaded: true,
+      status: 'saved',
+      ...(notice !== undefined && { notice }),
+    });
+    this.scheduleSave();
+  }
+
+  /** The server moved on (an admin changed the coins, or another device played). Our play so far stays on top. */
+  private takeServerValue(balance: number, version: number, notice: string): void {
+    this.adopt(balance, version, this.unsaved, notice);
+  }
+
+  /** The server turned the balance down as invalid, so the balance that was sent is dropped for the server's. */
+  private resetToServerValue(balance: number, version: number, notice: string): void {
+    this.adopt(balance, version, 0, notice);
   }
 
   private afterSettled(): void {

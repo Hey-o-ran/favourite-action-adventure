@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+﻿// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -182,8 +182,8 @@ describe('announcements in Chinese', () => {
 
 describe('choosing a game in Chinese', () => {
   const games = [
-    { id: 'a', name: '二十一点', origin: 'Spain', players: 'Vs the house', type: 'Beat the dealer', skill: 'Mix of both', popularity: 2 },
-    { id: 'b', name: '德州扑克', origin: 'United States', players: '3+ players', type: 'Poker', skill: 'Mostly skill', popularity: 1 },
+    { id: 'a', name: '二十一点', category: 'Card games', origin: 'Spain', players: 'Vs the house', type: 'Beat the dealer', skill: 'Mix of both', popularity: 2 },
+    { id: 'b', name: '德州扑克', category: 'Card games', origin: 'United States', players: '3+ players', type: 'Poker', skill: 'Mostly skill', popularity: 1 },
   ] as never;
 
   const nav = (filters = NO_FILTERS) =>
@@ -202,9 +202,11 @@ describe('choosing a game in Chinese', () => {
   it('shows the filter names, choices, sorting and game count in Chinese', () => {
     nav();
     expect(screen.getByRole('group', { name: t('nav.findGame') })).toBeInTheDocument();
-    for (const key of ['filter.origin', 'filter.players', 'filter.type', 'filter.skill'] as const) {
+    for (const key of ['filter.category', 'filter.origin', 'filter.players', 'filter.type', 'filter.skill'] as const) {
       expect(screen.getByText(t(key))).toBeInTheDocument();
     }
+    const category = screen.getByRole('combobox', { name: t('filter.category') });
+    expect(within(category).getByRole('option', { name: t('fact.Card games') })).toBeInTheDocument();
     const origin = screen.getByRole('combobox', { name: t('filter.origin') });
     expect(within(origin).getByRole('option', { name: t('nav.any') })).toBeInTheDocument();
     expect(within(origin).getByRole('option', { name: t('fact.Spain') })).toBeInTheDocument();
