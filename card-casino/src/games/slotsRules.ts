@@ -4,21 +4,17 @@
  */
 export type SlotSymbol = 'cherry' | 'lemon' | 'grape' | 'bell' | 'diamond' | 'seven';
 
-export const SYMBOL_EMOJI: Record<SlotSymbol, string> = {
-  cherry: '🍒',
-  lemon: '🍋',
-  grape: '🍇',
-  bell: '🔔',
-  diamond: '💎',
-  seven: '7️⃣',
-};
+/**
+ * The symbols are Glaggles, and these are their names (see `components/GlaggleFace.tsx` for their faces). The
+ * symbol ids above stay as they were, because the pay table and the odds are written in terms of them.
+ */
 export const SYMBOL_NAME: Record<SlotSymbol, string> = {
-  cherry: 'cherry',
-  lemon: 'lemon',
-  grape: 'grapes',
-  bell: 'bell',
-  diamond: 'diamond',
-  seven: 'seven',
+  cherry: 'Giggler',
+  lemon: 'Gazo',
+  grape: 'Gloober',
+  bell: 'Gembo',
+  diamond: 'Gleeber',
+  seven: 'Glabber',
 };
 
 /** The ring each reel spins. Cheap symbols are common and the 7 and diamond are rare, spread out evenly. */

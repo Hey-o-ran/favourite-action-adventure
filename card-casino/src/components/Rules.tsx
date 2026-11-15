@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 import { GameNav, type NavGame } from './GameNav';
 import type { Filters, SortOrder } from '../gameFilters';
+import { handText, useI18n, type MessageKey } from '../i18n';
 import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
 import { BIG_BLIND, BUY_IN, MAX_RAISES, SMALL_BLIND, betSize } from '../games/holdemRules';
-import { HIT_RATE, RETURN_TO_PLAYER, SYMBOL_EMOJI, THREE_OF_A_KIND, TWO_CHERRIES } from '../games/slotsRules';
+import { HIT_RATE, RETURN_TO_PLAYER, THREE_OF_A_KIND, TWO_CHERRIES } from '../games/slotsRules';
+import { GlaggleAt, GlaggleRow } from './GlaggleFace';
 import { CHIPS, evenMoneySpot, payoutOdds, columnSpot, cornerSpot, sixLineSpot, splitSpot, straightSpot, streetSpot } from '../games/rouletteRules';
 import { GIN_BONUS, HAND_BONUS, HAND_SIZE as GIN_HAND_SIZE, KNOCK_LIMIT, MATCH_BONUS, MATCH_TARGET, PAYOUT_BY_DIFFICULTY as GIN_PAYOUT, STOCK_FLOOR, UNDERCUT_BONUS } from '../games/ginRules';
 import { CATEGORY_NAMES } from '../games/pokerHands';
@@ -11,6 +13,9 @@ import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
 import { SPREAD_PAYOUTS, THREE_OF_A_KIND_PAYOUT, WIDE_SPREAD_PAYOUT } from '../games/redDogRules';
 import { BANKER_PAYOUT_PERCENT, PLAYER_PAYOUT, TIE_PAYOUT } from '../games/baccaratRules';
+
+/** The numbers from the game rules go into the text as plain strings, so they are never given thousands commas. */
+const s = (n: number) => String(n);
 
 /** A small card for diagrams. `back` draws a face-down card. */
 function MiniCard({ x, y, label, red, back }: { x: number; y: number; label?: string; red?: boolean; back?: boolean }) {
@@ -34,36 +39,53 @@ const Note = ({ x, y, children, anchor = 'middle' }: { x: number; y: number; chi
   </text>
 );
 
-function BlackjackDiagram() {
+/** The keys `<prefix>.1`, `<prefix>.2` ... `<prefix>.<count>` in the dictionary. */
+const keys = (prefix: string, count: number) => Array.from({ length: count }, (_, i) => `${prefix}.${i + 1}` as MessageKey);
+
+/** A bullet list of texts with **bold** parts. */
+function Items({ prefix, count, values }: { prefix: string; count: number; values?: Record<string, string> }) {
+  const { tb } = useI18n();
   return (
-    <svg viewBox="0 0 420 150" role="img" aria-label="A hand of King and 7 totals 17; dealer draws to 17">
-      <Note x={10} y={16} anchor="start">Your hand</Note>
+    <ul>
+      {keys(prefix, count).map((key) => (
+        <li key={key}>{tb(key, values)}</li>
+      ))}
+    </ul>
+  );
+}
+
+function BlackjackDiagram() {
+  const { t } = useI18n();
+  return (
+    <svg viewBox="0 0 420 150" role="img" aria-label={t('diagram.blackjack.label')}>
+      <Note x={10} y={16} anchor="start">{t('diagram.blackjack.yourHand')}</Note>
       <MiniCard x={10} y={26} label="K♠" />
       <MiniCard x={54} y={26} label="7♥" red />
-      <Note x={72} y={102}>10 + 7 = 17</Note>
-      <text x="170" y="62" fontSize="22" fill="#f5c542">vs</text>
-      <Note x={230} y={16} anchor="start">Dealer</Note>
+      <Note x={72} y={102}>{t('diagram.blackjack.sum')}</Note>
+      <text x="170" y="62" fontSize="22" fill="#f5c542">{t('diagram.blackjack.vs')}</text>
+      <Note x={230} y={16} anchor="start">{t('diagram.blackjack.dealer')}</Note>
       <MiniCard x={230} y={26} label="6♦" red />
       <MiniCard x={274} y={26} back />
-      <Note x={300} y={102}>Draws until 17+</Note>
-      <Note x={210} y={138}>Closest to 21 without going over wins</Note>
+      <Note x={300} y={102}>{t('diagram.blackjack.draws')}</Note>
+      <Note x={210} y={138}>{t('diagram.blackjack.closest')}</Note>
     </svg>
   );
 }
 
 function KlondikeDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 190" role="img" aria-label="Klondike layout: stock, waste, four foundations, seven tableau columns">
+    <svg viewBox="0 0 420 190" role="img" aria-label={t('diagram.klondike.label')}>
       <MiniCard x={10} y={10} back />
       <MiniCard x={56} y={10} label="9♣" />
-      <Note x={10} y={78} anchor="start">Stock → Waste</Note>
+      <Note x={10} y={78} anchor="start">{t('diagram.klondike.stockWaste')}</Note>
       {[0, 1, 2, 3].map((i) => (
         <g key={i}>
           <rect x={196 + i * 46} y={10} width="38" height="54" rx="5" fill="none" stroke="#f5c542" strokeDasharray="4 3" strokeWidth="1.5" />
           <text x={215 + i * 46} y={43} textAnchor="middle" fontSize="16" fill="#f5c542">A</text>
         </g>
       ))}
-      <Note x={196} y={78} anchor="start">Foundations: A → K by suit</Note>
+      <Note x={196} y={78} anchor="start">{t('diagram.klondike.foundations')}</Note>
       {[0, 1, 2, 3, 4, 5, 6].map((i) => (
         <g key={i}>
           {Array.from({ length: i + 1 }).map((_, j) => (
@@ -72,182 +94,191 @@ function KlondikeDiagram() {
           ))}
         </g>
       ))}
-      <Note x={210} y={182}>Tableau: stack alternating colours, descending (red 8 on black 9)</Note>
+      <Note x={210} y={182}>{t('diagram.klondike.tableau')}</Note>
     </svg>
   );
 }
 
 function PokerDiagram() {
+  const { t } = useI18n();
   const hand = ['A♠', 'A♥', '7♣', '2♦', 'K♠'];
   return (
-    <svg viewBox="0 0 420 120" role="img" aria-label="Five cards; hold two aces and draw three replacements">
+    <svg viewBox="0 0 420 120" role="img" aria-label={t('diagram.video-poker.label')}>
       {hand.map((c, i) => (
         <g key={c}>
           <MiniCard x={10 + i * 80} y={22} label={c} red={c.includes('♥') || c.includes('♦')} />
-          <Note x={29 + i * 80} y={16}>{i < 2 ? 'HOLD' : ''}</Note>
-          <Note x={29 + i * 80} y={96}>{i < 2 ? '' : 'replaced'}</Note>
+          <Note x={29 + i * 80} y={16}>{i < 2 ? t('diagram.video-poker.hold') : ''}</Note>
+          <Note x={29 + i * 80} y={96}>{i < 2 ? '' : t('diagram.video-poker.replaced')}</Note>
         </g>
       ))}
-      <Note x={210} y={114}>Hold the cards you want, then draw to replace the rest</Note>
+      <Note x={210} y={114}>{t('diagram.video-poker.note')}</Note>
     </svg>
   );
 }
 
 function HigherLowerDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 130" role="img" aria-label="A 7 is showing; the next card is higher, lower or the same rank">
+    <svg viewBox="0 0 420 130" role="img" aria-label={t('diagram.higher-lower.label')}>
       <MiniCard x={20} y={20} label="7♠" />
-      <Note x={39} y={90}>Showing</Note>
+      <Note x={39} y={90}>{t('diagram.higher-lower.showing')}</Note>
       <line x1="80" y1="47" x2="150" y2="47" stroke="#f5c542" strokeWidth="2" />
       <polygon points="150,41 162,47 150,53" fill="#f5c542" />
       <MiniCard x={180} y={20} label="?" />
-      <Note x={199} y={90}>Next card</Note>
-      <Note x={300} y={32} anchor="start">Higher: 8 – A</Note>
-      <Note x={300} y={52} anchor="start">Lower: 2 – 6</Note>
-      <Note x={300} y={72} anchor="start">Same rank: jackpot ×{JACKPOT_MULTIPLIER}</Note>
-      <Note x={210} y={120}>Aces are high. A tie on higher/lower loses.</Note>
+      <Note x={199} y={90}>{t('diagram.higher-lower.next')}</Note>
+      <Note x={300} y={32} anchor="start">{t('diagram.higher-lower.higher')}</Note>
+      <Note x={300} y={52} anchor="start">{t('diagram.higher-lower.lower')}</Note>
+      <Note x={300} y={72} anchor="start">{t('diagram.higher-lower.same', { jackpot: s(JACKPOT_MULTIPLIER) })}</Note>
+      <Note x={210} y={120}>{t('diagram.higher-lower.note')}</Note>
     </svg>
   );
 }
 
 function RedDogDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 130" role="img" aria-label="A 4 and a 9 are dealt; the third card wins if it is a 5, 6, 7 or 8">
+    <svg viewBox="0 0 420 130" role="img" aria-label={t('diagram.red-dog.label')}>
       <MiniCard x={20} y={20} label="4♣" />
       <rect x="82" y="20" width="38" height="54" rx="5" fill="none" stroke="#f5c542" strokeDasharray="4 3" strokeWidth="1.5" />
       <text x="101" y="53" textAnchor="middle" fontSize="18" fill="#f5c542">?</text>
       <MiniCard x={142} y={20} label="9♥" red />
-      <Note x={39} y={90}>Low</Note>
-      <Note x={101} y={90}>Third card</Note>
-      <Note x={161} y={90}>High</Note>
-      <Note x={230} y={36} anchor="start">Wins on 5, 6, 7 or 8</Note>
-      <Note x={230} y={56} anchor="start">4 cards in between = pays 1 to 1</Note>
-      <Note x={210} y={120}>Landing on the 4 or the 9 loses. Aces are high.</Note>
+      <Note x={39} y={90}>{t('diagram.red-dog.low')}</Note>
+      <Note x={101} y={90}>{t('diagram.red-dog.third')}</Note>
+      <Note x={161} y={90}>{t('diagram.red-dog.high')}</Note>
+      <Note x={230} y={36} anchor="start">{t('diagram.red-dog.wins')}</Note>
+      <Note x={230} y={56} anchor="start">{t('diagram.red-dog.pays')}</Note>
+      <Note x={210} y={120}>{t('diagram.red-dog.note')}</Note>
     </svg>
   );
 }
 
 function BaccaratDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 150" role="img" aria-label="Player holds 7 and 8, totalling 5; Banker holds 4 and 5, totalling 9; Banker wins">
-      <Note x={10} y={16} anchor="start">Player</Note>
+    <svg viewBox="0 0 420 150" role="img" aria-label={t('diagram.baccarat.label')}>
+      <Note x={10} y={16} anchor="start">{t('diagram.baccarat.player')}</Note>
       <MiniCard x={10} y={24} label="7♠" />
       <MiniCard x={54} y={24} label="8♥" red />
-      <Note x={72} y={100}>7 + 8 = 15 → 5</Note>
-      <Note x={230} y={16} anchor="start">Banker</Note>
+      <Note x={72} y={100}>{t('diagram.baccarat.playerSum')}</Note>
+      <Note x={230} y={16} anchor="start">{t('diagram.baccarat.banker')}</Note>
       <MiniCard x={230} y={24} label="4♣" />
       <MiniCard x={274} y={24} label="5♦" red />
-      <Note x={292} y={100}>4 + 5 = 9 → 9</Note>
-      <Note x={210} y={126}>Only the last digit counts. Closest to 9 wins, so Banker wins here.</Note>
-      <Note x={210} y={144}>J, Q, K and 10 are worth 0. Aces are 1.</Note>
+      <Note x={292} y={100}>{t('diagram.baccarat.bankerSum')}</Note>
+      <Note x={210} y={126}>{t('diagram.baccarat.note1')}</Note>
+      <Note x={210} y={144}>{t('diagram.baccarat.note2')}</Note>
     </svg>
   );
 }
 
 function SlotsDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 170" role="img" aria-label="Three reels with three sevens on the middle line, which is the biggest win, and a cherry, a bell and a lemon above and below">
+    <svg viewBox="0 0 420 170" role="img" aria-label={t('diagram.slots.label')}>
       <rect x="110" y="8" width="200" height="104" rx="10" fill="#3a2412" stroke="#e5c07b" strokeWidth="3" />
       {[0, 1, 2].map((i) => (
         <g key={i}>
           <rect x={120 + i * 63} y="16" width="56" height="88" rx="6" fill="#fff" />
-          <text x={148 + i * 63} y="38" textAnchor="middle" fontSize="20" opacity="0.5">{['🍒', '🔔', '🍋'][i]}</text>
-          <text x={148 + i * 63} y="68" textAnchor="middle" fontSize="24">7️⃣</text>
-          <text x={148 + i * 63} y="96" textAnchor="middle" fontSize="20" opacity="0.5">{['🍇', '🍒', '🔔'][i]}</text>
+          <GlaggleAt symbol={(['cherry', 'bell', 'lemon'] as const)[i]} x={136 + i * 63} y={18} size={24} faded />
+          <GlaggleAt symbol="seven" x={132 + i * 63} y={45} size={32} />
+          <GlaggleAt symbol={(['grape', 'cherry', 'bell'] as const)[i]} x={136 + i * 63} y={80} size={24} faded />
         </g>
       ))}
       <rect x="116" y="55" width="188" height="3" fill="#ef4444" />
-      <Note x={210} y={134}>Only the middle line pays.</Note>
-      <Note x={210} y={156}>Three 7s on it is the jackpot!</Note>
+      <Note x={210} y={134}>{t('diagram.slots.note1')}</Note>
+      <Note x={210} y={156}>{t('diagram.slots.note2')}</Note>
     </svg>
   );
 }
 
 function RouletteDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 170" role="img" aria-label="Chips on the table: a single number pays 35 to 1, a split 17 to 1, red or black 1 to 1">
+    <svg viewBox="0 0 420 170" role="img" aria-label={t('diagram.roulette.label')}>
       <MiniCard x={10} y={24} label="17" />
-      <Note x={29} y={96}>one number</Note>
-      <Note x={29} y={112}>35 to 1</Note>
+      <Note x={29} y={96}>{t('diagram.roulette.oneNumber')}</Note>
+      <Note x={29} y={112}>{t('diagram.roulette.odds35')}</Note>
       <MiniCard x={110} y={24} label="5" red />
       <MiniCard x={150} y={24} label="8" />
-      <Note x={149} y={96}>two touching</Note>
-      <Note x={149} y={112}>17 to 1</Note>
+      <Note x={149} y={96}>{t('diagram.roulette.twoTouching')}</Note>
+      <Note x={149} y={112}>{t('diagram.roulette.odds17')}</Note>
       <MiniCard x={250} y={24} label="1-12" />
-      <Note x={269} y={96}>a dozen</Note>
-      <Note x={269} y={112}>2 to 1</Note>
-      <MiniCard x={350} y={24} label="Red" red />
-      <Note x={369} y={96}>a colour</Note>
-      <Note x={369} y={112}>1 to 1</Note>
-      <Note x={210} y={148}>The more numbers a bet covers, the less it pays.</Note>
+      <Note x={269} y={96}>{t('diagram.roulette.dozen')}</Note>
+      <Note x={269} y={112}>{t('diagram.roulette.odds2')}</Note>
+      <MiniCard x={350} y={24} label={t('diagram.roulette.red')} red />
+      <Note x={369} y={96}>{t('diagram.roulette.colour')}</Note>
+      <Note x={369} y={112}>{t('diagram.roulette.odds1')}</Note>
+      <Note x={210} y={148}>{t('diagram.roulette.note')}</Note>
     </svg>
   );
 }
 
 function GinDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 190" role="img" aria-label="A hand with a set of three sevens, a run of 4, 5 and 6 of clubs, and two loose cards, a king and a 3, which count 13 points of deadwood">
-      <Note x={62} y={16}>Set</Note>
+    <svg viewBox="0 0 420 190" role="img" aria-label={t('diagram.gin-rummy.label')}>
+      <Note x={62} y={16}>{t('diagram.gin-rummy.set')}</Note>
       <MiniCard x={10} y={24} label="7♥" red />
       <MiniCard x={42} y={24} label="7♠" />
       <MiniCard x={74} y={24} label="7♦" red />
-      <Note x={190} y={16}>Run</Note>
+      <Note x={190} y={16}>{t('diagram.gin-rummy.run')}</Note>
       <MiniCard x={140} y={24} label="4♣" />
       <MiniCard x={172} y={24} label="5♣" />
       <MiniCard x={204} y={24} label="6♣" />
-      <Note x={330} y={16}>Deadwood</Note>
+      <Note x={330} y={16}>{t('diagram.gin-rummy.deadwood')}</Note>
       <MiniCard x={300} y={24} label="K♠" />
       <MiniCard x={340} y={24} label="3♦" red />
-      <Note x={62} y={96}>same number</Note>
-      <Note x={190} y={96}>in a row, same suit</Note>
-      <Note x={330} y={96}>10 + 3 = 13</Note>
-      <Note x={210} y={128}>Group your cards into sets and runs. What's left over is deadwood.</Note>
-      <Note x={210} y={148}>Aces count 1, face cards 10, other cards their number.</Note>
-      <Note x={210} y={168}>Get your deadwood down to 10 or fewer, then knock.</Note>
+      <Note x={62} y={96}>{t('diagram.gin-rummy.sameNumber')}</Note>
+      <Note x={190} y={96}>{t('diagram.gin-rummy.inARow')}</Note>
+      <Note x={330} y={96}>{t('diagram.gin-rummy.sum')}</Note>
+      <Note x={210} y={128}>{t('diagram.gin-rummy.note1')}</Note>
+      <Note x={210} y={148}>{t('diagram.gin-rummy.note2')}</Note>
+      <Note x={210} y={168}>{t('diagram.gin-rummy.note3')}</Note>
     </svg>
   );
 }
 
 function CrazyEightsDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 170" role="img" aria-label="The top card is 7 of hearts. A 7 of spades matches by rank, a king of hearts by suit, an 8 is wild, and a 3 of diamonds cannot be played">
-      <Note x={10} y={16} anchor="start">Top of the pile</Note>
+    <svg viewBox="0 0 420 170" role="img" aria-label={t('diagram.crazy-eights.label')}>
+      <Note x={10} y={16} anchor="start">{t('diagram.crazy-eights.top')}</Note>
       <MiniCard x={10} y={24} label="7♥" red />
-      <Note x={150} y={16} anchor="start">Your hand</Note>
+      <Note x={150} y={16} anchor="start">{t('diagram.crazy-eights.hand')}</Note>
       <MiniCard x={150} y={24} label="7♠" />
       <MiniCard x={198} y={24} label="K♥" red />
       <MiniCard x={246} y={24} label="8♣" />
       <g opacity="0.45">
         <MiniCard x={294} y={24} label="3♦" red />
       </g>
-      <Note x={169} y={96}>same rank</Note>
-      <Note x={217} y={96}>same suit</Note>
-      <Note x={265} y={96}>wild!</Note>
-      <Note x={313} y={96}>no match</Note>
-      <Note x={210} y={128}>Play a card that matches the suit or the number of the top card.</Note>
-      <Note x={210} y={148}>An 8 matches anything, and you choose the suit that comes next.</Note>
-      <Note x={210} y={166}>Can't play? Draw until you can.</Note>
+      <Note x={169} y={96}>{t('diagram.crazy-eights.sameRank')}</Note>
+      <Note x={217} y={96}>{t('diagram.crazy-eights.sameSuit')}</Note>
+      <Note x={265} y={96}>{t('diagram.crazy-eights.wild')}</Note>
+      <Note x={313} y={96}>{t('diagram.crazy-eights.noMatch')}</Note>
+      <Note x={210} y={128}>{t('diagram.crazy-eights.note1')}</Note>
+      <Note x={210} y={148}>{t('diagram.crazy-eights.note2')}</Note>
+      <Note x={210} y={166}>{t('diagram.crazy-eights.note3')}</Note>
     </svg>
   );
 }
 
 function HoldemDiagram() {
+  const { t } = useI18n();
   return (
-    <svg viewBox="0 0 420 160" role="img" aria-label="Two private cards, A of spades and K of hearts, plus five shared cards K, 7, 2, 9, K make three kings">
-      <Note x={10} y={16} anchor="start">Your 2 cards</Note>
+    <svg viewBox="0 0 420 160" role="img" aria-label={t('diagram.holdem.label')}>
+      <Note x={10} y={16} anchor="start">{t('diagram.holdem.yours')}</Note>
       <MiniCard x={10} y={24} label="A♠" />
       <MiniCard x={54} y={24} label="K♥" red />
-      <Note x={130} y={16} anchor="start">The 5 shared cards</Note>
+      <Note x={130} y={16} anchor="start">{t('diagram.holdem.shared')}</Note>
       <MiniCard x={130} y={24} label="K♦" red />
       <MiniCard x={174} y={24} label="7♣" />
       <MiniCard x={218} y={24} label="2♠" />
       <MiniCard x={262} y={24} label="9♥" red />
       <MiniCard x={306} y={24} label="K♣" />
-      <Note x={174} y={96}>Flop</Note>
-      <Note x={281} y={96}>Turn</Note>
-      <Note x={325} y={96}>River</Note>
-      <Note x={210} y={126}>Your best 5 of the 7 cards: K K K A 9</Note>
-      <Note x={210} y={146}>That's Three of a Kind.</Note>
+      <Note x={174} y={96}>{t('street.flop')}</Note>
+      <Note x={281} y={96}>{t('street.turn')}</Note>
+      <Note x={325} y={96}>{t('street.river')}</Note>
+      <Note x={210} y={126}>{t('diagram.holdem.best')}</Note>
+      <Note x={210} y={146}>{t('diagram.holdem.result')}</Note>
     </svg>
   );
 }
@@ -274,331 +305,249 @@ interface RulesProps {
 
 /** One rules page per game, keyed by the game's id in App.tsx. Add an entry here when you add a game. */
 export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort, onSortChange }: RulesProps) {
+  const { t, tb } = useI18n();
+  const title = (id: string) => t(`game.${id}.name` as MessageKey);
+
+  const ginValues = {
+    hand: s(GIN_HAND_SIZE),
+    target: s(MATCH_TARGET),
+    knock: s(KNOCK_LIMIT),
+    gin: s(GIN_BONUS),
+    undercut: s(UNDERCUT_BONUS),
+    floor: s(STOCK_FLOOR),
+    handBonus: s(HAND_BONUS),
+    matchBonus: s(MATCH_BONUS),
+    normal: s(GIN_PAYOUT.normal),
+    easy: s(GIN_PAYOUT.easy),
+    hard: s(GIN_PAYOUT.hard),
+    double: s(GIN_BONUS * 2),
+  };
+
   const pages: Record<string, ReactNode> = {
     blackjack: (
-      <Section title="Blackjack" diagram={<BlackjackDiagram />}>
-        <h3>How to play</h3>
-        <ul>
-          <li>Number cards count face value, J/Q/K count 10, and an Ace is 11 or 1.</li>
-          <li><b>Hit</b> to take a card, <b>Stand</b> to keep your hand, <b>Double</b> to take one card and double your bet.</li>
-          <li>Go over 21 and you bust. The dealer draws to 17 and stands on every 17.</li>
-          <li>A natural blackjack pays 3 to 2.</li>
-        </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>Stand on 17 or more. Hit on 11 or less.</li>
-          <li>Double on 10 or 11 when the dealer shows a weak card (2–6).</li>
-          <li>If the dealer shows 2–6 they bust often, so stand on 12–16.</li>
-        </ul>
+      <Section title={title('blackjack')} diagram={<BlackjackDiagram />}>
+        <h3>{t('rules.how')}</h3>
+        <Items prefix="rules.blackjack.how" count={4} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.blackjack.tip" count={3} />
       </Section>
     ),
 
     klondike: (
-      <Section title="Klondike Solitaire" diagram={<KlondikeDiagram />}>
-        <h3>How to play</h3>
-        <ul>
-          <li>Your bet is taken when you deal. Move all 52 cards onto the four foundations to win 2× your bet.</li>
-          <li>Build foundations up by suit from Ace to King.</li>
-          <li>On the tableau, build down in alternating colours. Only a King can fill an empty column.</li>
-          <li>Click the stock to turn one card. You can go through the stock three times.</li>
-          <li>Giving up, or running out of moves, loses your bet.</li>
-        </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>Prioritise moves that flip face-down cards.</li>
-          <li>Don't rush Aces and 2s up if you might need them as tableau targets.</li>
-          <li>Empty a column only when you have a King ready to place.</li>
-        </ul>
+      <Section title={title('klondike')} diagram={<KlondikeDiagram />}>
+        <h3>{t('rules.how')}</h3>
+        <Items prefix="rules.klondike.how" count={5} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.klondike.tip" count={3} />
       </Section>
     ),
 
     'video-poker': (
-      <Section title="Jacks or Better" diagram={<PokerDiagram />}>
-        <h3>How to play</h3>
-        <ul>
-          <li>Place a bet to get five cards. Choose which to <b>hold</b>, then draw to replace the rest.</li>
-          <li>Any pair of Jacks or higher, or better, pays. Payouts are multiples of your bet:</li>
-        </ul>
+      <Section title={title('video-poker')} diagram={<PokerDiagram />}>
+        <h3>{t('rules.how')}</h3>
+        <Items prefix="rules.video-poker.how" count={2} />
         <table className="paytable">
           <tbody>
             {PAYTABLE.map((r) => (
               <tr key={r.name}>
-                <td>{r.name}</td>
+                <td>{handText(t, r.name)}</td>
                 <td>{r.multiplier}×</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <h3>Tips</h3>
-        <ul>
-          <li>Always keep a made hand of a straight or better.</li>
-          <li>Keep a high pair over four cards to a straight or flush.</li>
-          <li>Pairs of 10s and lower don't pay, but are still worth holding over nothing.</li>
-          <li>With no pair, keep your high cards (J, Q, K, A).</li>
-        </ul>
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.video-poker.tip" count={4} />
       </Section>
     ),
 
     'higher-lower': (
-      <Section title="Higher or Lower" diagram={<HigherLowerDiagram />}>
-        <h3>How to play</h3>
-        <ul>
-          <li>Guess whether the next card is higher or lower than the one showing. Aces are high.</li>
-          <li>Each correct guess grows your pot by ×{POT_MULTIPLIER}.</li>
-          <li><b>Cash out</b> after at least one correct guess to keep the pot. A wrong guess or a tie loses it.</li>
-          <li>Or bet that the next card is the same rank: a 1-in-13 shot that pays ×{JACKPOT_MULTIPLIER} your pot.</li>
-        </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>Guess against the middle: if a 7 shows, higher and lower are close to even.</li>
-          <li>On a 2 or 3, bet higher. On a Queen, King or Ace, bet lower.</li>
-          <li>Cash out while you're ahead. The streak gets riskier the longer it goes.</li>
-        </ul>
+      <Section title={title('higher-lower')} diagram={<HigherLowerDiagram />}>
+        <h3>{t('rules.how')}</h3>
+        <Items prefix="rules.higher-lower.how" count={4} values={{ pot: s(POT_MULTIPLIER), jackpot: s(JACKPOT_MULTIPLIER) }} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.higher-lower.tip" count={3} />
       </Section>
     ),
 
     'red-dog': (
-      <Section title="Red Dog" diagram={<RedDogDiagram />}>
-        <h3>How to play</h3>
-        <ul>
-          <li>Place a bet and two cards are dealt. The gap between them is the <b>spread</b>: how many ranks fit in between.</li>
-          <li>You win if the third card lands strictly between the two. Landing on either one loses. Aces are high.</li>
-          <li>The smaller the spread, the bigger the payout:</li>
-        </ul>
+      <Section title={title('red-dog')} diagram={<RedDogDiagram />}>
+        <h3>{t('rules.how')}</h3>
+        <Items prefix="rules.red-dog.how" count={3} />
         <table className="paytable">
           <tbody>
             {SPREAD_PAYOUTS.map((p) => (
               <tr key={p.spread}>
-                <td>{p.spread} card in between</td>
-                <td>{p.payout} to 1</td>
+                <td>{t('rules.red-dog.card', { n: s(p.spread) })}</td>
+                <td>{t('rules.red-dog.ratio', { n: s(p.payout) })}</td>
               </tr>
             ))}
             <tr>
-              <td>4 or more in between</td>
-              <td>{WIDE_SPREAD_PAYOUT} to 1</td>
+              <td>{t('rules.red-dog.wide')}</td>
+              <td>{t('rules.red-dog.ratio', { n: s(WIDE_SPREAD_PAYOUT) })}</td>
             </tr>
           </tbody>
         </table>
-        <ul>
-          <li><b>Consecutive cards</b> (like 6 and 7) can't have anything between them, so it's a push and you keep your bet.</li>
-          <li><b>A pair</b> gets a third card straight away. If it matches you win {THREE_OF_A_KIND_PAYOUT} to 1, otherwise it's a push.</li>
-          <li><b>Raise:</b> after seeing the spread you can add up to your original bet before the third card is dealt.</li>
-        </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>Raise only on a spread of 7 or more. That's where the third card lands between them more than half the time.</li>
-          <li>On a narrow spread (1 or 2) the big payout is tempting, but it wins less than one time in six. Don't add to it.</li>
-          <li>Every hand uses a freshly shuffled deck, so there's nothing to remember from earlier hands.</li>
-        </ul>
+        <Items prefix="rules.red-dog.after" count={3} values={{ three: s(THREE_OF_A_KIND_PAYOUT) }} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.red-dog.tip" count={3} />
       </Section>
     ),
 
     baccarat: (
-      <Section title="Baccarat" diagram={<BaccaratDiagram />}>
-        <h3>How to play</h3>
-        <ul>
-          <li>You don't play any cards. Choose a bet, press Deal, and the cards play themselves out by fixed rules.</li>
-          <li>Two hands are dealt: <b>Player</b> and <b>Banker</b>. These are just names, and you can bet on either one whoever you are.</li>
-          <li>Add up a hand and only the last digit counts (15 is 5). The hand closest to 9 wins. 10, J, Q and K are worth 0 and an Ace is 1.</li>
-          <li>If either hand starts on 8 or 9 it's a <b>natural</b> and the round ends. Otherwise a hand may draw a third card, depending on its total. The game does this for you.</li>
-        </ul>
+      <Section title={title('baccarat')} diagram={<BaccaratDiagram />}>
+        <h3>{t('rules.how')}</h3>
+        <Items prefix="rules.baccarat.how" count={4} />
         <table className="paytable">
           <tbody>
             <tr>
-              <td>Player wins</td>
-              <td>{PLAYER_PAYOUT} to 1</td>
+              <td>{t('rules.baccarat.playerWins')}</td>
+              <td>{t('rules.baccarat.ratio', { n: s(PLAYER_PAYOUT) })}</td>
             </tr>
             <tr>
-              <td>Banker wins</td>
-              <td>0.{BANKER_PAYOUT_PERCENT} to 1</td>
+              <td>{t('rules.baccarat.bankerWins')}</td>
+              <td>{t('rules.baccarat.ratio', { n: `0.${BANKER_PAYOUT_PERCENT}` })}</td>
             </tr>
             <tr>
-              <td>Tie</td>
-              <td>{TIE_PAYOUT} to 1</td>
+              <td>{t('rules.baccarat.tie')}</td>
+              <td>{t('rules.baccarat.ratio', { n: s(TIE_PAYOUT) })}</td>
             </tr>
           </tbody>
         </table>
-        <ul>
-          <li>Banker pays a little less because the casino takes a 5% commission, and winnings are rounded down to a whole coin.</li>
-          <li>If the round is a tie, Player and Banker bets are returned. Only a Tie bet wins.</li>
-        </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>Banker is the best bet over time, even with the commission, and Player is close behind.</li>
-          <li>The Tie bet pays 8 to 1 but is the worst bet at the table. It's fun for a flutter, not a plan.</li>
-          <li>There's no skill in the cards, so the only choices are your bet and your bet size. Keep your bets small relative to your coins.</li>
-        </ul>
+        <Items prefix="rules.baccarat.after" count={2} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.baccarat.tip" count={3} />
       </Section>
     ),
     'crazy-eights': (
-      <Section title="Crazy Eights" diagram={<CrazyEightsDiagram />}>
-        <h3>How to play</h3>
-        <ul>
-          <li>You and the bot get {HAND_SIZE} cards each. One card is turned face up to start the pile. The first player to get rid of every card wins.</li>
-          <li>On your turn, play a card that matches the top card's <b>suit</b> or its <b>number</b>. Click a card to play it. Cards you can't play right now are dimmed.</li>
-          <li><b>8s are wild.</b> You can play one at any time, then choose which suit comes next.</li>
-          <li>If you have nothing to play, press <b>Draw cards</b>. You keep drawing until you pick up a card you can play.</li>
-          <li>If the deck runs out, the pile is reshuffled. If nobody can move at all, the round is a draw and your bet is returned.</li>
-          <li>Win the round to get your bet back plus {WIN_PAYOUT}× your bet. Lose and you lose your bet.</li>
-        </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>Save your 8s. They're your escape when nothing else fits, and a good way to finish.</li>
-          <li>When you play an 8, choose the suit you hold the most cards of.</li>
-          <li>Get rid of awkward cards, such as the only one you have in a suit, while you can.</li>
-          <li>Watch the bot's card count. When it gets low, stop saving your 8s and go out.</li>
-        </ul>
+      <Section title={title('crazy-eights')} diagram={<CrazyEightsDiagram />}>
+        <h3>{t('rules.how')}</h3>
+        <Items prefix="rules.crazy-eights.how" count={6} values={{ hand: s(HAND_SIZE), win: s(WIN_PAYOUT) }} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.crazy-eights.tip" count={4} />
       </Section>
     ),
     slots: (
-      <Section title="Slots" diagram={<SlotsDiagram />}>
-        <h3>How to play</h3>
+      <Section title={title('slots')} diagram={<SlotsDiagram />}>
+        <h3>{t('rules.how')}</h3>
         <ul>
-          <li>Choose how much to bet, then press <b>Spin</b>. Your bet is taken and the three reels spin, then stop one by one from left to right.</li>
-          <li>Only the <b>middle line</b>, marked in red, pays. The symbols above and below it are just for looks.</li>
-          <li>Three of the same symbol on the line pays like this. These numbers are how many coins come back for every coin you bet, so your bet is included:
+          <li>{tb('rules.slots.how.1')}</li>
+          <li>{tb('rules.slots.how.2')}</li>
+          <li>
+            {tb('rules.slots.how.3')}
             <ul>
               {(['seven', 'diamond', 'bell', 'grape', 'lemon', 'cherry'] as const).map((symbol) => (
                 <li key={symbol}>
-                  {SYMBOL_EMOJI[symbol].repeat(3)}: <b>{THREE_OF_A_KIND[symbol]}×</b> your bet
+                  <GlaggleRow symbol={symbol} count={3} />
+                  {tb('rules.slots.three', { n: s(THREE_OF_A_KIND[symbol]) })}
                 </li>
               ))}
               <li>
-                {SYMBOL_EMOJI.cherry}{SYMBOL_EMOJI.cherry} Exactly two cherries, anywhere on the line: <b>{TWO_CHERRIES}×</b> your bet
+                <GlaggleRow symbol="cherry" count={2} />
+                {tb('rules.slots.cherries', { n: s(TWO_CHERRIES) })}
               </li>
             </ul>
           </li>
-          <li>One cherry on its own pays nothing, and so does anything else.</li>
+          <li>{tb('rules.slots.how.4')}</li>
         </ul>
-        <h3>The odds</h3>
-        <ul>
-          <li>Every symbol is shown by the same number of stops on each reel, so the rare ones (the 7 and the diamond) really are rare.</li>
-          <li>Over a very long time the machine pays back about <b>{Math.round(RETURN_TO_PLAYER * 100)} coins for every 100</b> you bet. The rest is the house's share.</li>
-          <li>A spin pays something about <b>1 time in {Math.round(1 / HIT_RATE)}</b>. Most of those are small wins.</li>
-        </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>It's all luck. Every spin starts fresh, so a machine is never "due" a win and never "hot".</li>
-          <li>A small bet makes your coins last longer, and a big bet chases the jackpot. Both pay back the same share over time.</li>
-        </ul>
+        <h3>{t('rules.odds')}</h3>
+        <Items prefix="rules.slots.odds" count={3} values={{ back: s(Math.round(RETURN_TO_PLAYER * 100)), hit: s(Math.round(1 / HIT_RATE)) }} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.slots.tip" count={2} />
       </Section>
     ),
     roulette: (
-      <Section title="Roulette" diagram={<RouletteDiagram />}>
-        <h3>How to play</h3>
+      <Section title={title('roulette')} diagram={<RouletteDiagram />}>
+        <h3>{t('rules.how')}</h3>
         <ul>
-          <li>The wheel has 37 pockets: the numbers 1 to 36, which are red or black, and a green 0. The ball lands in one of them.</li>
-          <li>Choose a chip ({CHIPS.join(', ')} coins), then tap the table to put chips on the bets you like. Tap again to stack more chips. <b>Undo</b> takes back the last chip and <b>Clear</b> takes them all back.</li>
-          <li>When you're ready, press <b>Spin</b>. Your coins are taken, the wheel spins, and every bet that covers the winning number pays out. <b>Rebet</b> puts last round's bets back on the table.</li>
-          <li>Each bet covers some of the numbers, and the more it covers, the less it pays (your chips come back as well):
+          <li>{tb('rules.roulette.how.1')}</li>
+          <li>{tb('rules.roulette.how.2', { chips: CHIPS.join(', ') })}</li>
+          <li>{tb('rules.roulette.how.3')}</li>
+          <li>
+            {tb('rules.roulette.how.4')}
             <ul>
-              <li><b>One number</b> (tap it): {payoutOdds(straightSpot(1).numbers)} to 1. Tap 0 for the green zero.</li>
-              <li><b>Split</b> (the line between two touching numbers): {payoutOdds(splitSpot(1, 2)!.numbers)} to 1.</li>
-              <li><b>Street</b> (the bottom edge of a column of three): {payoutOdds(streetSpot(0).numbers)} to 1.</li>
-              <li><b>Corner</b> (where four numbers meet): {payoutOdds(cornerSpot(0, 0).numbers)} to 1.</li>
-              <li><b>Six line</b> (the bottom corner between two columns): {payoutOdds(sixLineSpot(0).numbers)} to 1.</li>
-              <li><b>Dozens</b> (1-12, 13-24, 25-36) and <b>columns</b> (the 2:1 boxes): {payoutOdds(columnSpot(0).numbers)} to 1.</li>
-              <li><b>Red or Black, Odd or Even, 1-18 or 19-36</b>: {payoutOdds(evenMoneySpot('red').numbers)} to 1.</li>
+              <li>{tb('rules.roulette.straight', { n: s(payoutOdds(straightSpot(1).numbers)) })}</li>
+              <li>{tb('rules.roulette.split', { n: s(payoutOdds(splitSpot(1, 2)!.numbers)) })}</li>
+              <li>{tb('rules.roulette.street', { n: s(payoutOdds(streetSpot(0).numbers)) })}</li>
+              <li>{tb('rules.roulette.corner', { n: s(payoutOdds(cornerSpot(0, 0).numbers)) })}</li>
+              <li>{tb('rules.roulette.sixLine', { n: s(payoutOdds(sixLineSpot(0).numbers)) })}</li>
+              <li>{tb('rules.roulette.column', { n: s(payoutOdds(columnSpot(0).numbers)) })}</li>
+              <li>{tb('rules.roulette.evenMoney', { n: s(payoutOdds(evenMoneySpot('red').numbers)) })}</li>
             </ul>
           </li>
-          <li>When the ball lands on 0, every bet on red, black, odd, even, low or high loses. That green 0 is the house's edge.</li>
+          <li>{tb('rules.roulette.how.5')}</li>
         </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>It's all luck: the wheel has no memory, so a number that hasn't come up for ages is no more likely than any other.</li>
-          <li>Every bet is equally fair over time, so spread small chips for a longer game, or one big bet on a colour for a quick one.</li>
-          <li>Keep an eye on the total on the table. You can't put down more than you have.</li>
-        </ul>
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.roulette.tip" count={3} />
       </Section>
     ),
     'gin-rummy': (
-      <Section title="Gin Rummy" diagram={<GinDiagram />}>
-        <h3>How to play</h3>
+      <Section title={title('gin-rummy')} diagram={<GinDiagram />}>
+        <h3>{t('rules.how')}</h3>
         <ul>
-          <li>You and the bot get {GIN_HAND_SIZE} cards each, and one card is turned up to start the pile. A match is played over several hands. The first player to reach {MATCH_TARGET} points wins it.</li>
-          <li>Make <b>melds</b>. A <b>set</b> is 3 or 4 cards with the same number. A <b>run</b> is 3 or more cards in a row of the same suit, like 4♣ 5♣ 6♣. Aces are low, so A-2-3 is a run, but Q-K-A is not.</li>
-          <li>Cards that aren't in a meld are <b>deadwood</b>. Aces count 1, face cards 10, and the rest their number. The game always groups your best melds for you and shows your deadwood total.</li>
-          <li>To start, the player who isn't dealing may take the turned-up card or pass. Then the dealer may take it or pass. If both pass, the player who went first draws from the stock.</li>
-          <li>Each turn, <b>draw</b> a card from the stock or take the top card of the pile, then <b>discard</b> one card. You can't throw back the card you just took from the pile.</li>
-          <li>When you've got {KNOCK_LIMIT} or fewer deadwood points, you can <b>knock</b>. Click the card you want to discard, then press <b>Knock</b>. The game tells you how many points you would have left over.</li>
-          <li>After a knock, the other player may <b>lay off</b> cards onto your sets and runs, like adding a 5♣ to 2♣ 3♣ 4♣. The game does this for them automatically, in the best way. Then both sides count their leftover deadwood, and you score the difference.</li>
-          <li><b>Gin</b> means no deadwood at all. You score the other player's deadwood plus {GIN_BONUS}, and they can't lay anything off.</li>
-          <li>An <b>undercut</b> is when the other player has the same or less deadwood than you after laying off. They score the difference plus {UNDERCUT_BONUS}, so be careful when you knock with a lot left over.</li>
-          <li>If only {STOCK_FLOOR} cards are left in the stock, the hand is a draw and nobody scores. The dealer swaps each hand.</li>
-          <li>When someone reaches {MATCH_TARGET}, the match ends. Both players get {HAND_BONUS} for each hand they won, and the winner gets {MATCH_BONUS} extra.</li>
-          <li>You bet once for the whole match. Win it and your bet comes back with winnings: {GIN_PAYOUT.normal}× your bet against the normal bot ({GIN_PAYOUT.easy}× on Easy, {GIN_PAYOUT.hard}× on Hard, rounded down to a whole coin). Lose, or press <b>Forfeit match</b>, and you lose your bet. Switching to another game doesn't forfeit, but reloading the page does.</li>
-          <li>The <b>Settings</b> button under the table changes how the next match is played. Your choices are remembered on this device:
+          {keys('rules.gin-rummy.how', 12).map((key) => (
+            <li key={key}>{tb(key, ginValues)}</li>
+          ))}
+          <li>
+            {tb('rules.gin-rummy.how.13')}
             <ul>
-              <li><b>Bot difficulty.</b> Easy knocks as soon as it can. Normal is a careful, fair bot. Hard also remembers what you throw away. The harder the bot, the more a win pays.</li>
-              <li><b>Match length.</b> The first player to 50, 100 or 150 points wins.</li>
-              <li><b>When you can knock.</b> Standard is {KNOCK_LIMIT} or fewer. In Oklahoma, the value of the first card turned up in each hand is the most you may have left over (an ace is 1). In Gin only, you can only win a hand by going gin.</li>
-              <li><b>Double bonuses.</b> The gin and undercut bonuses are worth {GIN_BONUS * 2} instead of {GIN_BONUS}.</li>
+              {keys('rules.gin-rummy.setting', 4).map((key) => (
+                <li key={key}>{tb(key, ginValues)}</li>
+              ))}
             </ul>
           </li>
         </ul>
-        <h3>Tips</h3>
-        <ul>
-          <li>Take a card from the pile only when it fits a meld. Otherwise draw from the stock, because the pile shows the bot what you want.</li>
-          <li>Throw away high cards that don't fit anything first. A king stuck in your hand costs 10 points.</li>
-          <li>Don't rush to knock with 10. If the bot has little deadwood, you could be undercut. Knocking low is much safer.</li>
-          <li>Watch what the bot picks up from the pile. It's collecting that number or suit, so don't feed it.</li>
-        </ul>
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.gin-rummy.tip" count={4} />
       </Section>
     ),
     holdem: (
-      <Section title="Texas Hold'em" diagram={<HoldemDiagram />}>
-        <h3>How to play</h3>
+      <Section title={title('holdem')} diagram={<HoldemDiagram />}>
+        <h3>{t('rules.how')}</h3>
         <ul>
-          <li>Press <b>Sit down</b> to put {BUY_IN} coins on the table. You play against two bots, and they start with {BUY_IN} too. The coins you have left when you <b>Leave table</b> go back to your balance.</li>
-          <li>Everyone gets 2 private cards. Five more are turned face up in the middle for everyone to share, a few at a time: the <b>flop</b> (3 cards), the <b>turn</b> (1) and the <b>river</b> (1).</li>
-          <li>The marked <b>D</b> is the dealer. The next player puts in a small forced bet ({SMALL_BLIND}) and the next one a bigger one ({BIG_BLIND}). These are the <b>blinds</b>, so there's always something to win.</li>
-          <li>There's a round of betting before the flop and after each new card. On your turn you can:
+          <li>{tb('rules.holdem.how.1', { buyIn: s(BUY_IN) })}</li>
+          <li>{tb('rules.holdem.how.2')}</li>
+          <li>{tb('rules.holdem.how.3', { small: s(SMALL_BLIND), big: s(BIG_BLIND) })}</li>
+          <li>
+            {tb('rules.holdem.how.4')}
             <ul>
-              <li><b>Fold</b> to give up the hand. You lose what you've already put in, but nothing more.</li>
-              <li><b>Check</b> if nobody has bet, to pass without paying.</li>
-              <li><b>Call</b> to match the bet.</li>
-              <li><b>Bet or Raise</b> to make the bet bigger.</li>
-              <li><b>All in</b> to bet as much as you possibly can in one go.</li>
+              {(['fold', 'check', 'call', 'raise', 'allIn'] as const).map((action) => (
+                <li key={action}>{tb(`rules.holdem.action.${action}` as MessageKey)}</li>
+              ))}
             </ul>
           </li>
-          <li>Bets are a fixed size: {betSize('preflop')} coins before the flop and on the flop, and {betSize('turn')} coins on the turn and river. There can be at most {MAX_RAISES} raises in a round.</li>
-          <li><b>All in</b> skips those limits. It bets straight up to the most the other players can match. If you have the fewest coins at the table, that's every coin you have. If you have more, the extra coins stay safely in your stack. The button shows the amount, and everyone else must call it or fold. Once someone is all in, nobody can bet any more and the rest of the cards are just dealt.</li>
-          <li>When the betting is done, players still in show their cards. Your hand is the <b>best five cards</b> you can make from your 2 plus the 5 shared ones. The best hand wins all the coins in the middle. A tie splits them.</li>
-          <li>If everyone else folds, you win the middle without showing your cards.</li>
-          <li>Nobody can bet more than the player with the fewest coins can match, so there are no side pots. If someone runs out, the rest of the cards are just dealt.</li>
+          <li>{tb('rules.holdem.how.5', { early: s(betSize('preflop')), late: s(betSize('turn')), raises: s(MAX_RAISES) })}</li>
+          <li>{tb('rules.holdem.how.6')}</li>
+          <li>{tb('rules.holdem.how.7')}</li>
+          <li>{tb('rules.holdem.how.8')}</li>
+          <li>{tb('rules.holdem.how.9')}</li>
         </ul>
-        <h3>Best hands, from strongest to weakest</h3>
+        <h3>{t('rules.bestHands')}</h3>
         <table className="paytable">
           <tbody>
-            {[
-              ['Royal Flush', 'A K Q J 10, all one suit'],
-              [CATEGORY_NAMES[8], 'five in a row, all one suit'],
-              [CATEGORY_NAMES[7], 'four cards of one rank'],
-              [CATEGORY_NAMES[6], 'three of one rank and two of another'],
-              [CATEGORY_NAMES[5], 'five cards of one suit'],
-              [CATEGORY_NAMES[4], 'five in a row'],
-              [CATEGORY_NAMES[3], 'three cards of one rank'],
-              [CATEGORY_NAMES[2], 'two different pairs'],
-              [CATEGORY_NAMES[1], 'two cards of one rank'],
-              [CATEGORY_NAMES[0], 'none of the above: the highest card plays'],
-            ].map(([name, what]) => (
+            {(
+              [
+                ['Royal Flush', 'royal'],
+                [CATEGORY_NAMES[8], 'straightFlush'],
+                [CATEGORY_NAMES[7], 'four'],
+                [CATEGORY_NAMES[6], 'fullHouse'],
+                [CATEGORY_NAMES[5], 'flush'],
+                [CATEGORY_NAMES[4], 'straight'],
+                [CATEGORY_NAMES[3], 'three'],
+                [CATEGORY_NAMES[2], 'twoPair'],
+                [CATEGORY_NAMES[1], 'pair'],
+                [CATEGORY_NAMES[0], 'high'],
+              ] as const
+            ).map(([name, what]) => (
               <tr key={name}>
-                <td>{name}</td>
-                <td>{what}</td>
+                <td>{handText(t, name)}</td>
+                <td>{t(`rules.holdem.hand.${what}` as MessageKey)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <h3>Tips</h3>
-        <ul>
-          <li>Be choosy before the flop. Pairs, two high cards (A, K, Q, J) and two cards of the same suit are good starts. Hands like 7 and 2 are worth folding.</li>
-          <li>Folding isn't losing. A hand you don't play costs you nothing more.</li>
-          <li>Don't chase. Calling bet after bet for one lucky card usually costs more than it wins.</li>
-          <li>The bots never bluff. If a bot raises, it has a good hand. If it only calls, it's usually not that strong.</li>
-          <li>Look at the shared cards for what others might have: three of one suit, or cards in a row, could mean a flush or a straight.</li>
-          <li>When you have a strong hand, bet and raise so the pot grows.</li>
-          <li>Going all in is a big move. Save it for a very strong hand, because a bot will only call one with a strong hand of its own. If you shove with a weak hand and get called, you could lose a lot at once.</li>
-        </ul>
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.holdem.tip" count={7} />
       </Section>
     ),
   };
@@ -614,7 +563,7 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
         sort={sort}
         onSortChange={onSortChange}
       />
-      {pages[gameId] ?? <p className="blurb">The rules for this game haven't been written yet.</p>}
+      {pages[gameId] ?? <p className="blurb">{t('rules.missing')}</p>}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { MessageKey } from './en-GB';
+import { rulesZh } from './rules.zh';
 
 /** Simplified Chinese. It must have every key that `en-GB.ts` has, and use the same {values}. */
 export const zhCN: Record<MessageKey, string> = {
@@ -541,4 +542,7 @@ export const zhCN: Record<MessageKey, string> = {
   'gin.log.drawn': '牌堆只剩 {count} 张牌，所以这一局算平局。',
   'gin.log.gin': '{who}打出了金拉米！',
   'gin.log.knocked': '{who}以 {points} 点敲牌。',
+
+  // The Rules page has its own file, because it is long.
+  ...rulesZh,
 };

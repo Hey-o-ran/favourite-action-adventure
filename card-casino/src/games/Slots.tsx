@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWallet } from '../wallet';
 import { BetPanel } from '../components/BetPanel';
+import { GlaggleFace, GlaggleRow } from '../components/GlaggleFace';
 import {
   REELS,
   STOPS,
-  SYMBOL_EMOJI,
   SYMBOL_NAME,
   THREE_OF_A_KIND,
   TWO_CHERRIES,
@@ -26,8 +26,8 @@ const PAYTABLE_ORDER: SlotSymbol[] = ['seven', 'diamond', 'bell', 'grape', 'lemo
 /** Says what the winning line was, for the screen. */
 function describeWin(line: ReturnType<typeof lineAt>): string {
   const [a, b, c] = line;
-  if (a === b && b === c) return `Three ${SYMBOL_NAME[a]}!`;
-  return 'Two cherries!';
+  if (a === b && b === c) return `Three ${SYMBOL_NAME[a]}s!`;
+  return `Two ${SYMBOL_NAME.cherry}s!`;
 }
 
 export function Slots() {
@@ -101,7 +101,7 @@ export function Slots() {
             >
               {rows.map((symbol, row) => (
                 <div key={row} className={`sl-cell${row === 1 ? ' line' : ''}${row === 1 && won && !spinning[i] ? ' win' : ''}`} aria-hidden="true">
-                  {SYMBOL_EMOJI[symbol]}
+                  <GlaggleFace symbol={symbol} decorative />
                 </div>
               ))}
             </div>
@@ -140,16 +140,20 @@ export function Slots() {
           {PAYTABLE_ORDER.map((symbol) => (
             <tr key={symbol}>
               <th scope="row">
-                <span aria-hidden="true">{SYMBOL_EMOJI[symbol].repeat(3)}</span>
-                <span className="sr-only">Three {SYMBOL_NAME[symbol]}</span>
+                <span aria-hidden="true">
+                  <GlaggleRow symbol={symbol} count={3} decorative />
+                </span>
+                <span className="sr-only">Three {SYMBOL_NAME[symbol]}s</span>
               </th>
               <td>{THREE_OF_A_KIND[symbol]}×</td>
             </tr>
           ))}
           <tr>
             <th scope="row">
-              <span aria-hidden="true">{SYMBOL_EMOJI.cherry}{SYMBOL_EMOJI.cherry} any</span>
-              <span className="sr-only">Any two cherries</span>
+              <span aria-hidden="true">
+                <GlaggleRow symbol="cherry" count={2} decorative /> any
+              </span>
+              <span className="sr-only">Any two {SYMBOL_NAME.cherry}s</span>
             </th>
             <td>{TWO_CHERRIES}×</td>
           </tr>
