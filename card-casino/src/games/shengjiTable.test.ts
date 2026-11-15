@@ -29,6 +29,7 @@ function table(over: Partial<HandState> & { hands: SCard[][] }): HandState {
     kitty: [],
     turn: 0,
     trick: [],
+    played: [],
     lastTrick: null,
     attackerPoints: 0,
     defenderPoints: 0,
