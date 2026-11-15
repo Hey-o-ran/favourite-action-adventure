@@ -1,12 +1,21 @@
+import { useI18n } from '../i18n';
+import { ZH_UPDATES } from '../i18n/zh-CN.updates';
+
 interface Update {
+  /** Names the update so its Chinese version in `i18n/zh-CN.updates.ts` can be found. */
+  id: string;
   date: string;
   title: string;
   points: string[];
 }
 
-/** Newest first. Written for kids, so keep it short, friendly and jargon-free. Add new updates at the top. */
-const UPDATES: Update[] = [
+/**
+ * Newest first. Written for kids, so keep it short, friendly and jargon-free. Add new updates at the top,
+ * and add the same `id` with its Chinese text to `i18n/zh-CN.updates.ts` (a test checks that every one has it).
+ */
+export const UPDATES: Update[] = [
   {
+    id: 'slots',
     date: '15 November 2026',
     title: 'Slots!',
     points: [
@@ -16,6 +25,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'roulette',
     date: '14 November 2026',
     title: 'Roulette, our first game without cards!',
     points: [
@@ -25,6 +35,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'blue-check',
     date: '14 November 2026',
     title: 'The blue check',
     points: [
@@ -34,6 +45,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'menu',
     date: '14 November 2026',
     title: 'A tidy menu',
     points: [
@@ -42,6 +54,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'gin-rummy',
     date: '14 November 2026',
     title: 'Gin Rummy is here!',
     points: [
@@ -52,6 +65,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'leaderboard',
     date: '13 November 2026',
     title: 'The Leaderboard!',
     points: [
@@ -62,6 +76,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'accidental-moves',
     date: '13 November 2026',
     title: 'No more accidental moves',
     points: [
@@ -70,6 +85,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'admin-abuse',
     date: '13 November 2026',
     title: 'ADMIN ABUSE!',
     points: [
@@ -80,6 +96,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'all-in',
     date: '13 November 2026',
     title: "All in at the poker table",
     points: [
@@ -90,6 +107,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'smarter-robots',
     date: '13 November 2026',
     title: "Smarter robots and Hold'em rules",
     points: [
@@ -99,6 +117,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'holdem-early',
     date: '13 November 2026',
     title: "Texas Hold'em (early version)",
     points: [
@@ -109,6 +128,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'sort-popularity',
     date: '13 November 2026',
     title: 'Sort by popularity',
     points: [
@@ -118,6 +138,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'crazy-eights',
     date: '13 November 2026',
     title: 'Crazy Eights, and a game finder',
     points: [
@@ -129,6 +150,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'rules-easier',
     date: '13 November 2026',
     title: 'Rules are easier to find',
     points: [
@@ -138,6 +160,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'baccarat',
     date: '13 November 2026',
     title: 'Baccarat is here!',
     points: [
@@ -147,6 +170,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'red-dog',
     date: '13 November 2026',
     title: 'Red Dog is here!',
     points: [
@@ -157,6 +181,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'fair-poker',
     date: '12 November 2026',
     title: 'Fairer Jacks or Better',
     points: [
@@ -165,6 +190,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'online',
     date: '12 November 2026',
     title: 'The game is on the internet!',
     points: [
@@ -173,6 +199,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'rules-button',
     date: '12 November 2026',
     title: 'New Rules button',
     points: [
@@ -182,6 +209,7 @@ const UPDATES: Update[] = [
     ],
   },
   {
+    id: 'opens',
     date: 'Before that',
     title: 'Card Casino opens!',
     points: [
@@ -193,20 +221,25 @@ const UPDATES: Update[] = [
 ];
 
 export function UpdateLog() {
+  const { t, lang } = useI18n();
   return (
     <div className="updates">
-      <h2>What's new</h2>
-      {UPDATES.map((u) => (
-        <section className="update" key={u.title}>
-          <p className="update-date">{u.date}</p>
-          <h3>{u.title}</h3>
-          <ul>
-            {u.points.map((p) => (
-              <li key={p}>{p}</li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <h2>{t('menu.whatsNew')}</h2>
+      {UPDATES.map((english) => {
+        // In another language, an update with no translation yet is shown in English rather than left out.
+        const u = lang === 'en-GB' ? english : (ZH_UPDATES[english.id] ?? english);
+        return (
+          <section className="update" key={english.id}>
+            <p className="update-date">{u.date}</p>
+            <h3>{u.title}</h3>
+            <ul>
+              {u.points.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
     </div>
   );
 }

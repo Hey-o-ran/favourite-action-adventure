@@ -76,12 +76,21 @@ export function gameText(t: Translate, id: string, part: 'name' | 'blurb' | 'not
   return key in enGB ? t(key as MessageKey) : fallback;
 }
 
+/** Text with **bold** parts (written that way in the dictionaries) as something to show: the bold parts become <b>. */
+export function boldText(text: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/).map((piece, i) =>
+    piece.startsWith('**') && piece.endsWith('**') ? <b key={i}>{piece.slice(2, -2)}</b> : piece,
+  );
+}
+
 export interface I18nValue {
   lang: Language;
   setLang: (lang: Language) => void;
   t: Translate;
   /** For a sentence with a bold name or the like inside it. */
   tx: TranslateRich;
+  /** A text with **bold** parts (and {values}) ready to show. */
+  tb: (key: MessageKey, values?: Values) => ReactNode[];
 }
 
 // Without a provider (in tests of a single component) the text is simply British English.
@@ -90,6 +99,7 @@ const DEFAULT: I18nValue = {
   setLang: () => {},
   t: (key, values) => translate('en-GB', key, values),
   tx: (key, parts) => translateRich('en-GB', key, parts),
+  tb: (key, values) => boldText(translate('en-GB', key, values)),
 };
 const I18nContext = createContext<I18nValue>(DEFAULT);
 
@@ -115,6 +125,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback<Translate>((key, values) => translate(lang, key, values), [lang]);
   const tx = useCallback<TranslateRich>((key, parts) => translateRich(lang, key, parts), [lang]);
-  const value = useMemo<I18nValue>(() => ({ lang, setLang, t, tx }), [lang, setLang, t, tx]);
+  const tb = useCallback((key: MessageKey, values?: Values) => boldText(translate(lang, key, values)), [lang]);
+  const value = useMemo<I18nValue>(() => ({ lang, setLang, t, tx, tb }), [lang, setLang, t, tx, tb]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

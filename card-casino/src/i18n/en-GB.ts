@@ -1,3 +1,5 @@
+import { rulesEn } from './rules';
+
 /**
  * Every piece of text players see, in British English. This is the source of truth: a new text goes here first,
  * and `zh-CN.ts` must then have the same key (the typecheck fails if it does not).
@@ -513,6 +515,9 @@ export const enGB = {
   'gin.log.drawn': 'Only {count} cards are left in the stock, so the hand is a draw.',
   'gin.log.gin': '{who} went gin!',
   'gin.log.knocked': '{who} knocked with {points}.',
+
+  // The Rules page has its own file, because it is long.
+  ...rulesEn,
 } as const;
 
 export type MessageKey = keyof typeof enGB;
