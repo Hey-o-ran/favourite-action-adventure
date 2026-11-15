@@ -57,6 +57,8 @@ export interface HandState {
   turn: number;
   /** The cards played so far in this trick, in order. The first one is the lead. */
   trick: Play[];
+  /** Every card from the tricks already finished. Everyone at the table has seen these, so the bots may use them. */
+  played: SCard[];
   /** The trick before, and who took it, so a screen can show it. */
   lastTrick: { plays: Play[]; winner: number } | null;
   /** Points each side has won in tricks so far. */
@@ -95,6 +97,7 @@ export function startHand(deck: readonly SCard[], standing: Standing): HandState
     kitty: buried,
     turn: standing.declarer,
     trick: [],
+    played: [],
     lastTrick: null,
     attackerPoints: 0,
     defenderPoints: 0,
@@ -158,6 +161,7 @@ function finishTrick(state: HandState): HandState {
   const next: HandState = {
     ...state,
     trick: [],
+    played: [...state.played, ...state.trick.flatMap((p) => p.cards)],
     lastTrick: { plays: state.trick, winner },
     attackerPoints,
     defenderPoints,
