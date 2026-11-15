@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { ApiError, giveCoins, searchUsers, type FoundUser } from '../api';
+import { useI18n } from '../i18n';
 import { useSession } from '../session';
 
 const MAX_AMOUNT = 10_000_000;
-const fmt = (n: number) => n.toLocaleString('en-US');
 
 /** Admins only: find a player by name or email, then give them coins or take some away. */
 export function AdminCoins() {
   const { session, logout } = useSession();
+  const { t } = useI18n();
   const [term, setTerm] = useState('');
   const [results, setResults] = useState<FoundUser[] | null>(null);
   const [truncated, setTruncated] = useState(false);
@@ -26,7 +27,7 @@ export function AdminCoins() {
     e.preventDefault();
     setSearchError(undefined);
     if (term.trim().length < 2) {
-      setSearchError('Type at least 2 characters of a name or email.');
+      setSearchError(t('coins.tooShort'));
       return;
     }
     setSearching(true);
@@ -39,7 +40,7 @@ export function AdminCoins() {
       setDone(undefined);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) logout();
-      else setSearchError('Could not search for players. Please try again.');
+      else setSearchError(t('coins.searchError'));
     } finally {
       setSearching(false);
     }
@@ -57,7 +58,7 @@ export function AdminCoins() {
     setDone(undefined);
     const n = Number(amount);
     if (!/^\d+$/.test(amount.trim()) || !Number.isInteger(n) || n < 1 || n > MAX_AMOUNT) {
-      setError(`Enter a whole number of coins from 1 to ${fmt(MAX_AMOUNT)}.`);
+      setError(t('coins.amountError', { max: MAX_AMOUNT }));
       return;
     }
     setWorking(true);
@@ -65,7 +66,7 @@ export function AdminCoins() {
       const res = await giveCoins(session.idToken, user.userId, direction * n);
       setResults((list) => (list ?? []).map((u) => (u.userId === user.userId ? { ...u, balance: res.balance } : u)));
       setDone(
-        `${direction === 1 ? `Gave ${fmt(n)} coins to ${user.displayName}` : `Took ${fmt(n)} coins from ${user.displayName}`}. Their balance is now ${fmt(res.balance)} coins.`,
+        t(direction === 1 ? 'coins.gave' : 'coins.took', { amount: n, name: user.displayName, balance: res.balance }),
       );
       setAmount('');
     } catch (err) {
@@ -73,15 +74,13 @@ export function AdminCoins() {
       else if (err instanceof ApiError && err.code === 'BALANCE_OUT_OF_RANGE') {
         const current = typeof err.details?.balance === 'number' ? err.details.balance : user.balance;
         setResults((list) => (list ?? []).map((u) => (u.userId === user.userId ? { ...u, balance: current } : u)));
-        setError(
-          `That would take the balance below 0 or above ${fmt(MAX_AMOUNT)}. ${user.displayName} has ${fmt(current)} coins.`,
-        );
+        setError(t('coins.outOfRange', { max: MAX_AMOUNT, name: user.displayName, balance: current }));
       } else if (err instanceof ApiError && err.code === 'ACCOUNT_NOT_ACTIVE') {
-        setError(`${user.displayName}'s account is not active, so it cannot be given coins.`);
+        setError(t('coins.notActive', { name: user.displayName }));
       } else if (err instanceof ApiError && err.status === 404) {
-        setError(`${user.displayName} could not be found any more.`);
+        setError(t('coins.gone', { name: user.displayName }));
       } else {
-        setError('Could not change the coins. Please try again.');
+        setError(t('coins.failed'));
       }
     } finally {
       setWorking(false);
@@ -90,16 +89,16 @@ export function AdminCoins() {
 
   return (
     <section className="admin-coins" aria-labelledby="admin-coins-title">
-      <h3 id="admin-coins-title">Give or take coins</h3>
-      <p className="hint">Find an approved player by name or email, then add or remove coins.</p>
+      <h3 id="admin-coins-title">{t('coins.title')}</h3>
+      <p className="hint">{t('coins.hint')}</p>
 
       <form className="coins-search" onSubmit={search}>
         <label>
-          Find a player
-          <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Name or email" />
+          {t('coins.find')}
+          <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder={t('coins.placeholder')} />
         </label>
         <button type="submit" disabled={searching}>
-          Search
+          {t('coins.search')}
         </button>
       </form>
 
@@ -108,15 +107,15 @@ export function AdminCoins() {
           {searchError}
         </p>
       )}
-      {results?.length === 0 && <p className="hint">No players found.</p>}
+      {results?.length === 0 && <p className="hint">{t('coins.none')}</p>}
 
       {results && results.length > 0 && (
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Display name</th>
-              <th>Email</th>
-              <th>Balance</th>
+              <th>{t('register.displayName')}</th>
+              <th>{t('login.email')}</th>
+              <th>{t('coins.balance')}</th>
               <th />
             </tr>
           </thead>
@@ -125,10 +124,14 @@ export function AdminCoins() {
               <tr key={u.userId} className={u.userId === chosenId ? 'chosen' : undefined}>
                 <td>{u.displayName}</td>
                 <td>{u.email}</td>
-                <td>{fmt(u.balance)} coins</td>
+                <td>{t('coins.balanceOf', { amount: u.balance })}</td>
                 <td>
-                  <button onClick={() => choose(u)} aria-label={`Choose ${u.displayName}`} aria-pressed={u.userId === chosenId}>
-                    Choose
+                  <button
+                    onClick={() => choose(u)}
+                    aria-label={t('coins.chooseName', { name: u.displayName })}
+                    aria-pressed={u.userId === chosenId}
+                  >
+                    {t('coins.choose')}
                   </button>
                 </td>
               </tr>
@@ -136,26 +139,26 @@ export function AdminCoins() {
           </tbody>
         </table>
       )}
-      {truncated && <p className="hint">More players match. Type more of the name or email to narrow it down.</p>}
+      {truncated && <p className="hint">{t('coins.more')}</p>}
 
       {chosen && (
         <div className="coins-form">
-          <h4>Giving coins to {chosen.displayName}</h4>
+          <h4>{t('coins.givingTo', { name: chosen.displayName })}</h4>
           <label>
-            Amount
+            {t('coins.amount')}
             <input
               inputMode="numeric"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="e.g. 250"
+              placeholder={t('coins.amountPlaceholder')}
             />
           </label>
           <div className="coins-actions">
             <button className="primary" disabled={working} onClick={() => change(chosen, 1)}>
-              Give coins
+              {t('coins.give')}
             </button>
             <button disabled={working} onClick={() => change(chosen, -1)}>
-              Take coins
+              {t('coins.take')}
             </button>
           </div>
         </div>

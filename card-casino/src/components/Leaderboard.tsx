@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { ApiError, getLeaderboard, type LeaderboardResponse } from '../api';
+import { useI18n, formatNumber } from '../i18n';
 import { useSession } from '../session';
 import { useWallet } from '../wallet';
 import { VerifiedBadge } from './VerifiedBadge';
-
-const coins = (n: number) => n.toLocaleString('en-US');
 
 /** The 10 players with the most coins, and where you stand. */
 export function Leaderboard() {
   const { session, logout } = useSession();
   const { flush } = useWallet();
+  const { t, tx } = useI18n();
   const [board, setBoard] = useState<LeaderboardResponse | null>(null);
   const [failed, setFailed] = useState(false);
   /** Bumped by "Try again" and "Refresh" to load the board once more. */
@@ -40,28 +40,27 @@ export function Leaderboard() {
 
   return (
     <section className="leaderboard" aria-labelledby="leaderboard-title">
-      <h2 id="leaderboard-title">Leaderboard</h2>
-      <p className="hint">The 10 players with the most coins.</p>
+      <h2 id="leaderboard-title">{t('menu.leaderboard')}</h2>
+      <p className="hint">{t('leaderboard.hint')}</p>
 
       {failed && (
         <div role="alert" className="login-error">
-          Could not load the leaderboard. Please try again.{' '}
-          <button onClick={() => setAttempt((n) => n + 1)}>Try again</button>
+          {t('leaderboard.loadError')} <button onClick={() => setAttempt((n) => n + 1)}>{t('common.tryAgain')}</button>
         </div>
       )}
-      {!board && !failed && <p className="hint">Loading…</p>}
+      {!board && !failed && <p className="hint">{t('common.loading')}</p>}
 
-      {board && board.entries.length === 0 && <p className="hint">Nobody is on the board yet.</p>}
+      {board && board.entries.length === 0 && <p className="hint">{t('leaderboard.empty')}</p>}
 
       {board && board.entries.length > 0 && (
         <table className="leaderboard-table">
-          <caption className="visually-hidden">Players ranked by coins</caption>
+          <caption className="visually-hidden">{t('leaderboard.caption')}</caption>
           <thead>
             <tr>
-              <th scope="col">Rank</th>
-              <th scope="col">Player</th>
+              <th scope="col">{t('leaderboard.rank')}</th>
+              <th scope="col">{t('leaderboard.player')}</th>
               <th scope="col" className="coins">
-                Coins
+                {t('leaderboard.coins')}
               </th>
             </tr>
           </thead>
@@ -74,9 +73,9 @@ export function Leaderboard() {
                   <td>
                     {e.displayName}
                     {e.verified && <VerifiedBadge />}
-                    {mine && <span className="you-tag"> (you)</span>}
+                    {mine && <span className="you-tag"> {t('leaderboard.you')}</span>}
                   </td>
-                  <td className="coins">{coins(e.coins)}</td>
+                  <td className="coins">{formatNumber(e.coins)}</td>
                 </tr>
               );
             })}
@@ -86,14 +85,14 @@ export function Leaderboard() {
 
       {me && !youInTop && (
         <p className="leaderboard-you">
-          You're <b>#{me.rank}</b> with <b>{coins(me.coins)}</b> coins.
+          {tx('leaderboard.youAre', { rank: <b>{me.rank}</b>, coins: <b>{formatNumber(me.coins)}</b> })}
         </p>
       )}
 
       {board && (
         <p className="hint leaderboard-foot">
-          {board.total} {board.total === 1 ? 'player' : 'players'} in all.{' '}
-          <button onClick={() => setAttempt((n) => n + 1)}>Refresh</button>
+          {t(board.total === 1 ? 'leaderboard.totalOne' : 'leaderboard.totalMany', { count: board.total })}{' '}
+          <button onClick={() => setAttempt((n) => n + 1)}>{t('leaderboard.refresh')}</button>
         </p>
       )}
     </section>

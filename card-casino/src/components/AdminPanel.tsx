@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ApiError, approveUser, listPendingUsers, type PendingUser } from '../api';
+import { useI18n } from '../i18n';
 import { useSession } from '../session';
 import { AdminAbuse } from './AdminAbuse';
 import { AdminCoins } from './AdminCoins';
@@ -7,6 +8,7 @@ import { AdminCoins } from './AdminCoins';
 /** Lists accounts waiting for approval, with a button to approve each one. Admins only. */
 export function AdminPanel() {
   const { session, logout } = useSession();
+  const { t } = useI18n();
   const [users, setUsers] = useState<PendingUser[] | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [approving, setApproving] = useState<string>();
@@ -46,7 +48,7 @@ export function AdminPanel() {
       await approveUser(session.idToken, user.userId);
       setUsers((list) => (list ?? []).filter((u) => u.userId !== user.userId));
     } catch (err) {
-      if (!handleFailure(err)) setApproveError(`Could not approve ${user.displayName}. Please try again.`);
+      if (!handleFailure(err)) setApproveError(t('admin.approveError', { name: user.displayName }));
     } finally {
       setApproving(undefined);
     }
@@ -54,12 +56,12 @@ export function AdminPanel() {
 
   return (
     <section className="admin-panel">
-      <h2>Admin panel</h2>
-      <p className="hint">Accounts waiting for approval. Approved players can log in straight away.</p>
+      <h2>{t('admin.title')}</h2>
+      <p className="hint">{t('admin.hint')}</p>
 
       {loadError && (
         <p role="alert" className="login-error">
-          Could not load the waiting list. Please try again later.
+          {t('admin.loadError')}
         </p>
       )}
       {approveError && (
@@ -68,16 +70,16 @@ export function AdminPanel() {
         </p>
       )}
 
-      {users === null && !loadError && <p className="hint">Loading…</p>}
-      {users?.length === 0 && <p className="hint">No accounts are waiting for approval.</p>}
+      {users === null && !loadError && <p className="hint">{t('common.loading')}</p>}
+      {users?.length === 0 && <p className="hint">{t('admin.none')}</p>}
 
       {users && users.length > 0 && (
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Display name</th>
-              <th>Email</th>
-              <th>Requested</th>
+              <th>{t('register.displayName')}</th>
+              <th>{t('login.email')}</th>
+              <th>{t('admin.requested')}</th>
               <th />
             </tr>
           </thead>
@@ -92,9 +94,9 @@ export function AdminPanel() {
                     className="primary"
                     onClick={() => approve(u)}
                     disabled={approving !== undefined}
-                    aria-label={`Approve ${u.displayName}`}
+                    aria-label={t('admin.approveName', { name: u.displayName })}
                   >
-                    Approve
+                    {t('admin.approve')}
                   </button>
                 </td>
               </tr>

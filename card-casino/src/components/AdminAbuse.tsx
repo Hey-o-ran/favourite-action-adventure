@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ApiError, startEvent, type AbuseEventType } from '../api';
 import { useAbuseEvents } from '../abuseEvents';
+import { eventWords } from '../abuseText';
+import { useI18n, type MessageKey } from '../i18n';
 import { useSession } from '../session';
 
 /** How long an event can last. Players must be online to take part, so these are short. */
@@ -8,9 +10,9 @@ const DURATIONS = [5, 10, 30, 60];
 const DEFAULT_COINS = 1000;
 const MAX_COINS = 100_000;
 
-const TYPES: { id: AbuseEventType; label: string; hint: string }[] = [
-  { id: 'FREE_COINS', label: 'Free coins', hint: 'Every player online gets coins added to their balance.' },
-  { id: 'UNLOSEABLE', label: 'Unloseable game', hint: "Every player's next game can't cost them any coins." },
+const TYPES: { id: AbuseEventType; label: MessageKey; hint: MessageKey }[] = [
+  { id: 'FREE_COINS', label: 'abuse.freeCoins', hint: 'abuse.freeCoinsHint' },
+  { id: 'UNLOSEABLE', label: 'abuse.unloseable', hint: 'abuse.unloseableHint' },
 ];
 
 const endTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -19,6 +21,7 @@ const endTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2
 export function AdminAbuse() {
   const { session, logout } = useSession();
   const { events, refresh } = useAbuseEvents();
+  const { t, tx, lang } = useI18n();
   const [type, setType] = useState<AbuseEventType>('FREE_COINS');
   const [amount, setAmount] = useState(String(DEFAULT_COINS));
   const [minutes, setMinutes] = useState(10);
@@ -30,12 +33,13 @@ export function AdminAbuse() {
   const coins = Number(amount);
   const amountError =
     type === 'FREE_COINS' && !(Number.isInteger(coins) && coins >= 1 && coins <= MAX_COINS)
-      ? `Enter a whole number of coins from 1 to ${MAX_COINS.toLocaleString('en-US')}.`
+      ? t('abuse.amountError', { max: MAX_COINS })
       : undefined;
+  // What players will see, worded the same way the announcement itself is.
   const announcement =
     type === 'FREE_COINS'
-      ? `Everyone gets ${amountError ? '…' : coins.toLocaleString('en-US')} coins!`
-      : "Everybody's next game is unloseable!";
+      ? t('announce.freeCoins', { amount: amountError ? '…' : coins })
+      : t('announce.unloseable');
 
   async function start() {
     setError(undefined);
@@ -47,14 +51,17 @@ export function AdminAbuse() {
         ...(type === 'FREE_COINS' && { amount: coins }),
         durationMinutes: minutes,
       });
-      setStarted(`Started for ${minutes} minutes: ${event.title}: ${event.message}`);
+      const words = eventWords(event, lang, t);
+      setStarted(t('abuse.started', { minutes, title: words.title, message: words.message }));
       setConfirming(false);
       await refresh(); // the admin is a player too, so they get the announcement straight away
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) logout();
-      else if (err instanceof ApiError && err.status === 403) setError('Only admins can start events.');
-      else if (err instanceof ApiError && err.fields && Object.values(err.fields)[0]) setError(Object.values(err.fields)[0]);
-      else setError('Could not start the event. Please try again.');
+      else if (err instanceof ApiError && err.status === 403) setError(t('abuse.onlyAdmins'));
+      else if (lang === 'en-GB' && err instanceof ApiError && err.fields && Object.values(err.fields)[0]) {
+        // The server's own wording is English, so it is only passed on as it is in English.
+        setError(Object.values(err.fields)[0]);
+      } else setError(t('abuse.startFailed'));
       setConfirming(false);
     } finally {
       setStarting(false);
@@ -63,31 +70,31 @@ export function AdminAbuse() {
 
   return (
     <section className="admin-abuse" aria-labelledby="admin-abuse-title">
-      <h3 id="admin-abuse-title">Admin abuse</h3>
-      <p className="hint">Start an event for every player. They see an announcement at the top of their screen straight away.</p>
+      <h3 id="admin-abuse-title">{t('abuse.title')}</h3>
+      <p className="hint">{t('abuse.hint')}</p>
 
       <fieldset className="abuse-form">
-        <legend>Event</legend>
-        {TYPES.map((t) => (
-          <label key={t.id} className="abuse-choice">
+        <legend>{t('abuse.event')}</legend>
+        {TYPES.map((option) => (
+          <label key={option.id} className="abuse-choice">
             <input
               type="radio"
               name="abuse-type"
-              checked={type === t.id}
+              checked={type === option.id}
               onChange={() => {
-                setType(t.id);
+                setType(option.id);
                 setConfirming(false);
               }}
             />
             <span>
-              <b>{t.label}</b> <span className="hint">{t.hint}</span>
+              <b>{t(option.label)}</b> <span className="hint">{t(option.hint)}</span>
             </span>
           </label>
         ))}
 
         {type === 'FREE_COINS' && (
           <label className="abuse-field">
-            <span>Coins for each player</span>
+            <span>{t('abuse.coinsEach')}</span>
             <input
               type="number"
               inputMode="numeric"
@@ -110,7 +117,7 @@ export function AdminAbuse() {
         )}
 
         <label className="abuse-field">
-          <span>Lasts</span>
+          <span>{t('abuse.lasts')}</span>
           <select
             value={minutes}
             onChange={(e) => {
@@ -120,7 +127,7 @@ export function AdminAbuse() {
           >
             {DURATIONS.map((m) => (
               <option key={m} value={m}>
-                {m} minutes
+                {t('abuse.minutes', { count: m })}
               </option>
             ))}
           </select>
@@ -128,21 +135,27 @@ export function AdminAbuse() {
       </fieldset>
 
       <p className="abuse-preview">
-        Players will see: <b>ADMIN ABUSE</b> {announcement}
+        {tx('abuse.preview', {
+          message: (
+            <>
+              <b>{t('announce.eventTitle')}</b> {announcement}
+            </>
+          ),
+        })}
       </p>
 
       {!confirming ? (
         <button className="primary" onClick={() => setConfirming(true)} disabled={Boolean(amountError) || starting}>
-          Start event
+          {t('abuse.start')}
         </button>
       ) : (
-        <div className="abuse-confirm" role="group" aria-label="Confirm the event">
-          <span>This tells every player now. It can't be undone.</span>
+        <div className="abuse-confirm" role="group" aria-label={t('abuse.confirmGroup')}>
+          <span>{t('abuse.confirmText')}</span>
           <button className="primary" onClick={start} disabled={starting}>
-            {starting ? 'Starting…' : 'Yes, start it'}
+            {starting ? t('abuse.starting') : t('abuse.yesStart')}
           </button>
           <button onClick={() => setConfirming(false)} disabled={starting}>
-            Cancel
+            {t('abuse.cancel')}
           </button>
         </div>
       )}
@@ -158,14 +171,14 @@ export function AdminAbuse() {
         </p>
       )}
 
-      <h4>On now</h4>
+      <h4>{t('abuse.onNow')}</h4>
       {events.length === 0 ? (
-        <p className="hint">No events are on.</p>
+        <p className="hint">{t('abuse.noneOn')}</p>
       ) : (
         <ul className="abuse-live">
           {events.map((e) => (
             <li key={e.eventId}>
-              {e.message} <span className="hint">until {endTime(e.expiresAt)}</span>
+              {eventWords(e, lang, t).message} <span className="hint">{t('abuse.until', { time: endTime(e.expiresAt) })}</span>
             </li>
           ))}
         </ul>
