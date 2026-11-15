@@ -15,6 +15,16 @@ interface Update {
  */
 export const UPDATES: Update[] = [
   {
+    id: 'glaggles',
+    date: '15 November 2026',
+    title: 'Glaggles in the slots!',
+    points: [
+      'The Slots machine has new faces! The fruit and the 7 are gone, and six round Glaggles from Glagglepedia have taken their place: the Giggler, Gazo, Gloober, Gembo, Gleeber and Glabber.',
+      'Three Glabbers on the middle line is the jackpot! Nothing else changed. Every Glaggle pays exactly what the picture it replaced paid.',
+      'You can see who pays what on the machine, and on the Rules page.',
+    ],
+  },
+  {
     id: 'gin-settings',
     date: '15 November 2026',
     title: 'Settings for Gin Rummy',

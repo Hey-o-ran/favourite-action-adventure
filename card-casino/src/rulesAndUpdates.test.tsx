@@ -104,6 +104,6 @@ describe("What's new in Chinese", () => {
   });
 
   it('puts the newest first, in both languages', () => {
-    expect(UPDATES[0].id).toBe('gin-settings');
+    expect(UPDATES[0].id).toBe('glaggles');
   });
 });

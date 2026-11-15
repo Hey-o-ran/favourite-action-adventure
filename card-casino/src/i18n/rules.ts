@@ -140,18 +140,27 @@ export const rulesEn = {
   'rules.slots.how.1': 'Choose how much to bet, then press **Spin**. Your bet is taken and the three reels spin, then stop one by one from left to right.',
   'rules.slots.how.2': 'Only the **middle line**, marked in red, pays. The symbols above and below it are just for looks.',
   'rules.slots.how.3': 'Three of the same symbol on the line pays like this. These numbers are how many coins come back for every coin you bet, so your bet is included:',
-  'rules.slots.three': '{symbols}: **{n}×** your bet',
-  'rules.slots.cherries': '{symbols} Exactly two cherries, anywhere on the line: **{n}×** your bet',
-  'rules.slots.how.4': 'One cherry on its own pays nothing, and so does anything else.',
-  'rules.slots.odds.1': 'Every symbol is shown by the same number of stops on each reel, so the rare ones (the 7 and the diamond) really are rare.',
+  // The three faces (or two) are drawn in front of these two texts.
+  'rules.slots.three': ': **{n}×** your bet',
+  'rules.slots.cherries': ' Exactly two Gigglers, anywhere on the line: **{n}×** your bet',
+  'rules.slots.how.4': 'One Giggler on its own pays nothing, and so does anything else.',
+  'rules.slots.odds.1': 'Every symbol is shown by the same number of stops on each reel, so the rare ones (the Glabber and the Gleeber) really are rare.',
   'rules.slots.odds.2': "Over a very long time the machine pays back about **{back} coins for every 100** you bet. The rest is the house's share.",
   'rules.slots.odds.3': 'A spin pays something about **1 time in {hit}**. Most of those are small wins.',
   'rules.slots.tip.1': 'It\'s all luck. Every spin starts fresh, so a machine is never "due" a win and never "hot".',
   'rules.slots.tip.2': 'A small bet makes your coins last longer, and a big bet chases the jackpot. Both pay back the same share over time.',
   'diagram.slots.label':
-    'Three reels with three sevens on the middle line, which is the biggest win, and a cherry, a bell and a lemon above and below',
+    'Three reels with three Glabbers on the middle line, which is the biggest win, a Giggler, a Gembo and a Gazo above, and a Gloober, a Giggler and a Gembo below',
   'diagram.slots.note1': 'Only the middle line pays.',
-  'diagram.slots.note2': 'Three 7s on it is the jackpot!',
+  'diagram.slots.note2': 'Three Glabbers on it is the jackpot!',
+
+  // ---- The Glaggles that are the slot symbols
+  'glaggle.giggler': 'Giggler',
+  'glaggle.gazo': 'Gazo',
+  'glaggle.gloober': 'Gloober',
+  'glaggle.gembo': 'Gembo',
+  'glaggle.gleeber': 'Gleeber',
+  'glaggle.glabber': 'Glabber',
 
   // ---- Roulette
   'rules.roulette.how.1': 'The wheel has 37 pockets: the numbers 1 to 36, which are red or black, and a green 0. The ball lands in one of them.',
