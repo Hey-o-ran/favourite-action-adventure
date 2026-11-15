@@ -15,6 +15,7 @@ export const enGB = {
   'menu.whatsNew': "What's new",
   'menu.leaderboard': 'Leaderboard',
   'menu.rules': 'Rules',
+  'footer.credit': 'Glagworld characters and concepts originate from the crowdsourced Glaggleland meme community. Images are used for non-commercial fan commentary purposes only.',
   'menu.shop': 'Shop (coming soon)',
   'menu.admin': 'ADMIN ONLY',
   'menu.logout': 'Log out',
