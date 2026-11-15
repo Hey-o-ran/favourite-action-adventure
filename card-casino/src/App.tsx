@@ -10,6 +10,7 @@ import { CrazyEights } from './games/CrazyEights';
 import { Holdem } from './games/Holdem';
 import { Gin } from './games/Gin';
 import { Roulette } from './games/Roulette';
+import { Slots } from './games/Slots';
 import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
@@ -45,7 +46,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Beat the dealer',
     skill: 'Mix of both',
-    popularity: 4,
+    popularity: 5,
     Component: Blackjack,
   },
   {
@@ -58,7 +59,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Bet on a winner',
     skill: 'Mostly luck',
-    popularity: 5,
+    popularity: 6,
     Component: Baccarat,
   },
   {
@@ -71,7 +72,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Guess the card',
     skill: 'Mostly luck',
-    popularity: 10,
+    popularity: 11,
     Component: RedDog,
   },
   {
@@ -84,7 +85,7 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Poker',
     skill: 'Mix of both',
-    popularity: 6,
+    popularity: 7,
     Component: VideoPoker,
   },
   {
@@ -97,7 +98,7 @@ const GAMES: GameEntry[] = [
     players: 'Solo',
     type: 'Solitaire',
     skill: 'Mostly skill',
-    popularity: 1,
+    popularity: 2,
     Component: Klondike,
   },
   {
@@ -110,7 +111,7 @@ const GAMES: GameEntry[] = [
     players: 'Solo',
     type: 'Guess the card',
     skill: 'Mostly luck',
-    popularity: 9,
+    popularity: 10,
     Component: HigherLower,
   },
   {
@@ -123,7 +124,7 @@ const GAMES: GameEntry[] = [
     players: '2 players',
     type: 'Empty your hand',
     skill: 'Mix of both',
-    popularity: 8,
+    popularity: 9,
     Component: CrazyEights,
   },
   {
@@ -136,7 +137,7 @@ const GAMES: GameEntry[] = [
     players: '3+ players',
     type: 'Poker',
     skill: 'Mostly skill',
-    popularity: 2,
+    popularity: 3,
     Component: Holdem,
   },
   {
@@ -149,7 +150,7 @@ const GAMES: GameEntry[] = [
     players: '2 players',
     type: 'Make sets and runs',
     skill: 'Mostly skill',
-    popularity: 7,
+    popularity: 8,
     Component: Gin,
   },
   {
@@ -162,8 +163,21 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Spin the wheel',
     skill: 'Mostly luck',
-    popularity: 3,
+    popularity: 4,
     Component: Roulette,
+  },
+  {
+    id: 'slots',
+    name: 'Slots',
+    blurb: 'Spin three reels and line up the symbols on the middle line. Three 7s pays 100 times your bet!',
+    category: 'Non-card games',
+    origin: 'United States',
+    originNote: 'The first real slot machine, the Liberty Bell, was built in San Francisco in about 1895 by Charles Fey.',
+    players: 'Vs the house',
+    type: 'Spin the reels',
+    skill: 'Mostly luck',
+    popularity: 1,
+    Component: Slots,
   },
 ];
 
