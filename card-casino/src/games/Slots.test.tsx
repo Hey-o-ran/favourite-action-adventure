@@ -64,9 +64,9 @@ describe('the slot machine', () => {
   it('shows what each combination pays', () => {
     setup();
     const table = screen.getByRole('table');
-    expect(within(table).getByRole('row', { name: /three seven/i })).toHaveTextContent('100×');
-    expect(within(table).getByRole('row', { name: /three cherry/i })).toHaveTextContent('5×');
-    expect(within(table).getByRole('row', { name: /any two cherries/i })).toHaveTextContent('3×');
+    expect(within(table).getByRole('row', { name: /three glabbers/i })).toHaveTextContent('100×');
+    expect(within(table).getByRole('row', { name: /three gigglers/i })).toHaveTextContent('5×');
+    expect(within(table).getByRole('row', { name: /any two gigglers/i })).toHaveTextContent('3×');
   });
 });
 
@@ -90,29 +90,29 @@ describe('spinning', () => {
     await user.click(spinButton());
 
     await pass(STOP_AT_MS[0]);
-    expect(reel(1)).toHaveAccessibleName(/cherry on the line/);
+    expect(reel(1)).toHaveAccessibleName(/Giggler on the line/);
     expect(reel(2)).toHaveAccessibleName('Reel 2: spinning');
     expect(reel(3)).toHaveAccessibleName('Reel 3: spinning');
     expect(settle).not.toHaveBeenCalled();
 
     await pass(STOP_AT_MS[1] - STOP_AT_MS[0]);
-    expect(reel(2)).toHaveAccessibleName(/lemon on the line/);
+    expect(reel(2)).toHaveAccessibleName(/Gazo on the line/);
     expect(reel(3)).toHaveAccessibleName('Reel 3: spinning');
     expect(settle).not.toHaveBeenCalled();
 
     await pass(STOP_AT_MS[2] - STOP_AT_MS[1]);
-    expect(reel(3)).toHaveAccessibleName(/bell on the line/);
+    expect(reel(3)).toHaveAccessibleName(/Gembo on the line/);
     expect(settle).toHaveBeenCalledTimes(1);
   });
 
-  it('pays the jackpot for three sevens', async () => {
+  it('pays the jackpot for three Glabbers', async () => {
     reelsStopOn('seven', 'seven', 'seven');
     const user = setup();
     await user.click(spinButton());
     await finish();
     expect(settle).toHaveBeenCalledTimes(1);
     expect(settle).toHaveBeenCalledWith(1000);
-    expect(result()).toHaveTextContent('Three seven! Pays 100× your bet: +990 coins');
+    expect(result()).toHaveTextContent('Three Glabbers! Pays 100× your bet: +990 coins');
     expect(reel(1).querySelector('.sl-cell.line')).toHaveClass('win');
   });
 
@@ -122,16 +122,16 @@ describe('spinning', () => {
     await user.click(spinButton());
     await finish();
     expect(settle).toHaveBeenCalledWith(100);
-    expect(result()).toHaveTextContent('Three grapes! Pays 10× your bet: +90 coins');
+    expect(result()).toHaveTextContent('Three Gloobers! Pays 10× your bet: +90 coins');
   });
 
-  it('pays for exactly two cherries, wherever they are', async () => {
+  it('pays for exactly two Gigglers, wherever they are', async () => {
     reelsStopOn('cherry', 'lemon', 'cherry');
     const user = setup();
     await user.click(spinButton());
     await finish();
     expect(settle).toHaveBeenCalledWith(30);
-    expect(result()).toHaveTextContent('Two cherries! Pays 3× your bet: +20 coins');
+    expect(result()).toHaveTextContent('Two Gigglers! Pays 3× your bet: +20 coins');
   });
 
   it('settles for 0 when nothing lines up, and does not mark a win', async () => {
