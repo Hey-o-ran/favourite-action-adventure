@@ -12,6 +12,7 @@ export const zhCN: Record<MessageKey, string> = {
   'menu.whatsNew': '最新动态',
   'menu.leaderboard': '排行榜',
   'menu.rules': '规则',
+  'footer.credit': 'Glagworld 的角色和概念源自由网友共同创作的 Glaggleland 梗图社区。图片仅用于非商业性的同人评论目的。',
   'menu.shop': '商店（即将推出）',
   'menu.admin': '仅限管理员',
   'menu.logout': '退出登录',
