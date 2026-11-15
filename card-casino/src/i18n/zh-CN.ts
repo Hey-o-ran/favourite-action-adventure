@@ -11,6 +11,7 @@ export const zhCN: Record<MessageKey, string> = {
   'menu.whatsNew': '最新动态',
   'menu.leaderboard': '排行榜',
   'menu.rules': '规则',
+  'menu.shop': '商店（即将推出）',
   'menu.admin': '仅限管理员',
   'menu.logout': '退出登录',
   'menu.back': '返回游戏',

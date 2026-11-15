@@ -290,7 +290,7 @@ button.primary {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 190px;
+  min-width: 220px;
   padding: 8px;
   background: var(--felt-dark);
   border: 1px solid #ffffff33;
@@ -298,6 +298,8 @@ button.primary {
   box-shadow: 0 10px 30px #000a;
 }
 .menu-list button { width: 100%; text-align: left; }
+.menu-list button.unavailable { opacity: 0.55; cursor: not-allowed; }
+.menu-list button.unavailable:hover { background: #ffffff14; }
 .menu-list button[aria-current='page'] { border-color: var(--gold); color: var(--gold); }
 
 .jackpot {

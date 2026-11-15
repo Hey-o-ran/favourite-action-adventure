@@ -190,6 +190,29 @@ describe('admin abuse announcements', () => {
   });
 });
 
+describe('shop menu item', () => {
+  it('sits between Leaderboard and Rules, dimmed, saying it is coming soon', async () => {
+    const user = userEvent.setup();
+    await renderApp(false);
+    await user.click(screen.getByRole('button', { name: /menu/i }));
+    const names = screen.getAllByRole('menuitem').map((i) => i.textContent);
+    expect(names.indexOf('Shop (coming soon)')).toBe(names.indexOf('Leaderboard') + 1);
+    expect(names.indexOf('Rules')).toBe(names.indexOf('Shop (coming soon)') + 1);
+    expect(screen.getByRole('menuitem', { name: 'Shop (coming soon)' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('does nothing when pressed: no page opens and the menu stays', async () => {
+    const user = userEvent.setup();
+    await renderApp(false);
+    await user.click(screen.getByRole('button', { name: /menu/i }));
+    await user.click(screen.getByRole('menuitem', { name: 'Shop (coming soon)' }));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /shop/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: "What's new" })).not.toHaveAttribute('aria-current');
+    expect(screen.queryByRole('menuitem', { name: /back to game/i })).not.toBeInTheDocument();
+  });
+});
+
 describe('leaderboard button', () => {
   it('is there for every player, opens the leaderboard, and goes back to the game', async () => {
     vi.mocked(api.getLeaderboard).mockResolvedValue({
