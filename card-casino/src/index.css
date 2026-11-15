@@ -531,3 +531,10 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .menu-heading { padding: 8px 12px 2px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); border-top: 1px solid #ffffff22; margin-top: 4px; }
 .menu-list button.checked::after { content: ' ✓'; }
 .abuse-bar.removed { background: linear-gradient(135deg, #b91c1c, #ef4444); }
+
+/* Glaggles (the slot symbols) */
+.glaggle { display: block; width: 100%; height: 100%; }
+.sl-cell .glaggle { width: 56px; height: 56px; }
+.sl-paytable th .glaggle { width: 26px; height: 26px; }
+.glaggle-row { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; }
+.rules li .glaggle { width: 24px; height: 24px; }

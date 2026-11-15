@@ -4,7 +4,8 @@ import type { Filters, SortOrder } from '../gameFilters';
 import { handText, useI18n, type MessageKey } from '../i18n';
 import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
 import { BIG_BLIND, BUY_IN, MAX_RAISES, SMALL_BLIND, betSize } from '../games/holdemRules';
-import { HIT_RATE, RETURN_TO_PLAYER, SYMBOL_EMOJI, THREE_OF_A_KIND, TWO_CHERRIES } from '../games/slotsRules';
+import { HIT_RATE, RETURN_TO_PLAYER, THREE_OF_A_KIND, TWO_CHERRIES } from '../games/slotsRules';
+import { GlaggleAt, GlaggleRow } from './GlaggleFace';
 import { CHIPS, evenMoneySpot, payoutOdds, columnSpot, cornerSpot, sixLineSpot, splitSpot, straightSpot, streetSpot } from '../games/rouletteRules';
 import { GIN_BONUS, HAND_BONUS, HAND_SIZE as GIN_HAND_SIZE, KNOCK_LIMIT, MATCH_BONUS, MATCH_TARGET, STOCK_FLOOR, UNDERCUT_BONUS, WIN_PAYOUT as GIN_WIN_PAYOUT } from '../games/ginRules';
 import { CATEGORY_NAMES } from '../games/pokerHands';
@@ -177,9 +178,9 @@ function SlotsDiagram() {
       {[0, 1, 2].map((i) => (
         <g key={i}>
           <rect x={120 + i * 63} y="16" width="56" height="88" rx="6" fill="#fff" />
-          <text x={148 + i * 63} y="38" textAnchor="middle" fontSize="20" opacity="0.5">{['🍒', '🔔', '🍋'][i]}</text>
-          <text x={148 + i * 63} y="68" textAnchor="middle" fontSize="24">7️⃣</text>
-          <text x={148 + i * 63} y="96" textAnchor="middle" fontSize="20" opacity="0.5">{['🍇', '🍒', '🔔'][i]}</text>
+          <GlaggleAt symbol={(['cherry', 'bell', 'lemon'] as const)[i]} x={136 + i * 63} y={18} size={24} faded />
+          <GlaggleAt symbol="seven" x={132 + i * 63} y={45} size={32} />
+          <GlaggleAt symbol={(['grape', 'cherry', 'bell'] as const)[i]} x={136 + i * 63} y={80} size={24} faded />
         </g>
       ))}
       <rect x="116" y="55" width="188" height="3" fill="#ef4444" />
@@ -421,9 +422,15 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
             {tb('rules.slots.how.3')}
             <ul>
               {(['seven', 'diamond', 'bell', 'grape', 'lemon', 'cherry'] as const).map((symbol) => (
-                <li key={symbol}>{tb('rules.slots.three', { symbols: SYMBOL_EMOJI[symbol].repeat(3), n: s(THREE_OF_A_KIND[symbol]) })}</li>
+                <li key={symbol}>
+                  <GlaggleRow symbol={symbol} count={3} />
+                  {tb('rules.slots.three', { n: s(THREE_OF_A_KIND[symbol]) })}
+                </li>
               ))}
-              <li>{tb('rules.slots.cherries', { symbols: `${SYMBOL_EMOJI.cherry}${SYMBOL_EMOJI.cherry}`, n: s(TWO_CHERRIES) })}</li>
+              <li>
+                <GlaggleRow symbol="cherry" count={2} />
+                {tb('rules.slots.cherries', { n: s(TWO_CHERRIES) })}
+              </li>
             </ul>
           </li>
           <li>{tb('rules.slots.how.4')}</li>
