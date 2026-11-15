@@ -8,6 +8,8 @@ export interface MenuItem {
   current?: boolean;
   /** Makes this a choice among several (like a language), and says whether it is the chosen one. */
   checked?: boolean;
+  /** Not available yet: shown dimmed, still reachable by keyboard, and pressing it does nothing (the menu stays open). */
+  disabled?: boolean;
   /** A small heading shown above this item, to start a new group. */
   heading?: string;
 }
@@ -68,8 +70,10 @@ export function HeaderMenu({ items, menuLabel = 'Menu' }: { items: MenuItem[]; m
                 role={item.checked === undefined ? 'menuitem' : 'menuitemradio'}
                 aria-checked={item.checked}
                 aria-current={item.current ? 'page' : undefined}
-                className={item.checked ? 'checked' : undefined}
+                aria-disabled={item.disabled ? true : undefined}
+                className={[item.checked && 'checked', item.disabled && 'unavailable'].filter(Boolean).join(' ') || undefined}
                 onClick={() => {
+                  if (item.disabled) return;
                   close(false);
                   item.onSelect();
                 }}

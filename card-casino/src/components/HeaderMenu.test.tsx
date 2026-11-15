@@ -45,6 +45,30 @@ describe('header menu', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
+  it('shows an item that is not available yet as dimmed, and pressing it does nothing', async () => {
+    const onSelect = vi.fn();
+    const user = userEvent.setup();
+    render(<HeaderMenu items={[...items(), { id: 'soon', label: 'Coming soon', onSelect, disabled: true }]} />);
+    await user.click(menuButton());
+    const soon = screen.getByRole('menuitem', { name: 'Coming soon' });
+    expect(soon).toHaveAttribute('aria-disabled', 'true');
+    expect(soon).toHaveClass('unavailable');
+    await user.click(soon);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(screen.getByRole('menu')).toBeInTheDocument(); // the menu stays open
+    expect(screen.getByRole('menuitem', { name: 'First' })).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('still lets the keyboard reach an item that is not available yet', async () => {
+    const user = userEvent.setup();
+    render(<HeaderMenu items={[{ id: 'a', label: 'First', onSelect: vi.fn() }, { id: 'soon', label: 'Coming soon', onSelect: vi.fn(), disabled: true }]} />);
+    await user.click(menuButton());
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Coming soon' })).toHaveFocus(); // so a screen reader can say it is unavailable
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+  });
+
   it('closes when the button is pressed again', async () => {
     const user = userEvent.setup();
     render(<HeaderMenu items={items()} />);

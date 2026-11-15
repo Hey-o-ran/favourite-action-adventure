@@ -13,6 +13,7 @@ export const enGB = {
   'menu.whatsNew': "What's new",
   'menu.leaderboard': 'Leaderboard',
   'menu.rules': 'Rules',
+  'menu.shop': 'Shop (coming soon)',
   'menu.admin': 'ADMIN ONLY',
   'menu.logout': 'Log out',
   'menu.back': 'Back to game',
