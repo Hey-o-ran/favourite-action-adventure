@@ -3,6 +3,7 @@ import { useWallet } from '../wallet';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
+import { handText, useI18n } from '../i18n';
 import {
   PAYTABLE,
   dealVideoPoker,
@@ -14,6 +15,7 @@ import {
 
 export function VideoPoker() {
   const { balance, wager, settle } = useWallet();
+  const { t } = useI18n();
   const [bet, setBet] = useState(10);
   const [round, setRound] = useState<VideoPokerRound | null>(null);
 
@@ -35,7 +37,7 @@ export function VideoPoker() {
 
   return (
     <section className="table">
-      <h2>Jacks or Better</h2>
+      <h2>{t('game.video-poker.name')}</h2>
 
       <div className="cards">
         {round?.hand.map((card, i) => (
@@ -46,7 +48,7 @@ export function VideoPoker() {
                 className={`hold-btn${round.held[i] ? ' on' : ''}`}
                 onClick={() => setRound(toggleHold(round, i))}
               >
-                {round.held[i] ? 'Held' : 'Hold'}
+                {round.held[i] ? t('poker.held') : t('poker.hold')}
               </button>
             )}
           </div>
@@ -57,11 +59,12 @@ export function VideoPoker() {
         <p className="result">
           {result.multiplier > 0 ? (
             <>
-              {result.name} · <span className="gain">+{round!.bet * result.multiplier - round!.bet} coins</span>
+              {handText(t, result.name)} ·{' '}
+              <span className="gain">{t('game.gain', { amount: round!.bet * result.multiplier - round!.bet })}</span>
             </>
           ) : (
             <>
-              No win · <span className="loss">-{round!.bet} coins</span>
+              {t('hand.No win')} · <span className="loss">{t('game.loss', { amount: round!.bet })}</span>
             </>
           )}
         </p>
@@ -70,12 +73,12 @@ export function VideoPoker() {
       <div className="actions">
         {!inRound && (
           <button className="primary" onClick={deal} disabled={balance < bet}>
-            {round ? 'Deal again' : 'Deal'}
+            {round ? t('game.dealAgain') : t('game.deal')}
           </button>
         )}
         {inRound && (
           <button className="primary" onClick={draw}>
-            Draw
+            {t('poker.draw')}
           </button>
         )}
       </div>
@@ -86,15 +89,15 @@ export function VideoPoker() {
         <table>
           <thead>
             <tr>
-              <th>Hand</th>
-              <th>Pays</th>
+              <th>{t('poker.hand')}</th>
+              <th>{t('poker.pays')}</th>
             </tr>
           </thead>
           <tbody>
             {PAYTABLE.map((row) => (
               <tr key={row.name} className={row.name === result?.name ? 'hit' : undefined}>
-                <td>{row.name}</td>
-                <td>{row.multiplier}×</td>
+                <td>{handText(t, row.name)}</td>
+                <td>{t('poker.multiplier', { n: row.multiplier })}</td>
               </tr>
             ))}
           </tbody>

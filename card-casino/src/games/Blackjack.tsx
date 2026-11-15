@@ -4,20 +4,22 @@ import { useWallet } from '../wallet';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
+import { useI18n, type MessageKey } from '../i18n';
 import { dealRound, doubleDown, handValue, hit, stakeOf, stand, type Outcome, type Round } from './blackjackRules';
 
-const OUTCOME_TEXT: Record<Outcome, string> = {
-  blackjack: 'Blackjack! Pays 3 to 2.',
-  win: 'You win!',
-  push: 'Push. Your bet is returned.',
-  lose: 'Dealer wins.',
-  bust: 'Bust! Dealer wins.',
+const OUTCOME_KEY: Record<Outcome, MessageKey> = {
+  blackjack: 'blackjack.blackjack',
+  win: 'blackjack.win',
+  push: 'blackjack.push',
+  lose: 'blackjack.lose',
+  bust: 'blackjack.bust',
 };
 
 export { DEAL_LOCK_MS } from '../useDealLock';
 
 export function Blackjack() {
   const { balance, wager, settle } = useWallet();
+  const { t } = useI18n();
   const [bet, setBet] = useState(50);
   const [round, setRound] = useState<Round | null>(null);
   const { locked, lock } = useDealLock();
@@ -53,7 +55,7 @@ export function Blackjack() {
     <section className="table">
       <div className="hand">
         <h3>
-          Dealer
+          {t('blackjack.dealer')}
           {round && (round.over || round.dealer.length > 0) && !(!round.over && round.dealer.length > 1)
             ? ` · ${handValue(round.dealer).total}`
             : ''}
@@ -66,7 +68,10 @@ export function Blackjack() {
       </div>
 
       <div className="hand">
-        <h3>You{round ? ` · ${handValue(round.player).total}` : ''}</h3>
+        <h3>
+          {t('blackjack.you')}
+          {round ? ` · ${handValue(round.player).total}` : ''}
+        </h3>
         <div className="cards">
           {round?.player.map((card, i) => (
             <CardView key={i} card={card} />
@@ -76,29 +81,27 @@ export function Blackjack() {
 
       {round?.over && (
         <p className="result">
-          {OUTCOME_TEXT[round.outcome!]}{' '}
-          <span className={net >= 0 ? 'gain' : 'loss'}>
-            {net >= 0 ? `+${net}` : net} coins
-          </span>
+          {t(OUTCOME_KEY[round.outcome!])}{' '}
+          <span className={net >= 0 ? 'gain' : 'loss'}>{t(net >= 0 ? 'game.gain' : 'game.loss', { amount: Math.abs(net) })}</span>
         </p>
       )}
 
       <div className="actions">
         {!inRound && (
           <button className="primary" onClick={deal} disabled={balance < bet}>
-            {round ? 'Deal again' : 'Deal'}
+            {round ? t('game.dealAgain') : t('game.deal')}
           </button>
         )}
         {inRound && round && (
           <>
             <button className="primary" onClick={() => act(hit)} disabled={locked}>
-              Hit
+              {t('blackjack.hit')}
             </button>
             <button onClick={() => act(stand)} disabled={locked}>
-              Stand
+              {t('blackjack.stand')}
             </button>
             <button onClick={double} disabled={locked || round.player.length !== 2 || balance < round.bet}>
-              Double
+              {t('blackjack.double')}
             </button>
           </>
         )}

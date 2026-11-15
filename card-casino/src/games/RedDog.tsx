@@ -4,10 +4,12 @@ import { useDealLock } from '../useDealLock';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
+import { useI18n } from '../i18n';
 import { dealThird, spreadPayout, startRedDog, type RedDogState } from './redDogRules';
 
 export function RedDog() {
   const { balance, wager, settle } = useWallet();
+  const { t, tx } = useI18n();
   const [bet, setBet] = useState(10);
   const [game, setGame] = useState<RedDogState | null>(null);
   const { locked, lock } = useDealLock();
@@ -37,7 +39,7 @@ export function RedDog() {
 
   return (
     <section className="table">
-      <h2>Red Dog</h2>
+      <h2>{t('game.red-dog.name')}</h2>
 
       <div className="cards">
         {game ? (
@@ -52,28 +54,21 @@ export function RedDog() {
       </div>
 
       <p className="result">
-        {deciding && (
-          <>
-            {game.spread} {game.spread === 1 ? 'card' : 'cards'} in between · pays{' '}
-            <span className="gain">{spreadPayout(game.spread)} to 1</span>. Will the next card land between them?
-          </>
-        )}
-        {game?.status === 'push' && game.spread === 0 && <>Consecutive cards: nothing can fit between them. Your bet is returned.</>}
-        {game?.status === 'push' && game.spread < 0 && <>A pair, and the third card didn't match. Your bet is returned.</>}
+        {deciding &&
+          tx(game.spread === 1 ? 'reddog.betweenOne' : 'reddog.betweenMany', {
+            count: game.spread,
+            pays: <span className="gain">{t('reddog.ratio', { n: spreadPayout(game.spread) })}</span>,
+          })}
+        {game?.status === 'push' && game.spread === 0 && <>{t('reddog.consecutive')}</>}
+        {game?.status === 'push' && game.spread < 0 && <>{t('reddog.pair')}</>}
         {game?.status === 'won' && game.spread < 0 && (
-          <>
-            Three of a kind! <span className="gain">+{game.returned - game.bet} coins</span>
-          </>
+          <>{tx('reddog.threeKind', { gain: <span className="gain">{t('game.gain', { amount: game.returned - game.bet })}</span> })}</>
         )}
         {game?.status === 'won' && game.spread > 0 && (
-          <>
-            Between them! <span className="gain">+{game.returned - stake} coins</span>
-          </>
+          <>{tx('reddog.between', { gain: <span className="gain">{t('game.gain', { amount: game.returned - stake })}</span> })}</>
         )}
         {game?.status === 'lost' && (
-          <>
-            Not between. You lost <span className="loss">{stake} coins</span>.
-          </>
+          <>{tx('reddog.lost', { loss: <span className="loss">{t('game.coins', { amount: stake })}</span> })}</>
         )}
       </p>
 
@@ -81,18 +76,18 @@ export function RedDog() {
         {deciding ? (
           <>
             <button className="primary" onClick={() => draw(0)} disabled={locked}>
-              Deal third card
+              {t('reddog.third')}
             </button>
             <button onClick={() => draw(halfRaise)} disabled={locked || halfRaise < 1 || balance < halfRaise}>
-              Raise +{halfRaise}
+              {t('reddog.raise', { amount: halfRaise })}
             </button>
             <button onClick={() => draw(game.bet)} disabled={locked || balance < game.bet}>
-              Raise +{game.bet}
+              {t('reddog.raise', { amount: game.bet })}
             </button>
           </>
         ) : (
           <button className="primary" onClick={deal} disabled={balance < bet}>
-            {game ? 'Deal again' : 'Deal'}
+            {game ? t('game.dealAgain') : t('game.deal')}
           </button>
         )}
       </div>

@@ -64,6 +64,12 @@ export function factText(t: Translate, value: string): string {
   return key in enGB ? t(key as MessageKey) : value;
 }
 
+/** The name of a poker hand ("Full House") in the chosen language. The English name is what the pay table matches on. */
+export function handText(t: Translate, name: string): string {
+  const key = `hand.${name}`;
+  return key in enGB ? t(key as MessageKey) : name;
+}
+
 /** A game's name, blurb or history in the chosen language. A game with no translation yet shows its English text. */
 export function gameText(t: Translate, id: string, part: 'name' | 'blurb' | 'note', fallback: string): string {
   const key = `game.${id}.${part}`;

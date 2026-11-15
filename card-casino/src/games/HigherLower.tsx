@@ -4,6 +4,7 @@ import { useDealLock } from '../useDealLock';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
+import { useI18n } from '../i18n';
 import {
   JACKPOT_MULTIPLIER,
   cashOutHigherLower,
@@ -16,6 +17,7 @@ import {
 
 export function HigherLower() {
   const { balance, wager, settle } = useWallet();
+  const { t, tx } = useI18n();
   const [bet, setBet] = useState(10);
   const [game, setGame] = useState<HigherLowerState | null>(null);
   const { locked, lock } = useDealLock();
@@ -58,7 +60,7 @@ export function HigherLower() {
 
   return (
     <section className="table">
-      <h2>Higher or Lower</h2>
+      <h2>{t('game.higher-lower.name')}</h2>
 
       <div className="cards">
         {game && <CardView card={game.current} />}
@@ -68,24 +70,18 @@ export function HigherLower() {
       <p className="result">
         {game && playing && (
           <>
-            Streak {game.streak} · pot <span className="gain">{game.pot}</span>
-            {game.streak > 0 && <> · cash out to keep it, or guess again to reach {nextPot(game.pot)}</>}
+            {tx('hilo.streak', { streak: game.streak, pot: <span className="gain">{game.pot}</span> })}
+            {game.streak > 0 && <>{t('hilo.keepOrGuess', { next: nextPot(game.pot) })}</>}
           </>
         )}
         {game?.status === 'lost' && (
-          <>
-            Wrong (or tie). You lost <span className="loss">{game.bet} coins</span>.
-          </>
+          <>{tx('hilo.lost', { loss: <span className="loss">{t('game.coins', { amount: game.bet })}</span> })}</>
         )}
         {game?.status === 'cashed' && (
-          <>
-            Cashed out <span className="gain">{game.pot} coins</span>.
-          </>
+          <>{tx('hilo.cashed', { won: <span className="gain">{t('game.coins', { amount: game.pot })}</span> })}</>
         )}
         {game?.status === 'jackpot' && (
-          <>
-            JACKPOT! Same rank. <span className="gain">+{game.pot - game.bet} coins</span>
-          </>
+          <>{tx('hilo.jackpotWin', { gain: <span className="gain">{t('game.gain', { amount: game.pot - game.bet })}</span> })}</>
         )}
       </p>
 
@@ -93,21 +89,26 @@ export function HigherLower() {
         {playing ? (
           <>
             <button className="primary" onClick={() => guess('higher')} disabled={locked}>
-              Higher ▲
+              {t('hilo.higher')}
             </button>
             <button className="primary" onClick={() => guess('lower')} disabled={locked}>
-              Lower ▼
+              {t('hilo.lower')}
             </button>
             <button onClick={cashOut} disabled={locked || game.streak === 0}>
-              Cash out
+              {t('hilo.cashOut')}
             </button>
-            <button className="jackpot" onClick={jackpot} disabled={locked} title={`Next card has the same rank. Pays ${JACKPOT_MULTIPLIER}× the pot.`}>
-              JACKPOT! (same rank, {JACKPOT_MULTIPLIER}×)
+            <button
+              className="jackpot"
+              onClick={jackpot}
+              disabled={locked}
+              title={t('hilo.jackpotHint', { multiplier: JACKPOT_MULTIPLIER })}
+            >
+              {t('hilo.jackpot', { multiplier: JACKPOT_MULTIPLIER })}
             </button>
           </>
         ) : (
           <button className="primary" onClick={start} disabled={balance < bet}>
-            {game ? 'Play again' : 'Start'}
+            {game ? t('game.playAgain') : t('game.start')}
           </button>
         )}
       </div>
