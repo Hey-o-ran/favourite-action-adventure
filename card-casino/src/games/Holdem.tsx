@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useWallet } from '../wallet';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
+import { handText, useI18n, type MessageKey } from '../i18n';
 import { BIG_BLIND, BUY_IN, SEAT_COUNT, act, legalActions, startHand, type Action, type HoldemState } from './holdemRules';
 import { botAction } from './holdemBots';
 import { describeResult, formatLog, nextHandSetup, seatName } from './holdemTable';
@@ -11,6 +12,7 @@ const BOT_DELAY_MS = 700;
 
 export function Holdem() {
   const { balance, wager, settle } = useWallet();
+  const { t, tx } = useI18n();
   /** Null while you're not sitting at the table. */
   const [hand, setHand] = useState<HoldemState | null>(null);
   const [notice, setNotice] = useState('');
@@ -40,7 +42,7 @@ export function Holdem() {
 
   const nextHand = () => {
     if (!next) return;
-    const notes = next.rebought.map((seat) => `${seatName(seat)} bought back in.`);
+    const notes = next.rebought.map((seat) => t('holdem.rebought', { who: seatName(seat, t) }));
     setNotice(notes.join(' '));
     setHand(startHand(next.stacks, next.button, shuffle(newDeck())));
   };
@@ -52,38 +54,36 @@ export function Holdem() {
     setHand(null);
     setNotice(
       next?.humanBust
-        ? `You can't cover the big blind (${BIG_BLIND}), so you left the table with ${chips} ${chips === 1 ? 'coin' : 'coins'}.`
-        : `You left the table with ${chips} coins.`,
+        ? t(chips === 1 ? 'holdem.leftBustOne' : 'holdem.leftBustMany', { bigBlind: BIG_BLIND, chips })
+        : t('holdem.left', { chips }),
     );
   };
 
   if (!hand) {
     return (
       <section className="table">
-        <h2>Texas Hold'em</h2>
-        <p className="blurb">
-          Sit down with {BUY_IN} coins against two bots. Any chips you have left when you leave go back to your balance.
-        </p>
+        <h2>{t('game.holdem.name')}</h2>
+        <p className="blurb">{t('holdem.intro', { buyIn: BUY_IN })}</p>
         {notice && <p className="result">{notice}</p>}
         <div className="actions">
           <button className="primary" onClick={sitDown} disabled={balance < BUY_IN}>
-            Sit down ({BUY_IN} coins)
+            {t('holdem.sit', { buyIn: BUY_IN })}
           </button>
         </div>
-        {balance < BUY_IN && <p className="blurb">You need at least {BUY_IN} coins to sit down.</p>}
+        {balance < BUY_IN && <p className="blurb">{t('holdem.need', { buyIn: BUY_IN })}</p>}
       </section>
     );
   }
 
   const legal = legalActions(hand);
   const myTurn = hand.toAct === 0;
-  const result = hand.over ? describeResult(hand) : null;
+  const result = hand.over ? describeResult(hand, t) : null;
   const showdown = hand.street === 'showdown';
   const me = hand.seats[0];
 
   return (
     <section className="table">
-      <h2>Texas Hold'em</h2>
+      <h2>{t('game.holdem.name')}</h2>
 
       <div className="holdem-seats">
         {[1, 2].map((i) => (
@@ -93,8 +93,10 @@ export function Holdem() {
 
       <div className="holdem-board">
         <p className="hand-label">
-          {hand.street === 'showdown' ? 'Showdown' : hand.street[0].toUpperCase() + hand.street.slice(1)} · Pot{' '}
-          <span className="gain">{hand.pot}</span>
+          {tx('holdem.pot', {
+            street: t(`street.${hand.street}` as MessageKey),
+            pot: <span className="gain">{hand.pot}</span>,
+          })}
         </p>
         <div className="cards">
           {Array.from({ length: 5 }, (_, i) => (hand.board[i] ? <CardView key={i} card={hand.board[i]} /> : <div key={i} className="slot" />))}
@@ -107,13 +109,13 @@ export function Holdem() {
         {result && (
           <>
             {result.text}{' '}
-            {result.net > 0 && <span className="gain">+{result.net} coins</span>}
-            {result.net < 0 && <span className="loss">{result.net} coins</span>}
-            {result.net === 0 && <>You break even.</>}
+            {result.net > 0 && <span className="gain">{t('game.gain', { amount: result.net })}</span>}
+            {result.net < 0 && <span className="loss">{t('game.loss', { amount: Math.abs(result.net) })}</span>}
+            {result.net === 0 && <>{t('holdem.even')}</>}
           </>
         )}
-        {!result && myTurn && <>Your turn.</>}
-        {!result && !myTurn && <>{seatName(hand.toAct!)} is thinking…</>}
+        {!result && myTurn && <>{t('holdem.yourTurn')}</>}
+        {!result && !myTurn && <>{t('holdem.thinking', { who: seatName(hand.toAct!, t) })}</>}
         {notice && <> {notice}</>}
       </p>
 
@@ -121,47 +123,43 @@ export function Holdem() {
         {!hand.over && (
           <>
             <button onClick={() => play('fold')} disabled={!myTurn || !legal.fold}>
-              Fold
+              {t('holdem.fold')}
             </button>
             {legal.check || !myTurn ? (
               <button className="primary" onClick={() => play('check')} disabled={!myTurn || !legal.check}>
-                Check
+                {t('holdem.check')}
               </button>
             ) : (
               <button className="primary" onClick={() => play('call')} disabled={!myTurn || !legal.call}>
-                Call {legal.callAmount}
-                {legal.callAmount >= me.stack && ' (all in)'}
+                {t('holdem.call', { amount: legal.callAmount })}
+                {legal.callAmount >= me.stack && t('holdem.callAllIn')}
               </button>
             )}
             <button onClick={() => play('raise')} disabled={!myTurn || !legal.raise}>
-              {hand.currentBet === 0 ? 'Bet' : 'Raise to'} {legal.raiseTo || ''}
+              {hand.currentBet === 0 ? t('holdem.bet') : t('holdem.raiseTo')} {legal.raiseTo || ''}
             </button>
             <button
               className="all-in"
               onClick={() => play('allin')}
               disabled={!myTurn || !legal.allIn}
-              title={
-                legal.allInTo >= me.stack + me.bet
-                  ? 'Bet every chip you have'
-                  : 'Bet the most the other players can match. You keep the rest.'
-              }
+              title={legal.allInTo >= me.stack + me.bet ? t('holdem.allInEvery') : t('holdem.allInMost')}
             >
-              All in {myTurn && legal.allIn ? `(${legal.allInTo})` : ''}
+              {t('holdem.allIn')} {myTurn && legal.allIn ? `(${legal.allInTo})` : ''}
             </button>
           </>
         )}
         {hand.over && !next?.humanBust && (
           <button className="primary" onClick={nextHand}>
-            Next hand
+            {t('holdem.next')}
           </button>
         )}
-        <button onClick={leave} disabled={!hand.over} title={hand.over ? undefined : 'Finish the hand first, or fold'}>
-          Leave table ({me.stack})
+        <button onClick={leave} disabled={!hand.over} title={hand.over ? undefined : t('holdem.leaveTitle')}>
+          {t('holdem.leave', { stack: me.stack })}
         </button>
       </div>
 
-      <ul className="holdem-log" aria-label="What happened this hand">
-        {formatLog(hand.log).slice(-6).map((line, i) => (
+      <ul className="holdem-log" aria-label={t('holdem.logLabel')}>
+        {formatLog(hand.log, t).slice(-6).map((line, i) => (
           <li key={i}>{line}</li>
         ))}
       </ul>
@@ -170,19 +168,21 @@ export function Holdem() {
 }
 
 function Seat({ hand, seat, faceUp }: { hand: HoldemState; seat: number; faceUp: boolean }) {
+  const { t } = useI18n();
   const s = hand.seats[seat];
   const active = hand.toAct === seat;
   const winner = hand.over && hand.winners.includes(seat);
+  const handName = hand.handNames[seat];
   return (
     <div className={['holdem-seat', active && 'active', s.folded && 'folded', winner && 'winner'].filter(Boolean).join(' ')}>
       <p className="hand-label">
-        {seatName(seat)}
-        {hand.button === seat && <span className="dealer-chip" title="Dealer button">D</span>}
+        {seatName(seat, t)}
+        {hand.button === seat && <span className="dealer-chip" title={t('holdem.dealerButton')}>D</span>}
         {' · '}
-        {s.stack} coins
-        {s.bet > 0 && <> · bet {s.bet}</>}
-        {s.folded && <> · folded</>}
-        {hand.handNames[seat] && <span className="gain"> · {hand.handNames[seat]}</span>}
+        {t('holdem.seatCoins', { stack: s.stack })}
+        {s.bet > 0 && <> · {t('holdem.seatBet', { bet: s.bet })}</>}
+        {s.folded && <> · {t('holdem.seatFolded')}</>}
+        {handName && <span className="gain"> · {handText(t, handName)}</span>}
       </p>
       <div className="cards">
         {s.hole.map((card, i) => (
