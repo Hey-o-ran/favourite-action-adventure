@@ -227,7 +227,7 @@ describe('playing a trick', () => {
     expect(found).not.toBeNull();
     setup(found!.deck, 0.25);
     deal();
-    pass(BOT_DELAY_MS * 3);
+    for (let i = 0; i < 3; i++) pass(BOT_DELAY_MS); // each bot starts its wait only after the one before has played
     expect(result()).toHaveTextContent(/your turn/i);
     fireEvent.click(cardEl(found!.illegal.id));
     fireEvent.click(screen.getByRole('button', { name: 'Play 1 card' }));
