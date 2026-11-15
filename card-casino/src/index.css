@@ -342,6 +342,35 @@ button.primary {
 .pile .suit.red { color: var(--loss); }
 .dim { opacity: 0.5; }
 
+/* Shengji */
+.shengji { --card-w: min(46px, 8vw); }
+.shengji .card { font-size: 11px; }
+.shengji .card .pip { font-size: 1.5em; }
+.sj-card.joker { color: #111; }
+.sj-card.joker.red { color: #c81e1e; }
+.sj-card.faded { opacity: 0.55; }
+.sj-table { display: grid; grid-template-columns: 1fr minmax(180px, 2fr) 1fr; grid-template-areas: '. top .' 'left center right' '. last .'; gap: 8px; align-items: center; margin: 8px 0 12px; }
+.sj-seat { text-align: center; padding: 6px 8px; border-radius: 10px; background: #0003; display: flex; flex-direction: column; gap: 2px; }
+.sj-seat small { color: var(--muted); }
+.sj-seat.turn { outline: 2px solid var(--gold); }
+.sj-seat.top { grid-area: top; }
+.sj-seat.left { grid-area: left; }
+.sj-seat.right { grid-area: right; }
+.sj-center { grid-area: center; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-areas: '. top .' 'left . right' '. bottom .'; gap: 4px; justify-items: center; align-items: center; padding: 8px; min-height: calc(var(--card-w) * 4.4); background: #0002; border-radius: 12px; }
+.sj-play { display: flex; justify-content: center; min-height: calc(var(--card-w) * 1.4); }
+.sj-play .card + .card { margin-left: calc(var(--card-w) * -0.5); }
+.sj-play.top { grid-area: top; }
+.sj-play.left { grid-area: left; }
+.sj-play.right { grid-area: right; }
+.sj-play.bottom { grid-area: bottom; }
+.sj-last { grid-area: last; text-align: center; margin: 0; }
+.sj-points { margin: 0 0 4px; }
+.sj-hand { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 8px; }
+.sj-group { display: flex; flex-wrap: wrap; row-gap: 6px; padding-top: 8px; }
+.sj-group .card + .card { margin-left: calc(var(--card-w) * -0.45); }
+.sj-group .card[role='button']:hover { z-index: 2; }
+.sj-group .card.selected { z-index: 3; }
+
 /* Game settings */
 .settings { display: grid; gap: 14px; margin: 8px 0 12px; padding: 14px 16px; background: #0004; border: 1px solid #ffffff22; border-radius: 12px; }
 .settings-group h3 { margin: 0 0 6px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
