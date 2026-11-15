@@ -6,6 +6,7 @@ import {
   filterOptions,
   matchesFilters,
   originLabel,
+  SORT_OPTIONS,
   sortGames,
   type GameFacts,
 } from './gameFilters';
@@ -101,5 +102,45 @@ describe('sorting games', () => {
       { name: 'Z', ...game({ popularity: 2 }) },
     ];
     expect(names(sortGames(tied, 'popularity'))).toBe('YXZ');
+  });
+});
+
+describe('sorting games alphabetically', () => {
+  const named = (...list: string[]) => list.map((name, i) => ({ name, ...game({ popularity: i + 1 }) }));
+  const order = (list: { name: string }[]) => list.map((g) => g.name).join(', ');
+
+  it('puts the games in A to Z order by name', () => {
+    expect(order(sortGames(named('Red Dog', 'Blackjack', 'Gin Rummy', 'Baccarat'), 'alphabetical'))).toBe(
+      'Baccarat, Blackjack, Gin Rummy, Red Dog',
+    );
+  });
+
+  it('ignores capital letters and accents', () => {
+    expect(order(sortGames(named('zebra', 'Éclair', 'apple', 'Banana'), 'alphabetical'))).toBe('apple, Banana, Éclair, zebra');
+  });
+
+  it('puts numbers in number order, not letter by letter', () => {
+    expect(order(sortGames(named('Game 10', 'Game 9', 'Game 2'), 'alphabetical'))).toBe('Game 2, Game 9, Game 10');
+  });
+
+  it('sorts by the name the player sees, so a Chinese player gets pinyin order', () => {
+    // bai (百), de (德), er (二), ya (亚)
+    const chinese = named('二十一点', '百家乐', '德州扑克', '亚');
+    expect(order(sortGames(chinese, 'alphabetical', 'zh-CN'))).toBe('百家乐, 德州扑克, 二十一点, 亚');
+  });
+
+  it('keeps games with the same name in their original order, and leaves the list untouched', () => {
+    const same = [
+      { name: 'Twin', ...game({ popularity: 5 }) },
+      { name: 'Twin', ...game({ popularity: 1 }) },
+      { name: 'Alpha', ...game({ popularity: 3 }) },
+    ];
+    const sorted = sortGames(same, 'alphabetical');
+    expect(sorted.map((g) => g.popularity)).toEqual([3, 5, 1]);
+    expect(same.map((g) => g.popularity)).toEqual([5, 1, 3]);
+  });
+
+  it('offers it in the Sort by choices, after the other two', () => {
+    expect(SORT_OPTIONS.map((o) => o.id)).toEqual(['default', 'popularity', 'alphabetical']);
   });
 });

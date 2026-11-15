@@ -25,16 +25,25 @@ export interface GameFacts {
   popularity: number;
 }
 
-export type SortOrder = 'default' | 'popularity';
+export type SortOrder = 'default' | 'popularity' | 'alphabetical';
 export const SORT_OPTIONS: { id: SortOrder; label: string }[] = [
   { id: 'default', label: 'Default order' },
   { id: 'popularity', label: 'Most popular first' },
+  { id: 'alphabetical', label: 'Alphabetical (A–Z)' },
 ];
 
-/** Returns the games in the chosen order without changing the original list. Ties keep their original order. */
-export function sortGames<T extends { popularity: number }>(games: readonly T[], sort: SortOrder): T[] {
+/**
+ * Returns the games in the chosen order without changing the original list. Ties keep their original order.
+ * Alphabetical order goes by the name the player sees, so pass the language: capitals and accents are ignored,
+ * numbers count as numbers, and Chinese names come out in pinyin order.
+ */
+export function sortGames<T extends { popularity: number; name?: string }>(games: readonly T[], sort: SortOrder, locale = 'en-GB'): T[] {
   const sorted = [...games];
   if (sort === 'popularity') sorted.sort((a, b) => a.popularity - b.popularity);
+  if (sort === 'alphabetical') {
+    const collator = new Intl.Collator(locale, { sensitivity: 'base', numeric: true });
+    sorted.sort((a, b) => collator.compare(a.name ?? '', b.name ?? ''));
+  }
   return sorted;
 }
 

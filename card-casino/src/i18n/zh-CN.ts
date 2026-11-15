@@ -191,6 +191,7 @@ export const zhCN: Record<MessageKey, string> = {
   'nav.sortBy': '排序方式',
   'nav.sortDefault': '默认顺序',
   'nav.sortPopular': '最受欢迎优先',
+  'nav.sortAlphabetical': '按名称拼音排序',
   'nav.count': '共 {count} 个游戏',
   'nav.countMatching': '{total} 个游戏中有 {matching} 个符合',
   'nav.games': '游戏',
