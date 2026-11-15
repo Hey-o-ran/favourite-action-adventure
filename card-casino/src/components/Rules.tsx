@@ -5,7 +5,7 @@ import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
 import { BIG_BLIND, BUY_IN, MAX_RAISES, SMALL_BLIND, betSize } from '../games/holdemRules';
 import { HIT_RATE, RETURN_TO_PLAYER, SYMBOL_EMOJI, THREE_OF_A_KIND, TWO_CHERRIES } from '../games/slotsRules';
 import { CHIPS, evenMoneySpot, payoutOdds, columnSpot, cornerSpot, sixLineSpot, splitSpot, straightSpot, streetSpot } from '../games/rouletteRules';
-import { GIN_BONUS, HAND_BONUS, HAND_SIZE as GIN_HAND_SIZE, KNOCK_LIMIT, MATCH_BONUS, MATCH_TARGET, STOCK_FLOOR, UNDERCUT_BONUS, WIN_PAYOUT as GIN_WIN_PAYOUT } from '../games/ginRules';
+import { GIN_BONUS, HAND_BONUS, HAND_SIZE as GIN_HAND_SIZE, KNOCK_LIMIT, MATCH_BONUS, MATCH_TARGET, PAYOUT_BY_DIFFICULTY as GIN_PAYOUT, STOCK_FLOOR, UNDERCUT_BONUS } from '../games/ginRules';
 import { CATEGORY_NAMES } from '../games/pokerHands';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
@@ -526,7 +526,15 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
           <li>An <b>undercut</b> is when the other player has the same or less deadwood than you after laying off. They score the difference plus {UNDERCUT_BONUS}, so be careful when you knock with a lot left over.</li>
           <li>If only {STOCK_FLOOR} cards are left in the stock, the hand is a draw and nobody scores. The dealer swaps each hand.</li>
           <li>When someone reaches {MATCH_TARGET}, the match ends. Both players get {HAND_BONUS} for each hand they won, and the winner gets {MATCH_BONUS} extra.</li>
-          <li>You bet once for the whole match. Win it to get your bet back plus {GIN_WIN_PAYOUT}× your bet. Lose, or press <b>Forfeit match</b>, and you lose your bet. Switching to another game doesn't forfeit, but reloading the page does.</li>
+          <li>You bet once for the whole match. Win it and your bet comes back with winnings: {GIN_PAYOUT.normal}× your bet against the normal bot ({GIN_PAYOUT.easy}× on Easy, {GIN_PAYOUT.hard}× on Hard, rounded down to a whole coin). Lose, or press <b>Forfeit match</b>, and you lose your bet. Switching to another game doesn't forfeit, but reloading the page does.</li>
+          <li>The <b>Settings</b> button under the table changes how the next match is played. Your choices are remembered on this device:
+            <ul>
+              <li><b>Bot difficulty.</b> Easy knocks as soon as it can. Normal is a careful, fair bot. Hard also remembers what you throw away. The harder the bot, the more a win pays.</li>
+              <li><b>Match length.</b> The first player to 50, 100 or 150 points wins.</li>
+              <li><b>When you can knock.</b> Standard is {KNOCK_LIMIT} or fewer. In Oklahoma, the value of the first card turned up in each hand is the most you may have left over (an ace is 1). In Gin only, you can only win a hand by going gin.</li>
+              <li><b>Double bonuses.</b> The gin and undercut bonuses are worth {GIN_BONUS * 2} instead of {GIN_BONUS}.</li>
+            </ul>
+          </li>
         </ul>
         <h3>Tips</h3>
         <ul>
