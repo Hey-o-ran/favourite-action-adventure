@@ -23,13 +23,19 @@ export interface GameFacts {
    * there is no reliable global card-game chart. Give every game its own number.
    */
   popularity: number;
+  /**
+   * Roughly how many minutes one game takes, for the Sort by box. An estimate, like popularity: one round of a
+   * quick game, or one hand or match of a longer one. Fractions are fine (a spin of the slots is about 0.2).
+   */
+  length: number;
 }
 
-export type SortOrder = 'default' | 'popularity' | 'alphabetical';
+export type SortOrder = 'default' | 'popularity' | 'alphabetical' | 'length';
 export const SORT_OPTIONS: { id: SortOrder; label: string }[] = [
   { id: 'default', label: 'Default order' },
   { id: 'popularity', label: 'Most popular first' },
   { id: 'alphabetical', label: 'Alphabetical (A–Z)' },
+  { id: 'length', label: 'Shortest game first' },
 ];
 
 /**
@@ -37,9 +43,10 @@ export const SORT_OPTIONS: { id: SortOrder; label: string }[] = [
  * Alphabetical order goes by the name the player sees, so pass the language: capitals and accents are ignored,
  * numbers count as numbers, and Chinese names come out in pinyin order.
  */
-export function sortGames<T extends { popularity: number; name?: string }>(games: readonly T[], sort: SortOrder, locale = 'en-GB'): T[] {
+export function sortGames<T extends { popularity: number; length?: number; name?: string }>(games: readonly T[], sort: SortOrder, locale = 'en-GB'): T[] {
   const sorted = [...games];
   if (sort === 'popularity') sorted.sort((a, b) => a.popularity - b.popularity);
+  if (sort === 'length') sorted.sort((a, b) => (a.length ?? 0) - (b.length ?? 0));
   if (sort === 'alphabetical') {
     const collator = new Intl.Collator(locale, { sensitivity: 'base', numeric: true });
     sorted.sort((a, b) => collator.compare(a.name ?? '', b.name ?? ''));

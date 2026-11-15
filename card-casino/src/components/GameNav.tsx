@@ -38,6 +38,7 @@ const SORT_NAME_KEYS: Record<SortOrder, MessageKey> = {
   default: 'nav.sortDefault',
   popularity: 'nav.sortPopular',
   alphabetical: 'nav.sortAlphabetical',
+  length: 'nav.sortLength',
 };
 
 /** Filter and sort dropdowns plus a row of the games that match, in the chosen order. */

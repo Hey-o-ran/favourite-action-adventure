@@ -182,8 +182,8 @@ describe('announcements in Chinese', () => {
 
 describe('choosing a game in Chinese', () => {
   const games = [
-    { id: 'a', name: '二十一点', category: 'Card games', origin: 'Spain', players: 'Vs the house', type: 'Beat the dealer', skill: 'Mix of both', popularity: 2 },
-    { id: 'b', name: '德州扑克', category: 'Card games', origin: 'United States', players: '3+ players', type: 'Poker', skill: 'Mostly skill', popularity: 1 },
+    { id: 'a', name: '二十一点', category: 'Card games', origin: 'Spain', players: 'Vs the house', type: 'Beat the dealer', skill: 'Mix of both', popularity: 2, length: 1 },
+    { id: 'b', name: '德州扑克', category: 'Card games', origin: 'United States', players: '3+ players', type: 'Poker', skill: 'Mostly skill', popularity: 1, length: 5 },
   ] as never;
 
   const nav = (filters = NO_FILTERS) =>
