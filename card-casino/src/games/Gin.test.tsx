@@ -56,6 +56,7 @@ const advance = (ms: number) => reactAct(() => vi.advanceTimersByTime(ms));
 const waitForLock = () => advance(DEAL_LOCK_MS);
 
 beforeEach(() => {
+  window.localStorage.clear();
   vi.useFakeTimers({ shouldAdvanceTime: true });
   vi.resetAllMocks();
   vi.spyOn(Math, 'random').mockReturnValue(0.9);
@@ -174,5 +175,144 @@ describe('Gin Rummy table', () => {
     await user.click(button(/^deal$/i));
     expect(screen.queryByText(/you · 10 cards/i)).not.toBeInTheDocument();
     expect(settle).not.toHaveBeenCalled();
+  });
+});
+
+describe('Gin Rummy settings', () => {
+  const save = (values: Record<string, unknown>) => window.localStorage.setItem('card-casino.settings.gin-rummy', JSON.stringify(values));
+  const settingsButton = () => screen.getByRole('button', { name: /^settings$|^hide settings$/i });
+
+  /** Plays the rigged hand to a gin, with whatever settings are saved. */
+  async function winByGin(user: ReturnType<typeof setup>) {
+    await user.click(button(/^deal$/i));
+    await waitForLock();
+    await user.click(button(/take the 5♠/i));
+    await user.click(screen.getByRole('button', { name: 'K of hearts' }));
+    await user.click(button(/gin!/i));
+  }
+
+  it('has a Settings button that opens and closes the panel', async () => {
+    const user = setup();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    await user.click(settingsButton());
+    expect(settingsButton()).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('radio', { name: /^Hard/ })).toBeInTheDocument();
+    await user.click(settingsButton());
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+  });
+
+  it('starts on Normal, standard rules and no modifiers', async () => {
+    const user = setup();
+    await user.click(settingsButton());
+    expect(screen.getByRole('radio', { name: /^Normal/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /^Standard: first to 100/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /^Standard: 10 or fewer/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /double bonuses/i })).not.toBeChecked();
+    expect(screen.getByText(/a win pays 2× your bet/i)).toBeInTheDocument();
+  });
+
+  it('says what a win pays for the chosen strength before you deal', async () => {
+    const user = setup();
+    await user.click(settingsButton());
+    await user.click(screen.getByRole('radio', { name: /^Hard/ }));
+    expect(screen.getByText(/a win pays 3× your bet/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: /^Easy/ }));
+    expect(screen.getByText(/a win pays 1.5× your bet/i)).toBeInTheDocument();
+  });
+
+  it('remembers the settings next time', async () => {
+    const user = setup();
+    await user.click(settingsButton());
+    await user.click(screen.getByRole('radio', { name: /^Hard/ }));
+    await user.click(screen.getByRole('checkbox', { name: /double bonuses/i }));
+    cleanup();
+
+    const again = setup();
+    await again.click(settingsButton());
+    expect(screen.getByRole('radio', { name: /^Hard/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /double bonuses/i })).toBeChecked();
+  });
+
+  it('pays a win by the strength of the bot: 3× on Hard, 1.5× on Easy', async () => {
+    save({ difficulty: 'hard' });
+    await winByGin(setup());
+    expect(settle).toHaveBeenCalledTimes(1);
+    expect(settle).toHaveBeenCalledWith(150);
+    expect(result()).toHaveTextContent('+100 coins');
+
+    cleanup();
+    vi.clearAllMocks();
+    wager.mockReturnValue(true);
+    save({ difficulty: 'easy' });
+    await winByGin(setup());
+    expect(settle).toHaveBeenCalledWith(75);
+    expect(result()).toHaveTextContent('+25 coins');
+  });
+
+  it('shows the settings a match is being played with', async () => {
+    save({ difficulty: 'hard', target: '150', knockRule: 'oklahoma', doubleBonuses: true });
+    const user = setup();
+    await user.click(button(/^deal$/i));
+    const summary = document.querySelector('.gin-summary');
+    expect(summary).toHaveTextContent('Hard bot · first to 150 · Oklahoma knock · double bonuses');
+    expect(document.querySelector('.scoreboard')).toHaveTextContent('first to 150');
+  });
+
+  it('keeps a match on the settings it started with when you change them part way through', async () => {
+    const user = setup();
+    await user.click(button(/^deal$/i));
+    expect(document.querySelector('.gin-summary')).toHaveTextContent('Normal bot · first to 100');
+    await user.click(settingsButton());
+    await user.click(screen.getByRole('radio', { name: /^Hard/ }));
+    await user.click(screen.getByRole('radio', { name: /first to 50/ }));
+    expect(document.querySelector('.gin-summary')).toHaveTextContent('Normal bot · first to 100');
+    expect(screen.getByText(/a win pays 2× your bet/i)).toBeInTheDocument(); // still this match's payout
+    expect(screen.getByText(/apply from the next match/i)).toBeInTheDocument();
+  });
+
+  it('pays double bonuses for a gin', async () => {
+    save({ doubleBonuses: true });
+    await winByGin(setup());
+    expect(result()).toHaveTextContent('98 + 50 bonus = 148');
+  });
+
+  it('shows the knock limit of the hand, which Oklahoma takes from the first card', async () => {
+    save({ knockRule: 'oklahoma' });
+    const user = setup();
+    await user.click(button(/^deal$/i));
+    expect(screen.getByText(/knock at 5 or fewer/i)).toBeInTheDocument(); // the first card turned up is the 5 of spades
+  });
+
+  it('lets you knock only with gin in gin only, and says why', async () => {
+    save({ knockRule: 'gin' });
+    const user = setup();
+    await user.click(button(/^deal$/i));
+    expect(screen.getByText(/gin only/i, { selector: '.hand-label' })).toBeInTheDocument();
+    await waitForLock();
+    await user.click(button(/take the 5♠/i));
+    await user.click(screen.getByRole('button', { name: '7 of hearts' })); // breaks the set: far from gin
+    expect(button(/knock \(\d+ left\)/i)).toBeDisabled();
+    expect(button(/knock \(\d+ left\)/i)).toHaveAttribute('title', expect.stringMatching(/gin only/i));
+    await user.click(screen.getByRole('button', { name: '7 of hearts' })); // unselect
+    await user.click(screen.getByRole('button', { name: 'K of hearts' }));
+    expect(button(/gin!/i)).toBeEnabled();
+  });
+
+  it('puts the settings back on reset', async () => {
+    save({ difficulty: 'hard', target: '50' });
+    const user = setup();
+    await user.click(settingsButton());
+    await user.click(screen.getByRole('button', { name: /reset to defaults/i }));
+    expect(screen.getByRole('radio', { name: /^Normal/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /first to 100/ })).toBeChecked();
+  });
+
+  it('ignores a saved setting that is no longer valid', async () => {
+    save({ difficulty: 'impossible', target: '7', knockRule: 'whenever' });
+    const user = setup();
+    await user.click(settingsButton());
+    expect(screen.getByRole('radio', { name: /^Normal/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /first to 100/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /^Standard: 10 or fewer/ })).toBeChecked();
   });
 });

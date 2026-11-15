@@ -290,7 +290,7 @@ button.primary {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 190px;
+  min-width: 220px;
   padding: 8px;
   background: var(--felt-dark);
   border: 1px solid #ffffff33;
@@ -298,6 +298,8 @@ button.primary {
   box-shadow: 0 10px 30px #000a;
 }
 .menu-list button { width: 100%; text-align: left; }
+.menu-list button.unavailable { opacity: 0.55; cursor: not-allowed; }
+.menu-list button.unavailable:hover { background: #ffffff14; }
 .menu-list button[aria-current='page'] { border-color: var(--gold); color: var(--gold); }
 
 .jackpot {
@@ -339,6 +341,18 @@ button.primary {
 .pile .suit { font-weight: 700; color: var(--ink); }
 .pile .suit.red { color: var(--loss); }
 .dim { opacity: 0.5; }
+
+/* Game settings */
+.settings { display: grid; gap: 14px; margin: 8px 0 12px; padding: 14px 16px; background: #0004; border: 1px solid #ffffff22; border-radius: 12px; }
+.settings-group h3 { margin: 0 0 6px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.setting-choice { border: 0; margin: 0 0 8px; padding: 0; min-width: 0; }
+.setting-choice legend { padding: 0; font-weight: 700; }
+.setting-help { display: block; color: var(--muted); margin: 2px 0 4px; }
+.setting-option, .setting-toggle { display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; cursor: pointer; }
+.setting-option input, .setting-toggle input { margin-top: 4px; accent-color: var(--gold); }
+.setting-option small, .setting-toggle small { display: block; color: var(--muted); }
+.settings-foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin: 0; color: var(--muted); font-size: 0.9rem; }
+.gin-summary { margin: 0 0 6px; }
 
 /* Slots */
 .sl-machine { position: relative; display: flex; gap: 10px; justify-content: center; padding: 16px; margin: 12px auto; width: max-content; max-width: 100%; background: linear-gradient(#3a2412, #241408); border: 4px solid #e5c07b; border-radius: 16px; box-shadow: inset 0 0 20px #0009; }

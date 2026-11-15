@@ -221,6 +221,8 @@ export function App() {
   const menuItems: MenuItem[] = [
     page('updates', t('menu.whatsNew')),
     page('leaderboard', t('menu.leaderboard')),
+    // A placeholder for now: the shop isn't built yet.
+    { id: 'shop', label: t('menu.shop'), disabled: true, onSelect: () => {} },
     page('rules', t('menu.rules')),
     ...(session.user.isAdmin ? [page('admin', t('menu.admin'))] : []),
     ...LANGUAGES.map(

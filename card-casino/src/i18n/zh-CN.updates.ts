@@ -3,6 +3,16 @@
  * needs the same number of points as the English update (a test checks this).
  */
 export const ZH_UPDATES: Record<string, { date: string; title: string; points: string[] }> = {
+  'gin-settings': {
+    date: '2026年11月15日',
+    title: '金拉米有设置啦',
+    points: [
+      '金拉米现在有了设置按钮！按下它就能改变下一场比赛的玩法，它会记住你的选择。',
+      '可以选择简单、普通或困难的机器人。机器人越强，打败它赢得越多：简单难度赢赌注的 1.5 倍，普通难度 2 倍，困难难度 3 倍。',
+      '你还可以选择短比赛或长比赛（先到 50 分或 150 分），改变什么时候可以敲牌，或者为金拉米和反杀打开双倍奖励。',
+      '更多游戏很快也会有设置。',
+    ],
+  },
   slots: {
     date: '2026年11月15日',
     title: '老虎机来啦！',

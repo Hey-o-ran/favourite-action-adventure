@@ -6,7 +6,7 @@ import { HAND_SIZE, WIN_PAYOUT } from '../games/crazyEightsRules';
 import { BIG_BLIND, BUY_IN, MAX_RAISES, SMALL_BLIND, betSize } from '../games/holdemRules';
 import { HIT_RATE, RETURN_TO_PLAYER, SYMBOL_EMOJI, THREE_OF_A_KIND, TWO_CHERRIES } from '../games/slotsRules';
 import { CHIPS, evenMoneySpot, payoutOdds, columnSpot, cornerSpot, sixLineSpot, splitSpot, straightSpot, streetSpot } from '../games/rouletteRules';
-import { GIN_BONUS, HAND_BONUS, HAND_SIZE as GIN_HAND_SIZE, KNOCK_LIMIT, MATCH_BONUS, MATCH_TARGET, STOCK_FLOOR, UNDERCUT_BONUS, WIN_PAYOUT as GIN_WIN_PAYOUT } from '../games/ginRules';
+import { GIN_BONUS, HAND_BONUS, HAND_SIZE as GIN_HAND_SIZE, KNOCK_LIMIT, MATCH_BONUS, MATCH_TARGET, PAYOUT_BY_DIFFICULTY as GIN_PAYOUT, STOCK_FLOOR, UNDERCUT_BONUS } from '../games/ginRules';
 import { CATEGORY_NAMES } from '../games/pokerHands';
 import { PAYTABLE } from '../games/videoPokerRules';
 import { JACKPOT_MULTIPLIER, POT_MULTIPLIER } from '../games/higherLowerRules';
@@ -307,6 +307,21 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
   const { t, tb } = useI18n();
   const title = (id: string) => t(`game.${id}.name` as MessageKey);
 
+  const ginValues = {
+    hand: s(GIN_HAND_SIZE),
+    target: s(MATCH_TARGET),
+    knock: s(KNOCK_LIMIT),
+    gin: s(GIN_BONUS),
+    undercut: s(UNDERCUT_BONUS),
+    floor: s(STOCK_FLOOR),
+    handBonus: s(HAND_BONUS),
+    matchBonus: s(MATCH_BONUS),
+    normal: s(GIN_PAYOUT.normal),
+    easy: s(GIN_PAYOUT.easy),
+    hard: s(GIN_PAYOUT.hard),
+    double: s(GIN_BONUS * 2),
+  };
+
   const pages: Record<string, ReactNode> = {
     blackjack: (
       <Section title={title('blackjack')} diagram={<BlackjackDiagram />}>
@@ -462,21 +477,19 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
     'gin-rummy': (
       <Section title={title('gin-rummy')} diagram={<GinDiagram />}>
         <h3>{t('rules.how')}</h3>
-        <Items
-          prefix="rules.gin-rummy.how"
-          count={12}
-          values={{
-            hand: s(GIN_HAND_SIZE),
-            target: s(MATCH_TARGET),
-            knock: s(KNOCK_LIMIT),
-            gin: s(GIN_BONUS),
-            undercut: s(UNDERCUT_BONUS),
-            floor: s(STOCK_FLOOR),
-            handBonus: s(HAND_BONUS),
-            matchBonus: s(MATCH_BONUS),
-            win: s(GIN_WIN_PAYOUT),
-          }}
-        />
+        <ul>
+          {keys('rules.gin-rummy.how', 12).map((key) => (
+            <li key={key}>{tb(key, ginValues)}</li>
+          ))}
+          <li>
+            {tb('rules.gin-rummy.how.13')}
+            <ul>
+              {keys('rules.gin-rummy.setting', 4).map((key) => (
+                <li key={key}>{tb(key, ginValues)}</li>
+              ))}
+            </ul>
+          </li>
+        </ul>
         <h3>{t('rules.tips')}</h3>
         <Items prefix="rules.gin-rummy.tip" count={4} />
       </Section>
