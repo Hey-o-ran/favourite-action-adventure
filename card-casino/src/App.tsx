@@ -19,6 +19,7 @@ import { AdminGate } from './components/AdminGate';
 import { Leaderboard } from './components/Leaderboard';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { SaveStatus } from './components/SaveStatus';
+import { GameScope, usePlaytime } from './statsRecorder';
 import { HeaderMenu, type MenuItem } from './components/HeaderMenu';
 import { useSession } from './session';
 import { LANGUAGES, factText, gameText, useI18n } from './i18n';
@@ -208,6 +209,8 @@ export function App() {
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [sort, setSort] = useState<SortOrder>('default');
   const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin' | 'leaderboard'>('game');
+  // Time spent playing, for the stats: only counted while a game is showing, not the rules or the leaderboard.
+  usePlaytime(activeId, view === 'game');
   const showRules = view !== 'game';
   /** Set once the admin password has been entered. It lasts until the page is reloaded or you log out. */
   const [adminUnlocked, setAdminUnlocked] = useState(false);
@@ -299,7 +302,9 @@ export function App() {
         {/* Games stay mounted when hidden so an unfinished hand isn't lost when switching games. */}
         {GAMES.map(({ id, Component }) => (
           <div key={id} hidden={id !== activeId}>
-            <Component />
+            <GameScope gameId={id}>
+              <Component />
+            </GameScope>
           </div>
         ))}
       </div>

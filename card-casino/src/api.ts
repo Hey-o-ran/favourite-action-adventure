@@ -192,6 +192,16 @@ export const getBalance = async (token: string) =>
 export const saveBalance = async (token: string, req: BalanceResponse, options?: RequestOptions) =>
   (await request<BalanceResponse>('PUT', '/v1/me/balance', req, token, options))!;
 
+export type GameResult = 'win' | 'draw' | 'loss';
+/** A finished game and/or some seconds of play, for the player's stats. */
+export interface StatsReport {
+  game: string;
+  result?: GameResult;
+  seconds?: number;
+}
+export const recordStats = async (token: string, report: StatsReport) =>
+  (await request<{ resultRecorded: boolean; secondsCredited: number }>('POST', '/v1/me/stats', report, token))!;
+
 /** One line of the leaderboard: a player's rank, name and coins. Never an email or account id. */
 export interface LeaderboardEntry {
   rank: number;
