@@ -4,15 +4,17 @@ import { newDeck, shuffle, type Card } from '../cards';
 import { useDealLock } from '../useDealLock';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
-import { useI18n, type Translate } from '../i18n';
+import { useI18n, type MessageKey, type Translate } from '../i18n';
+import { useGameSettings } from '../gameSettings';
+import { SettingsPanel } from '../components/SettingsPanel';
+import { GIN_SETTINGS, ginChoices } from './ginSettings';
 import { ginLog } from './gameLogs';
 import { botStep } from './ginBot';
 import {
-  GIN_BONUS,
+  DEFAULT_RULES,
   HAND_BONUS,
   MATCH_BONUS,
-  MATCH_TARGET,
-  UNDERCUT_BONUS,
+  PAYOUT_BY_DIFFICULTY,
   arrange,
   cardName,
   discardCard,
@@ -46,7 +48,7 @@ function describeResult(r: HandResult, t: Translate): string {
   const knocker = r.knocker!;
   const them = other(knocker);
   if (r.kind === 'gin')
-    return t('gin.res.gin', { knocker: name(knocker), other: name(them), otherPoints: r.otherPoints!, bonus: GIN_BONUS, points: r.points });
+    return t('gin.res.gin', { knocker: name(knocker), other: name(them), otherPoints: r.otherPoints!, bonus: r.bonus, points: r.points });
   const laid =
     r.laidOff!.length > 0 ? t('gin.res.laid', { other: name(them), cards: r.laidOff!.map(cardName).join(' ') }) : '';
   if (r.kind === 'undercut')
@@ -57,7 +59,7 @@ function describeResult(r: HandResult, t: Translate): string {
       other: name(them),
       otherPoints: r.otherPoints!,
       diff: r.knockerPoints! - r.otherPoints!,
-      bonus: UNDERCUT_BONUS,
+      bonus: r.bonus,
       points: r.points,
     });
   return t('gin.res.knock', { knocker: name(knocker), knockerPoints: r.knockerPoints!, laid, other: name(them), otherPoints: r.otherPoints!, points: r.points });
@@ -73,6 +75,10 @@ export function Gin() {
   const [confirmingForfeit, setConfirmingForfeit] = useState(false);
   const settled = useRef(true);
   const { locked, lock } = useDealLock();
+  const { values: settingValues, set: setSetting, reset: resetSettings } = useGameSettings(GIN_SETTINGS);
+  const [showSettings, setShowSettings] = useState(false);
+  /** What the next match will be played with. A match in progress keeps the settings it started with. */
+  const choices = ginChoices(settingValues);
 
   const hand = match?.hand;
   const playing = match?.status === 'playing';
@@ -85,7 +91,7 @@ export function Gin() {
     settled.current = false;
     setSelected(null);
     setConfirmingForfeit(false);
-    setMatch(startMatch(shuffle(newDeck()), bet, Math.random() < 0.5 ? 'player' : 'bot'));
+    setMatch(startMatch(shuffle(newDeck()), bet, Math.random() < 0.5 ? 'player' : 'bot', { rules: choices.rules, difficulty: choices.difficulty }));
     lock();
   };
 
@@ -98,7 +104,7 @@ export function Gin() {
   // The bot moves a moment after you.
   useEffect(() => {
     if (!match || match.status !== 'playing' || match.hand.phase === 'over' || match.hand.turn !== 'bot') return;
-    const timer = window.setTimeout(() => setMatch((m) => (m ? updateHand(m, botStep(m.hand)) : m)), BOT_DELAY_MS);
+    const timer = window.setTimeout(() => setMatch((m) => (m ? updateHand(m, botStep(m.hand, m.difficulty)) : m)), BOT_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [match]);
 
@@ -178,8 +184,16 @@ export function Gin() {
               hand: match.handNumber,
               you: <b>{match.scores.player}</b>,
               bot: <b>{match.scores.bot}</b>,
-              target: MATCH_TARGET,
+              target: match.rules.target,
               dealer: t(hand.dealer === 'player' ? 'gin.youDeal' : 'gin.botDeals'),
+            })}
+          </p>
+          <p className="hint gin-summary">
+            {t('gin.summary', {
+              difficulty: t(`settings.gin.difficulty.${match.difficulty}` as MessageKey),
+              target: match.rules.target,
+              knock: t(`gin.short.${match.rules.knockRule}` as MessageKey),
+              extra: match.rules.ginBonus > DEFAULT_RULES.ginBonus ? t('gin.summary.double') : '',
             })}
           </p>
 
@@ -200,6 +214,7 @@ export function Gin() {
           <p className="hand-label">
             {t('gin.youHand', { count: hand.player.length })}
             {playerPoints !== null && <>{t('gin.loose', { points: playerPoints })}</>}
+            {playerPoints !== null && <>{hand.knockLimit === 0 ? t('gin.limitGinOnly') : t('gin.limitNote', { limit: hand.knockLimit })}</>}
           </p>
           {renderGroups('player', false)}
         </>
@@ -279,7 +294,13 @@ export function Gin() {
             <button
               onClick={() => move((h) => knock(h, selectedIndex))}
               disabled={!knockInfo?.allowed}
-              title={knockInfo && !knockInfo.allowed ? t('gin.knockTitle', { points: knockInfo.points }) : undefined}
+              title={
+                knockInfo && !knockInfo.allowed
+                  ? hand!.knockLimit === 0
+                    ? t('gin.knockTitleGin', { points: knockInfo.points })
+                    : t('gin.knockTitle', { points: knockInfo.points, limit: hand!.knockLimit })
+                  : undefined
+              }
             >
               {knockInfo?.allowed && knockInfo.points === 0
                 ? t('gin.gin')
@@ -321,7 +342,15 @@ export function Gin() {
         </div>
       )}
 
+      <div className="actions">
+        <button aria-expanded={showSettings} onClick={() => setShowSettings((s) => !s)}>
+          {t(showSettings ? 'settings.hide' : 'settings.show')}
+        </button>
+      </div>
+      {showSettings && <SettingsPanel schema={GIN_SETTINGS} values={settingValues} onChange={setSetting} onReset={resetSettings} />}
+
       <BetPanel value={bet} onChange={setBet} max={balance} disabled={playing} />
+      <p className="hint">{t('gin.winPays', { multiple: PAYOUT_BY_DIFFICULTY[playing && match ? match.difficulty : choices.difficulty] })}</p>
     </section>
   );
 }

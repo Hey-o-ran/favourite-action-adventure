@@ -26,6 +26,33 @@ export const cardName = (card: Card) => `${rankLabel(card.rank)}${SUIT_SYMBOL[ca
 const bySuitThenRank = (a: Card, b: Card) => a.suit.localeCompare(b.suit) || a.rank - b.rank;
 const byRankThenSuit = (a: Card, b: Card) => a.rank - b.rank || a.suit.localeCompare(b.suit);
 
+// ---------------------------------------------------------------- settings
+
+/** How strong the bot plays. A harder bot pays more when you beat it. */
+export type Difficulty = 'easy' | 'normal' | 'hard';
+/**
+ * When you may knock. Standard is 10 or fewer. Oklahoma uses the value of the first card turned up each hand
+ * (an ace is 1), so the limit changes from hand to hand. Gin only means you can only win by going gin.
+ */
+export type KnockRule = 'standard' | 'oklahoma' | 'gin';
+
+/** The rules a match is played by. */
+export interface GinRules {
+  /** The score that wins the match. */
+  target: number;
+  knockRule: KnockRule;
+  ginBonus: number;
+  undercutBonus: number;
+}
+export const DEFAULT_RULES: GinRules = { target: MATCH_TARGET, knockRule: 'standard', ginBonus: GIN_BONUS, undercutBonus: UNDERCUT_BONUS };
+
+/** Coins handed back per coin bet for winning a match, the stake included. Harder bots pay more. */
+export const PAYOUT_BY_DIFFICULTY: Record<Difficulty, number> = { easy: 1.5, normal: 2, hard: 3 };
+
+/** The most deadwood you may knock with in a hand whose first card turned up is `upcard`. */
+export const knockLimitFor = (rule: KnockRule, upcard: Card): number =>
+  rule === 'gin' ? 0 : rule === 'oklahoma' ? deadwoodValue(upcard) : KNOCK_LIMIT;
+
 // ---------------------------------------------------------------- melds
 
 /** A set is 3 or 4 cards of one rank. A run is 3 or more in a row of one suit. Aces are low only (no K-A-2). */
@@ -219,13 +246,19 @@ export interface GinHand {
   taken: Card | null;
   /** Cards the player has picked up from the pile, which tell the bot what the player is collecting. */
   playerTook: Card[];
+  /** Cards the player has thrown away, which tell a strong bot what the player does not want. */
+  playerDiscards: Card[];
+  /** The rules this hand is played by. */
+  rules: GinRules;
+  /** The most deadwood you may knock with in this hand. */
+  knockLimit: number;
   result: HandResult | null;
   /** A short description of the last move, for the screen. */
   log: string;
 }
 
 /** Deals 10 cards each, alternating from the player who isn't dealing, then turns up the first card. */
-export function dealHand(deck: readonly Card[], dealer: Who): GinHand {
+export function dealHand(deck: readonly Card[], dealer: Who, rules: GinRules = DEFAULT_RULES): GinHand {
   const stock = [...deck];
   const first = other(dealer);
   const hands: Record<Who, Card[]> = { player: [], bot: [] };
@@ -245,6 +278,9 @@ export function dealHand(deck: readonly Card[], dealer: Who): GinHand {
     passes: 0,
     taken: null,
     playerTook: [],
+    playerDiscards: [],
+    rules,
+    knockLimit: knockLimitFor(rules.knockRule, up),
     result: null,
     log: `${first === 'player' ? 'You are' : 'Bot is'} first to act. The ${cardName(up)} is turned up.`,
   };
@@ -322,6 +358,7 @@ export function discardCard(h: GinHand, index: number): GinHand {
     ...withHand(h, h.turn, hand.filter((_, i) => i !== index)),
     discard: [...h.discard, card],
     taken: null,
+    playerDiscards: h.turn === 'player' ? [...h.playerDiscards, card] : h.playerDiscards,
     log: `${subject(h.turn)} discarded the ${cardName(card)}.`,
   };
   if (next.stock.length <= STOCK_FLOOR) {
@@ -335,7 +372,7 @@ export function knockOption(h: GinHand, index: number): { allowed: boolean; poin
   const hand = h[h.turn];
   if (h.phase !== 'discard' || !discardable(h, hand).includes(index)) return { allowed: false, points: 0 };
   const points = deadwoodPoints(hand.filter((_, i) => i !== index));
-  return { allowed: points <= KNOCK_LIMIT, points };
+  return { allowed: points <= h.knockLimit, points };
 }
 
 /** Discards the card at `index` and knocks (or goes gin, with no deadwood), then settles the hand. */
@@ -362,8 +399,8 @@ export function knock(h: GinHand, index: number): GinHand {
       otherDeadwood: against.deadwood,
       otherPoints: against.points,
       laidOff: [],
-      points: against.points + GIN_BONUS,
-      bonus: GIN_BONUS,
+      points: against.points + h.rules.ginBonus,
+      bonus: h.rules.ginBonus,
     };
     return { ...base, result, log: `${subject(knocker)} went gin!` };
   }
@@ -383,8 +420,8 @@ export function knock(h: GinHand, index: number): GinHand {
     otherDeadwood: layoff.remaining.deadwood,
     otherPoints: o,
     laidOff: layoff.laidOff,
-    points: undercut ? k - o + UNDERCUT_BONUS : o - k,
-    bonus: undercut ? UNDERCUT_BONUS : 0,
+    points: undercut ? k - o + h.rules.undercutBonus : o - k,
+    bonus: undercut ? h.rules.undercutBonus : 0,
   };
   return { ...base, result, log: `${subject(knocker)} knocked with ${k}.` };
 }
@@ -402,18 +439,33 @@ export interface GinMatch {
   /** Final scores with the match and hand bonuses added. Set when the match ends by points. */
   final: Record<Who, number> | null;
   forfeited: boolean;
+  /** The rules and bot strength this match was started with. Changing settings later doesn't affect it. */
+  rules: GinRules;
+  difficulty: Difficulty;
+  /** Coins handed back per coin bet for winning, stake included. */
+  payout: number;
 }
 
-export function startMatch(deck: readonly Card[], bet: number, dealer: Who): GinMatch {
+export function startMatch(
+  deck: readonly Card[],
+  bet: number,
+  dealer: Who,
+  options: { rules?: GinRules; difficulty?: Difficulty } = {},
+): GinMatch {
+  const rules = options.rules ?? DEFAULT_RULES;
+  const difficulty = options.difficulty ?? 'normal';
   return {
     bet,
     scores: { player: 0, bot: 0 },
     handsWon: { player: 0, bot: 0 },
     handNumber: 1,
-    hand: dealHand(deck, dealer),
+    hand: dealHand(deck, dealer, rules),
     status: 'playing',
     final: null,
     forfeited: false,
+    rules,
+    difficulty,
+    payout: PAYOUT_BY_DIFFICULTY[difficulty],
   };
 }
 
@@ -432,7 +484,7 @@ export function updateHand(m: GinMatch, hand: GinHand): GinMatch {
   if (!winner) return next;
   const scores = { ...m.scores, [winner]: m.scores[winner] + points };
   const handsWon = { ...m.handsWon, [winner]: m.handsWon[winner] + 1 };
-  const ended = scores[winner] >= MATCH_TARGET;
+  const ended = scores[winner] >= m.rules.target;
   return {
     ...next,
     scores,
@@ -445,13 +497,13 @@ export function updateHand(m: GinMatch, hand: GinHand): GinMatch {
 /** Deals the next hand, with the other player dealing. */
 export function nextHand(m: GinMatch, deck: readonly Card[]): GinMatch {
   if (m.status !== 'playing' || m.hand.phase !== 'over') return m;
-  return { ...m, handNumber: m.handNumber + 1, hand: dealHand(deck, other(m.hand.dealer)) };
+  return { ...m, handNumber: m.handNumber + 1, hand: dealHand(deck, other(m.hand.dealer), m.rules) };
 }
 
 export const forfeit = (m: GinMatch): GinMatch => (m.status === 'playing' ? { ...m, status: 'lost', forfeited: true } : m);
 
 /** Coins handed back, including the stake. */
-export const returnedFor = (m: GinMatch): number => (m.status === 'won' ? m.bet * (1 + WIN_PAYOUT) : 0);
+export const returnedFor = (m: GinMatch): number => (m.status === 'won' ? Math.floor(m.bet * m.payout) : 0);
 
 /** The cards nobody can see from the bot's side: the whole deck except its own hand and the pile. */
 export function unseenCards(h: GinHand, hand: readonly Card[]): Card[] {

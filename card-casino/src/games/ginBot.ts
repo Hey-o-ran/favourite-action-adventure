@@ -1,6 +1,5 @@
 import type { Card } from '../cards';
 import {
-  KNOCK_LIMIT,
   arrange,
   deadwoodPoints,
   deadwoodValue,
@@ -14,16 +13,26 @@ import {
   takeUpcard,
   topDiscard,
   unseenCards,
+  type Difficulty,
   type GinHand,
 } from './ginRules';
 
 /*
- * A decent, fair bot. It plays by what it can see: its own cards, the whole discard pile, and which pile cards
- * you picked up. It never looks at your hand or the stock.
+ * A fair bot that plays by what it can see: its own cards, the whole discard pile, and which pile cards you picked
+ * up. It never looks at your hand or the stock. There are three strengths:
+ *
+ * - Easy takes pile cards only when they build a meld and knocks the moment it can. It doesn't think about what
+ *   you are collecting, so it often knocks too early and gets undercut.
+ * - Normal also avoids throwing cards you seem to want, knocks later while there is plenty of stock left, and waits
+ *   for gin when many cards would make it.
+ * - Hard also remembers what you threw away (you don't want those, so they are safe to throw), only waits for gin
+ *   when it has plenty of chances, and knocks a little sooner when you have been picking up lots of pile cards.
  */
 
 /** Gin outs need this many live cards before the bot is willing to wait for gin instead of knocking. */
 const WAIT_FOR_GIN_OUTS = 3;
+/** A strong bot waits for gin only with more chances, since a knock can often win it anyway. */
+const WAIT_FOR_GIN_OUTS_HARD = 4;
 /** Stock sizes below which the bot is happier to knock with more deadwood. */
 const KNOCK_LIMIT_EARLY = 4;
 const KNOCK_LIMIT_MIDDLE = 7;
@@ -70,16 +79,28 @@ function potentialOf(loose: readonly Card[]): number {
   return score;
 }
 
+/** A card is safe to throw if you threw the same number, or the next one up or down in its suit: you aren't collecting it. */
+function safetyOf(card: Card, threw: readonly Card[]): number {
+  let safety = 0;
+  for (const t of threw) {
+    if (t.rank === card.rank) safety += 2;
+    else if (t.suit === card.suit && Math.abs(t.rank - card.rank) === 1) safety += 1;
+  }
+  return safety;
+}
+
 /** Every legal discard from an 11-card hand, best first. */
-function rankDiscards(h: GinHand, hand: readonly Card[]): DiscardChoice[] {
+function rankDiscards(h: GinHand, hand: readonly Card[], level: Difficulty): DiscardChoice[] {
   const choices = discardable(h, hand).map((index) => {
     const rest = hand.filter((_, i) => i !== index);
     const arranged = arrange(rest);
+    // Easy just gets rid of the most deadwood. Normal and Hard also think about what you want.
+    const danger = level === 'easy' ? 0 : dangerOf(hand[index], h.playerTook) - (level === 'hard' ? safetyOf(hand[index], h.playerDiscards) : 0);
     return {
       index,
       deadwood: arranged.points,
-      danger: dangerOf(hand[index], h.playerTook),
-      potential: potentialOf(arranged.deadwood),
+      danger,
+      potential: level === 'easy' ? 0 : potentialOf(arranged.deadwood),
     };
   });
   return choices.sort(
@@ -108,21 +129,30 @@ function ginOuts(h: GinHand, hand: readonly Card[]): number {
 }
 
 /** How much deadwood the bot is willing to knock with, depending on how far through the stock the hand is. */
-const knockLimit = (h: GinHand) => (h.stock.length > 20 ? KNOCK_LIMIT_EARLY : h.stock.length > 12 ? KNOCK_LIMIT_MIDDLE : KNOCK_LIMIT);
+function knockLimit(h: GinHand, level: Difficulty): number {
+  if (level === 'easy') return h.knockLimit;
+  const base = h.stock.length > 20 ? KNOCK_LIMIT_EARLY : h.stock.length > 12 ? KNOCK_LIMIT_MIDDLE : h.knockLimit;
+  // A strong bot knocks a little sooner when you've been collecting pile cards, because you may be close to going out.
+  const rushed = level === 'hard' && h.playerTook.length >= 3 ? 2 : 0;
+  return Math.min(h.knockLimit, base + rushed);
+}
 
 /** Does the bot knock after its best discard? Gin always. Otherwise only with little deadwood, and not if gin is likely. */
-function shouldKnock(h: GinHand, best: DiscardChoice): boolean {
+function shouldKnock(h: GinHand, best: DiscardChoice, level: Difficulty): boolean {
   if (best.deadwood === 0) return true;
-  if (best.deadwood > Math.min(KNOCK_LIMIT, knockLimit(h))) return false;
+  if (best.deadwood > knockLimit(h, level)) return false;
+  // Easy knocks the moment it can.
+  if (level === 'easy') return true;
   const rest = h.bot.filter((_, i) => i !== best.index);
   const arranged = arrange(rest);
   // With one loose card left, a single lucky draw makes gin. Wait for it while there are plenty of chances.
-  if (arranged.deadwood.length === 1 && h.stock.length > 8 && ginOuts(h, rest) >= WAIT_FOR_GIN_OUTS) return false;
+  const needed = level === 'hard' ? WAIT_FOR_GIN_OUTS_HARD : WAIT_FOR_GIN_OUTS;
+  if (arranged.deadwood.length === 1 && h.stock.length > 8 && ginOuts(h, rest) >= needed) return false;
   return true;
 }
 
 /** Plays one step for the bot: a decision on the first card, a draw, or a discard (which may be a knock). */
-export function botStep(h: GinHand): GinHand {
+export function botStep(h: GinHand, level: Difficulty = 'normal'): GinHand {
   if (h.turn !== 'bot') return h;
 
   if (h.phase === 'offer') {
@@ -135,8 +165,8 @@ export function botStep(h: GinHand): GinHand {
   }
 
   if (h.phase === 'discard') {
-    const best = rankDiscards(h, h.bot)[0];
-    return shouldKnock(h, best) ? knock(h, best.index) : discardCard(h, best.index);
+    const best = rankDiscards(h, h.bot, level)[0];
+    return shouldKnock(h, best, level) ? knock(h, best.index) : discardCard(h, best.index);
   }
   return h;
 }

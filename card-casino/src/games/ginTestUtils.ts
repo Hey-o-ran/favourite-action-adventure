@@ -27,6 +27,8 @@ interface HandSpec {
   passes?: number;
   taken?: string;
   playerTook?: string;
+  /** Cards the player has thrown away. */
+  playerDiscards?: string;
 }
 
 /** A hand in exactly the state a test wants, without dealing. */
@@ -44,6 +46,7 @@ export function handOf(spec: HandSpec): GinHand {
     passes: spec.passes ?? 0,
     taken: spec.taken ? cards(spec.taken)[0] : null,
     playerTook: cards(spec.playerTook ?? ''),
+    playerDiscards: cards(spec.playerDiscards ?? ''),
     result: null,
   };
 }

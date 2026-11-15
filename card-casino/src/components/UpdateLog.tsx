@@ -8,6 +8,16 @@ interface Update {
 const UPDATES: Update[] = [
   {
     date: '15 November 2026',
+    title: 'Settings for Gin Rummy',
+    points: [
+      'Gin Rummy now has a Settings button! Press it to change how your next match is played. It remembers your choices.',
+      'Pick an Easy, Normal or Hard bot. The harder the bot, the more you win when you beat it: 1.5 times your bet on Easy, 2 times on Normal and 3 times on Hard.',
+      'You can also choose a short or long match (first to 50 or 150), change when you are allowed to knock, or switch on double bonuses for gin and undercut.',
+      'More games will get settings soon.',
+    ],
+  },
+  {
+    date: '15 November 2026',
     title: 'Slots!',
     points: [
       'A brand new Slots machine! Choose your bet, press Spin, and watch the three reels stop one by one.',
