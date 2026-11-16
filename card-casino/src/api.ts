@@ -209,6 +209,8 @@ export interface LeaderboardEntry {
   coins: number;
   /** True for admins, who get a blue check next to their name. */
   verified?: boolean;
+  /** Wins, draws, losses and play time for the chosen period. Missing from an older server, which has no stats yet. */
+  stats?: PlayerStats;
 }
 export interface LeaderboardResponse {
   /** The top players, best first. */
@@ -219,5 +221,24 @@ export interface LeaderboardResponse {
   total: number;
 }
 
-export const getLeaderboard = async (token: string) =>
-  (await request<LeaderboardResponse>('GET', '/v1/leaderboard', undefined, token))!;
+/** Wins, draws, losses and seconds of play in one game. */
+export interface GameStats {
+  game: string;
+  wins: number;
+  draws: number;
+  losses: number;
+  seconds: number;
+}
+export interface PlayerStats {
+  wins: number;
+  draws: number;
+  losses: number;
+  seconds: number;
+  /** Only the games that were played, the most played first. */
+  games: GameStats[];
+}
+/** Which days the stats cover: today or this month (both UTC), or everything. */
+export type LeaderboardPeriod = 'day' | 'month' | 'all';
+
+export const getLeaderboard = async (token: string, period: LeaderboardPeriod = 'all') =>
+  (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}`, undefined, token))!;

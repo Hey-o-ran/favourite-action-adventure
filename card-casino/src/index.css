@@ -374,6 +374,36 @@ button.primary {
 .sj-group .card[role='button']:hover { z-index: 2; }
 .sj-group .card.selected { z-index: 3; }
 
+/* Leaderboard stats */
+.period-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.leaderboard-table .rate, .leaderboard-table .time { white-space: nowrap; text-align: right; color: var(--muted); }
+.leaderboard-table .toggle { width: 1%; }
+.stats-toggle { padding: 2px 10px; }
+.stats-detail td { background: #0003; padding: 10px 14px; }
+.stat-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.stat-game { display: grid; grid-template-columns: 120px minmax(90px, 1fr) 9.5em 3em 5.5em; gap: 4px 12px; align-items: center; }
+.stat-game .name { font-weight: 700; }
+.stat-game .record, .stat-game .rate, .stat-game .time { white-space: nowrap; font-size: 0.85rem; }
+.stat-game .rate, .stat-game .time { color: var(--muted); }
+.result-bar { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: #ffffff1f; min-width: 80px; }
+.result-bar .bar-win { background: var(--gain); }
+.result-bar .bar-draw { background: #94a3b8; }
+.result-bar .bar-loss { background: var(--loss); }
+.record .w { color: var(--gain); font-weight: 700; }
+.record .d { color: #cbd5e1; font-weight: 700; }
+.record .l { color: var(--loss); font-weight: 700; }
+.stat-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 0.8rem; color: var(--muted); }
+.stat-legend li::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 50%; vertical-align: -1px; }
+.stat-legend .win::before { background: var(--gain); }
+.stat-legend .draw::before { background: #94a3b8; }
+.stat-legend .loss::before { background: var(--loss); }
+.leaderboard-you-stats { margin: 8px 0 12px; padding: 10px 14px; background: #0003; border-radius: 12px; }
+.leaderboard-you-stats h3 { margin: 0 0 8px; font-size: 0.95rem; }
+@media (max-width: 480px) {
+  .stat-game { grid-template-columns: 1fr auto auto; }
+  .stat-game .result-bar { grid-column: 1 / -1; grid-row: 2; }
+}
+
 /* Game settings */
 .settings { display: grid; gap: 14px; margin: 8px 0 12px; padding: 14px 16px; background: #0004; border: 1px solid #ffffff22; border-radius: 12px; }
 .settings-group h3 { margin: 0 0 6px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
