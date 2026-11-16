@@ -2,10 +2,11 @@ import { useState, type FormEvent } from 'react';
 import { ApiError, giveCoins, searchUsers, type FoundUser } from '../api';
 import { useI18n } from '../i18n';
 import { useSession } from '../session';
+import { BanForm, BansList } from './AdminBan';
 
 const MAX_AMOUNT = 10_000_000;
 
-/** Admins only: find a player by name or email, then give them coins or take some away. */
+/** Admins only: find a player by name or email, then choose what to do: give or take coins, or ban them. */
 export function AdminCoins() {
   const { session, logout } = useSession();
   const { t } = useI18n();
@@ -22,6 +23,10 @@ export function AdminCoins() {
   const [done, setDone] = useState<string>();
 
   const chosen = results?.find((u) => u.userId === chosenId);
+  /** What the chosen player is for: the two buttons switch between giving or taking coins and banning. */
+  const [mode, setMode] = useState<'coins' | 'ban'>('coins');
+  /** Changes when a ban is made, so the list of bans loads again. */
+  const [bansVersion, setBansVersion] = useState(0);
 
   async function search(e: FormEvent) {
     e.preventDefault();
@@ -92,6 +97,23 @@ export function AdminCoins() {
       <h3 id="admin-coins-title">{t('coins.title')}</h3>
       <p className="hint">{t('coins.hint')}</p>
 
+      <div className="players-mode" role="group" aria-label={t('players.mode')}>
+        {(['coins', 'ban'] as const).map((m) => (
+          <button
+            key={m}
+            className={mode === m ? 'primary' : undefined}
+            aria-pressed={mode === m}
+            onClick={() => {
+              setMode(m);
+              setError(undefined);
+              setDone(undefined);
+            }}
+          >
+            {t(`players.mode.${m}` as 'players.mode.coins')}
+          </button>
+        ))}
+      </div>
+
       <form className="coins-search" onSubmit={search}>
         <label>
           {t('coins.find')}
@@ -141,7 +163,10 @@ export function AdminCoins() {
       )}
       {truncated && <p className="hint">{t('coins.more')}</p>}
 
-      {chosen && (
+      {chosen && mode === 'ban' && <BanForm key={chosen.userId} player={chosen} onBanned={() => setBansVersion((v) => v + 1)} />}
+      {mode === 'ban' && <BansList refresh={bansVersion} />}
+
+      {chosen && mode === 'coins' && (
         <div className="coins-form">
           <h4>{t('coins.givingTo', { name: chosen.displayName })}</h4>
           <label>
@@ -164,12 +189,12 @@ export function AdminCoins() {
         </div>
       )}
 
-      {error && (
+      {mode === 'coins' && error && (
         <p role="alert" className="login-error">
           {error}
         </p>
       )}
-      {done && (
+      {mode === 'coins' && done && (
         <p role="status" className="hint">
           {done}
         </p>

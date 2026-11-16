@@ -42,12 +42,32 @@ export interface LoginResponse {
   expiresIn: number;
   user: { userId: string; email: string; displayName: string; isAdmin: boolean };
 }
-export interface PendingUser {
-  userId: string;
-  email: string;
-  displayName: string;
-  createdAt: string;
+/** What a ban tells the player: why, and until when. */
+export interface BanDetails {
+  title: string;
+  description: string;
+  /** When the ban ends, as a date and time. */
+  until: string;
 }
+/** A ban as the admin sees it in the list. */
+export interface Ban extends BanDetails {
+  userId: string;
+  displayName: string;
+  bannedAt: string;
+  bannedBy: string;
+}
+
+let bannedHandler: ((ban: BanDetails) => void) | null = null;
+/** Called when any request is refused because the player is banned, so the screen can show the ban whatever they were doing. */
+export const setBannedHandler = (handler: ((ban: BanDetails) => void) | null) => {
+  bannedHandler = handler;
+};
+const asBanDetails = (details: Record<string, unknown> | undefined): BanDetails | null =>
+  details && typeof details.title === 'string' && typeof details.description === 'string' && typeof details.until === 'string'
+    ? { title: details.title, description: details.description, until: details.until }
+    : null;
+/** The ban an error carries, if it is the "banned" error. */
+export const banOf = (err: unknown): BanDetails | null => (err instanceof ApiError && err.code === 'BANNED' ? asBanDetails(err.details) : null);
 
 interface ErrorBody {
   error?: { code?: string; message?: string; fields?: Record<string, string>; details?: Record<string, unknown> };
@@ -92,7 +112,10 @@ async function request<T>(
     const err = (data as ErrorBody | undefined)?.error;
     // API Gateway rejects a missing/expired token itself, with a body that has no `error`.
     const code = err?.code ?? (res.status === 401 ? 'UNAUTHORIZED' : 'UNKNOWN');
-    throw new ApiError(res.status, code, err?.message ?? 'Request failed', err?.fields, err?.details);
+    const failure = new ApiError(res.status, code, err?.message ?? 'Request failed', err?.fields, err?.details);
+    const ban = banOf(failure);
+    if (ban) bannedHandler?.(ban);
+    throw failure;
   }
   return data as T | undefined;
 }
@@ -105,15 +128,12 @@ export const resendCode = async (req: { email: string }) => {
 };
 export const login = async (req: LoginRequest) => (await request<LoginResponse>('POST', '/v1/auth/login', req))!;
 
-export const listPendingUsers = async (token: string) =>
-  (await request<{ users: PendingUser[] }>('GET', '/v1/admin/users', undefined, token))!;
-export const approveUser = async (token: string, userId: string) =>
-  (await request<{ userId: string; status: 'ACTIVE' }>(
-    'POST',
-    `/v1/admin/users/${encodeURIComponent(userId)}/approve`,
-    undefined,
-    token,
-  ))!;
+/** Bans a player for a while. The player is shown the title and description. */
+export const banUser = async (token: string, userId: string, req: { title: string; description: string; durationMinutes: number }) =>
+  (await request<{ ban: Ban }>('POST', `/v1/admin/users/${encodeURIComponent(userId)}/ban`, req, token))!;
+export const liftBan = async (token: string, userId: string) =>
+  (await request<{ lifted: boolean }>('POST', `/v1/admin/users/${encodeURIComponent(userId)}/unban`, undefined, token))!;
+export const listBans = async (token: string) => (await request<{ bans: Ban[] }>('GET', '/v1/admin/bans', undefined, token))!;
 
 /** An active player the admin can give coins to. */
 export interface FoundUser {

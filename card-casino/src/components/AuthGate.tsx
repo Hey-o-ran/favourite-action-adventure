@@ -2,15 +2,15 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNo
 import { ApiError, login } from '../api';
 import { clearSession, loadSession, saveSession, SessionContext, type Session } from '../session';
 import { RegisterForm } from './RegisterForm';
+import { banOf, type BanDetails } from '../api';
 import { useI18n, type Translate } from '../i18n';
+import { BanNotice } from './BanNotice';
 
 function loginMessage(err: unknown, t: Translate): string {
   if (!(err instanceof ApiError)) return t('error.generic');
   switch (err.code) {
     case 'INVALID_CREDENTIALS':
       return t('login.invalid');
-    case 'ACCOUNT_PENDING':
-      return t('login.pending');
     case 'EMAIL_NOT_CONFIRMED':
       return t('login.notConfirmed');
     case 'RATE_LIMITED':
@@ -31,6 +31,8 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  /** Set when the login is refused because the account is banned. */
+  const [ban, setBan] = useState<BanDetails | null>(null);
 
   const logout = useCallback(() => {
     clearSession();
@@ -50,6 +52,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const value = useMemo(() => (session ? { session, logout } : null), [session, logout]);
 
   if (value) return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  if (ban) return <BanNotice ban={ban} onBack={() => setBan(null)} />;
   if (view === 'register') return <RegisterForm onBack={() => setView('login')} />;
 
   async function submit(e: FormEvent) {
@@ -65,7 +68,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
       setPassword('');
       setSession(next);
     } catch (err) {
-      setError(loginMessage(err, t));
+      const banned = banOf(err);
+      if (banned) setBan(banned);
+      else setError(loginMessage(err, t));
       setPassword('');
     } finally {
       setBusy(false);

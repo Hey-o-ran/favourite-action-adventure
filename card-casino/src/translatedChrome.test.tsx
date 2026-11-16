@@ -25,8 +25,6 @@ vi.mock('./api', async (orig) => {
   return {
     ...actual,
     getLeaderboard: vi.fn(),
-    listPendingUsers: vi.fn(),
-    approveUser: vi.fn(),
     searchUsers: vi.fn(),
     giveCoins: vi.fn(),
     startEvent: vi.fn(),
@@ -64,7 +62,6 @@ beforeEach(() => {
   vi.mocked(api.saveBalance).mockImplementation(server.save);
   vi.mocked(api.listActiveEvents).mockResolvedValue({ events: [] });
   vi.mocked(api.listNotices).mockResolvedValue({ notices: [] });
-  vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
 });
 afterEach(() => cleanup());
 
@@ -276,16 +273,6 @@ describe('the admin pages in Chinese', () => {
     await user.click(screen.getByRole('button', { name: t('adminGate.enter') }));
     expect(await screen.findByRole('alert')).toHaveTextContent(t('adminGate.wrong'));
     expect(screen.getByRole('button', { name: t('menu.back') })).toBeInTheDocument();
-  });
-
-  it('shows the approval list in Chinese', async () => {
-    vi.mocked(api.listPendingUsers).mockResolvedValue({
-      users: [{ userId: 'u9', email: 'new@example.com', displayName: 'Newbie', createdAt: '2026-11-01T10:00:00.000Z' }],
-    });
-    inChinese(<AdminPanel />, true);
-    expect(screen.getByRole('heading', { name: t('admin.title') })).toBeInTheDocument();
-    expect(await screen.findByRole('columnheader', { name: t('admin.requested') })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: t('admin.approveName', { name: 'Newbie' }) })).toHaveTextContent(t('admin.approve'));
   });
 
   it('shows the give-or-take-coins section in Chinese, and explains the result in Chinese', async () => {

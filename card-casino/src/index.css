@@ -374,6 +374,24 @@ button.primary {
 .sj-group .card[role='button']:hover { z-index: 2; }
 .sj-group .card.selected { z-index: 3; }
 
+/* Bans */
+.players-mode { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+.ban-form { display: grid; gap: 12px; margin: 12px 0; max-width: 520px; }
+.ban-form label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
+.ban-form label small { color: var(--muted); }
+.ban-form input, .ban-form textarea, .ban-form select { padding: 8px; border-radius: 8px; border: 1px solid #ffffff44; background: #0005; color: var(--ink); font: inherit; }
+.ban-length { display: flex; gap: 8px; align-items: flex-end; }
+.ban-length label { flex: 1; }
+.ban-confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; background: #7f1d1d66; border-radius: 10px; }
+.ban-confirm p { margin: 0; flex-basis: 100%; }
+.ban-list { margin: 16px 0; }
+.ban-list h4 { margin: 0 0 8px; }
+.ban-notice .login-card { text-align: center; }
+.ban-title { margin: 0; font-size: 1.25rem; color: var(--gold); }
+.ban-description { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ban-time { margin: 0; font-weight: 700; }
+.ban-time small { display: block; margin-top: 2px; font-weight: 400; color: var(--muted); }
+
 /* Leaderboard stats */
 .period-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 .leaderboard-table .rate, .leaderboard-table .time { white-space: nowrap; text-align: right; color: var(--muted); }
