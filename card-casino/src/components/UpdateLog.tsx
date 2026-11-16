@@ -15,6 +15,16 @@ interface Update {
  */
 export const UPDATES: Update[] = [
   {
+    id: 'big-wins',
+    date: '16 November 2026',
+    title: 'Big wins for everyone to see!',
+    points: [
+      'When someone hits something super rare, like a royal flush, three Glabbers in the slots, a single number in Roulette or a Blackjack, a banner pops up at the top for everyone: who did it, and how many coins they won.',
+      'Any win of 50 times your bet or more shows up too. Banners appear within a few seconds, you can close them with the little x, and you only see each one once.',
+      'The coins have to really be in your balance, and each player can have one banner a minute, so nobody can fake a big win.',
+    ],
+  },
+  {
     id: 'glaggles',
     date: '15 November 2026',
     title: 'Glaggles in the slots!',

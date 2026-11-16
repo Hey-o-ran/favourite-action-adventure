@@ -3,6 +3,15 @@
  * needs the same number of points as the English update (a test checks this).
  */
 export const ZH_UPDATES: Record<string, { date: string; title: string; points: string[] }> = {
+  'big-wins': {
+    date: '2026年11月16日',
+    title: '大奖让大家都看见！',
+    points: [
+      '当有人打出超级罕见的牌型，比如皇家同花顺、老虎机里的三个格拉伯、轮盘赌的单个数字或黑杰克时，屏幕顶部会给所有人弹出一条横幅：是谁，赢了多少金币。',
+      '赢得下注 50 倍或更多的奖金也会出现。横幅几秒钟内就会出现，可以用小小的 x 关掉，而且每条你只会看到一次。',
+      '金币必须真的在你的余额里，而且每位玩家每分钟只能有一条横幅，所以没人能假冒大奖。',
+    ],
+  },
   glaggles: {
     date: '2026年11月15日',
     title: '老虎机里的格拉格！',

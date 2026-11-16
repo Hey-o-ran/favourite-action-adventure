@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useDealLock } from '../useDealLock';
 import { useWallet } from '../wallet';
+import { useWinMark } from '../bigWins';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
@@ -19,6 +20,7 @@ export { DEAL_LOCK_MS } from '../useDealLock';
 
 export function Blackjack() {
   const { balance, wager, settle } = useWallet();
+  const { markWin } = useWinMark();
   const { t } = useI18n();
   const [bet, setBet] = useState(50);
   const [round, setRound] = useState<Round | null>(null);
@@ -28,7 +30,10 @@ export function Blackjack() {
 
   const apply = (next: Round) => {
     setRound(next);
-    if (next.over) settle(next.returned);
+    if (next.over) {
+      if (next.outcome === 'blackjack') markWin('blackjack');
+      settle(next.returned);
+    }
   };
 
   const deal = () => {

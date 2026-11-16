@@ -4,6 +4,7 @@ import { App } from './App';
 import { WalletProvider } from './wallet';
 import { AbuseEventsProvider } from './abuseEvents';
 import { CoinNoticesProvider } from './coinNotices';
+import { WinAnnouncementsProvider } from './winAnnouncements';
 import { AuthGate } from './components/AuthGate';
 import { SiteFooter } from './components/SiteFooter';
 import { LanguageProvider } from './i18n';
@@ -16,7 +17,9 @@ createRoot(document.getElementById('root')!).render(
         <WalletProvider>
           <AbuseEventsProvider>
             <CoinNoticesProvider>
-              <App />
+              <WinAnnouncementsProvider>
+                <App />
+              </WinAnnouncementsProvider>
             </CoinNoticesProvider>
           </AbuseEventsProvider>
         </WalletProvider>

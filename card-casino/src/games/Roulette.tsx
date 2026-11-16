@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useWallet } from '../wallet';
+import { useWinMark } from '../bigWins';
 import {
   CHIPS,
   COLUMNS,
@@ -88,6 +89,7 @@ const splitLabel = (a: number, b: number) => `Split ${Math.min(a, b)} and ${Math
 
 export function Roulette() {
   const { balance, wager, settle } = useWallet();
+  const { markWin } = useWinMark();
   const [chip, setChip] = useState<number>(10);
   const [bets, setBets] = useState<Bet[]>([]);
   /** Every chip put down, newest last, so Undo takes them back one at a time. */
@@ -151,6 +153,8 @@ export function Roulette() {
       setPlaced([]);
       setSpinning(false);
       // The wallet expects a settle for every wager, with 0 for a loss.
+      // A single number that came in.
+      if (spun.some((b) => b.kind === 'straight' && b.numbers.includes(landed))) markWin('rouletteNumber');
       settle(returned);
     }, SPIN_MS);
   };

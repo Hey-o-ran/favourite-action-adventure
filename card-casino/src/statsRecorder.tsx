@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { recordStats, type GameResult, type StatsReport } from './api';
+import { recordStats, reportWin, type GameResult, type StatsReport, type WinKind } from './api';
+import { BIG_WIN_MULTIPLE, WinMarkContext, type WinMark } from './bigWins';
 import { useSession } from './session';
 import { WalletContext, useWallet, type WalletValue } from './wallet';
 
@@ -17,6 +18,21 @@ function send(token: string, report: StatsReport) {
 }
 
 /**
+ * Tells the server about a big win. The balance is saved first, because the server only announces a win its saved balance
+ * backs up. A win the game marked is reported as that win; any other win of 50 times the bet or more as a big win.
+ */
+function announceWin(wallet: WalletValue, token: string, marked: WinKind | null, bet: number, prize: number) {
+  if (prize <= 0) return;
+  const win: WinKind | null = marked ?? (prize >= bet * BIG_WIN_MULTIPLE ? 'bigWin' : null);
+  if (!win) return;
+  void wallet
+    .flush()
+    .catch(() => {})
+    .then(() => reportWin(token, { win, prize, bet }))
+    .catch(() => {});
+}
+
+/**
  * Gives a game its own view of the wallet that notes how each round ends. The game wagers and settles exactly as before:
  * this adds up what was put in since the last settle (a round can have several bets, like a blackjack double) and, when
  * the round is settled, reports win, draw or loss for this game. A settle with nothing wagered behind it is not reported.
@@ -25,6 +41,7 @@ export function GameScope({ gameId, children }: { gameId: string; children: Reac
   const wallet = useWallet();
   const { session } = useSession();
   const staked = useRef(0);
+  const marked = useRef<WinKind | null>(null);
   // The latest wallet and token, so a game holding on to an old wager or settle function still uses the current ones.
   const latest = useRef({ wallet, token: session.idToken });
   latest.current = { wallet, token: session.idToken };
@@ -39,14 +56,32 @@ export function GameScope({ gameId, children }: { gameId: string; children: Reac
       },
       settle(returned) {
         latest.current.wallet.settle(returned);
-        if (staked.current > 0) send(latest.current.token, { game: gameId, result: outcomeOf(staked.current, returned) });
+        const bet = staked.current;
+        if (bet > 0) {
+          send(latest.current.token, { game: gameId, result: outcomeOf(bet, returned) });
+          announceWin(latest.current.wallet, latest.current.token, marked.current, bet, returned - bet);
+        }
         staked.current = 0;
+        marked.current = null;
       },
     }),
     [wallet, gameId],
   );
 
-  return <WalletContext.Provider value={scoped}>{children}</WalletContext.Provider>;
+  const mark = useMemo<WinMark>(
+    () => ({
+      markWin(win) {
+        marked.current = win;
+      },
+    }),
+    [],
+  );
+
+  return (
+    <WalletContext.Provider value={scoped}>
+      <WinMarkContext.Provider value={mark}>{children}</WinMarkContext.Provider>
+    </WalletContext.Provider>
+  );
 }
 
 /** Seconds of play are sent in pieces of this size. */
