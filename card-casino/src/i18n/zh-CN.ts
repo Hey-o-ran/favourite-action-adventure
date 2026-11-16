@@ -292,7 +292,11 @@ export const zhCN: Record<MessageKey, string> = {
   'filter.origin': '起源国家',
   'filter.players': '玩家人数',
   'filter.type': '游戏类型',
-  'filter.skill': '运气或技巧',
+  'filter.skill': '运气或技巧',
+  'filter.difficulty': '上手难度',
+  'fact.Easy': '简单',
+  'fact.Medium': '中等',
+  'fact.Hard': '困难',
   'facts.from': '起源于{country}',
   'facts.unclear': '起源不明',
 

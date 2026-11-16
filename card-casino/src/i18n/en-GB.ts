@@ -296,7 +296,11 @@ export const enGB = {
   'filter.origin': 'Country of origin',
   'filter.players': 'Players',
   'filter.type': 'Type of game',
-  'filter.skill': 'Luck or skill',
+  'filter.skill': 'Luck or skill',
+  'filter.difficulty': 'How hard to learn',
+  'fact.Easy': 'Easy',
+  'fact.Medium': 'Medium',
+  'fact.Hard': 'Hard',
   'facts.from': 'From {country}',
   'facts.unclear': 'Origin unclear',
 
