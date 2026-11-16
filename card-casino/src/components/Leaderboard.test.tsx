@@ -59,7 +59,7 @@ const rows = () =>
   within(screen.getByRole('table'))
     .getAllByRole('row')
     .slice(1)
-    .map((tr) => Array.from(tr.querySelectorAll('td')).map((td) => td.textContent!.replace(/\s+/g, ' ').trim()));
+    .map((tr) => Array.from(tr.querySelectorAll('td')).slice(0, 3).map((td) => td.textContent!.replace(/\s+/g, ' ').trim()));
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -78,7 +78,7 @@ describe('leaderboard page', () => {
       ['2', 'ada (you)', '4,000'],
       ['3', 'cleo', '1,200'],
     ]);
-    expect(api.getLeaderboard).toHaveBeenCalledWith('tok');
+    expect(api.getLeaderboard).toHaveBeenCalledWith('tok', 'all');
   });
 
   it('shows a loading message until the board arrives', async () => {
