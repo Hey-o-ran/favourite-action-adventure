@@ -25,11 +25,14 @@ function describe(entry: LogEntry, t: Translate): { line: string; note?: string;
       return { line: t('log.balance', { before: num(d.before), after: num(d.after), delta: signed(num(d.delta)) }) };
     case 'login':
       if (d.ok === true) return { line: t('log.loginOk') };
-      return { line: t(d.reason === 'pending' ? 'log.loginPending' : d.reason === 'unconfirmed' ? 'log.loginUnconfirmed' : 'log.loginBad') };
+      return { line: t(d.reason === 'pending' ? 'log.loginPending' : d.reason === 'banned' ? 'log.loginBanned' : d.reason === 'unconfirmed' ? 'log.loginUnconfirmed' : 'log.loginBad') };
     case 'adminCoins':
       return { line: t('log.adminCoins', { amount: signed(num(d.amount)), by: text(d.by), balance: num(d.balanceAfter) }) };
     case 'account':
       if (d.step === 'approved') return { line: t('log.approved', { by: text(d.by) }) };
+      if (d.step === 'activated') return { line: t('log.activated') };
+      if (d.step === 'banned') return { line: t('log.banned', { by: text(d.by), title: text(d.title), until: new Date(String(d.until)).toLocaleString() }) };
+      if (d.step === 'unbanned') return { line: t('log.unbanned', { by: text(d.by) }) };
       return { line: t(d.step === 'confirmed' ? 'log.confirmed' : 'log.registered') };
     case 'event':
       return { line: t('log.event', { type: text(d.eventType) }) };

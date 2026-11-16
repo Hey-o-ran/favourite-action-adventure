@@ -67,12 +67,37 @@ describe('login page', () => {
     expect(screen.queryByText(/the casino floor/i)).not.toBeInTheDocument();
   });
 
-  it('tells a pending user their account is waiting for approval', async () => {
-    vi.mocked(api.login).mockRejectedValue(new ApiError(403, 'ACCOUNT_PENDING', 'pending'));
+  it('shows the ban, with its title, description and time left, when the account is banned', async () => {
+    const until = new Date(Date.now() + 2 * 3_600_000 + 5 * 60_000).toISOString();
+    vi.mocked(api.login).mockRejectedValue(new ApiError(403, 'BANNED', 'banned', undefined, { title: 'Time out', description: 'Please be kind.', until }));
     const user = userEvent.setup();
     renderGate();
     await logIn(user);
-    expect(await screen.findByRole('alert')).toHaveTextContent(/waiting for admin approval/i);
+    expect(await screen.findByRole('heading', { name: 'You are banned' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Time out' })).toBeInTheDocument();
+    expect(screen.getByText('Please be kind.')).toBeInTheDocument();
+    expect(screen.getByText(/the ban ends in 2h/i)).toBeInTheDocument();
+    expect(screen.queryByText(/the casino floor/i)).not.toBeInTheDocument();
+  });
+
+  it('goes back to the login from the ban', async () => {
+    const until = new Date(Date.now() + 3_600_000).toISOString();
+    vi.mocked(api.login).mockRejectedValue(new ApiError(403, 'BANNED', 'banned', undefined, { title: 'Time out', description: 'Wait.', until }));
+    const user = userEvent.setup();
+    renderGate();
+    await logIn(user);
+    await user.click(await screen.findByRole('button', { name: /back to login/i }));
+    expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'You are banned' })).not.toBeInTheDocument();
+  });
+
+  it('does not treat an ordinary refusal as a ban', async () => {
+    vi.mocked(api.login).mockRejectedValue(new ApiError(403, 'BANNED', 'banned'));
+    const user = userEvent.setup();
+    renderGate();
+    await logIn(user);
+    expect(await screen.findByRole('alert')).toBeInTheDocument(); // no details to show: the general error
+    expect(screen.queryByRole('heading', { name: 'You are banned' })).not.toBeInTheDocument();
   });
 
   it('tells a user who has not confirmed their email', async () => {
@@ -193,7 +218,7 @@ describe('registration page', () => {
     expect(await screen.findByText(/does not meet the password policy/i)).toBeInTheDocument();
   });
 
-  it('confirms the email, then explains the account is pending admin approval', async () => {
+  it('confirms the email, then says the player can log in now, with no approval to wait for', async () => {
     vi.mocked(api.registerUser).mockResolvedValue(registered);
     vi.mocked(api.confirmUser).mockResolvedValue({ email: 'ada@example.com', status: 'CONFIRMED' });
     const user = userEvent.setup();
@@ -202,7 +227,9 @@ describe('registration page', () => {
     await user.type(await screen.findByLabelText(/confirmation code/i), '123456');
     await user.click(screen.getByRole('button', { name: /^confirm$/i }));
     expect(api.confirmUser).toHaveBeenCalledWith({ email: 'ada@example.com', code: '123456' });
-    expect(await screen.findByRole('heading', { name: /pending approval/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /you're all set/i })).toBeInTheDocument();
+    expect(screen.getByText(/you can log in now/i)).toBeInTheDocument();
+    expect(screen.queryByText(/approval/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /back to login/i }));
     expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument();
   });

@@ -13,8 +13,6 @@ vi.mock('./api', async (orig) => {
   const actual = await orig<typeof import('./api')>();
   return {
     ...actual,
-    listPendingUsers: vi.fn(),
-    approveUser: vi.fn(),
     getBalance: vi.fn(),
     saveBalance: vi.fn(),
     listActiveEvents: vi.fn(),
@@ -75,7 +73,6 @@ describe('casino header', () => {
   });
 
   it('opens the admin panel from ADMIN ONLY and returns to the game', async () => {
-    vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
     const user = userEvent.setup();
     await renderApp(true);
     await pickFromMenu(user, 'ADMIN ONLY');
@@ -86,22 +83,18 @@ describe('casino header', () => {
   });
 
   it('asks for the admin password first, and shows nothing of the panel until it is right', async () => {
-    vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
     const user = userEvent.setup();
     await renderApp(true);
     await pickFromMenu(user, 'ADMIN ONLY');
     expect(await screen.findByRole('dialog', { name: /admin access/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /admin panel/i })).not.toBeInTheDocument();
-    expect(api.listPendingUsers).not.toHaveBeenCalled();
 
     await user.type(screen.getByLabelText(/password/i), 'wrong{Enter}');
     expect(await screen.findByRole('alert')).toHaveTextContent(/not right/i);
     expect(screen.queryByRole('heading', { name: /admin panel/i })).not.toBeInTheDocument();
-    expect(api.listPendingUsers).not.toHaveBeenCalled();
   });
 
   it('can leave the password page without entering anything, and does not ask again once you are in', async () => {
-    vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
     const user = userEvent.setup();
     await renderApp(true);
     await pickFromMenu(user, 'ADMIN ONLY');
@@ -232,7 +225,6 @@ describe('leaderboard button', () => {
 
   it('is also there for admins, and switching to another page replaces it', async () => {
     vi.mocked(api.getLeaderboard).mockResolvedValue({ entries: [], total: 0 });
-    vi.mocked(api.listPendingUsers).mockResolvedValue({ users: [] });
     const user = userEvent.setup();
     await renderApp(true);
     await pickFromMenu(user, 'Leaderboard');

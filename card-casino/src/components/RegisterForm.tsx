@@ -120,8 +120,8 @@ export function RegisterForm({ onBack }: { onBack: () => void }) {
     return (
       <div className="login">
         <div className="login-card">
-          <h1>{t('register.pendingTitle')}</h1>
-          <p className="hint">{t('register.pendingText')}</p>
+          <h1>{t('register.doneTitle')}</h1>
+          <p className="hint">{t('register.doneText')}</p>
           <button className="primary" type="button" onClick={onBack}>
             {t('register.backToLogin')}
           </button>

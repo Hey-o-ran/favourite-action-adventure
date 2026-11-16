@@ -64,7 +64,6 @@ describe('login in Chinese', () => {
   });
 
   it.each([
-    ['ACCOUNT_PENDING', 'login.pending'],
     ['EMAIL_NOT_CONFIRMED', 'login.notConfirmed'],
     ['RATE_LIMITED', 'error.rateLimited'],
     ['NETWORK_ERROR', 'error.network'],
@@ -133,7 +132,7 @@ describe('registration in Chinese', () => {
     await user.click(screen.getByRole('button', { name: zhCN['register.submit'] }));
     await user.type(await screen.findByLabelText(zhCN['register.code']), '123456');
     await user.click(screen.getByRole('button', { name: zhCN['register.confirm'] }));
-    expect(await screen.findByRole('heading', { name: zhCN['register.pendingTitle'] })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: zhCN['register.doneTitle'] })).toBeInTheDocument();
   });
 });
 

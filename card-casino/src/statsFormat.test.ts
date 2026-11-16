@@ -36,6 +36,13 @@ describe('the time played', () => {
     expect(formatDuration(36_000 + 1800, en)).toBe('10h 30m');
   });
 
+  it('uses days for long stretches, such as a ban, with the hours that go with them', () => {
+    expect(formatDuration(86_400, en)).toBe('1d');
+    expect(formatDuration(86_400 * 3 + 3600 * 5 + 600, en)).toBe('3d 5h');
+    expect(formatDuration(86_399, en)).toBe('23h 59m');
+    expect(formatDuration(86_400 * 2, zh)).toBe('2 天');
+  });
+
   it('drops the seconds once there are minutes, and ignores what is not a whole second', () => {
     expect(formatDuration(125, en)).toBe('2m');
     expect(formatDuration(59.9, en)).toBe('59s');
