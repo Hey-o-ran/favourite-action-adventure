@@ -19,6 +19,7 @@ import { AdminGate } from './components/AdminGate';
 import { Leaderboard } from './components/Leaderboard';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { SaveStatus } from './components/SaveStatus';
+import { GameScope, usePlaytime } from './statsRecorder';
 import { HeaderMenu, type MenuItem } from './components/HeaderMenu';
 import { useSession } from './session';
 import { LANGUAGES, factText, gameText, useI18n } from './i18n';
@@ -46,7 +47,9 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Beat the dealer',
     skill: 'Mix of both',
+    difficulty: 'Easy',
     popularity: 5,
+    length: 1,
     Component: Blackjack,
   },
   {
@@ -59,7 +62,9 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Bet on a winner',
     skill: 'Mostly luck',
+    difficulty: 'Easy',
     popularity: 6,
+    length: 0.5,
     Component: Baccarat,
   },
   {
@@ -72,7 +77,9 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Guess the card',
     skill: 'Mostly luck',
+    difficulty: 'Easy',
     popularity: 11,
+    length: 1,
     Component: RedDog,
   },
   {
@@ -85,7 +92,9 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Poker',
     skill: 'Mix of both',
+    difficulty: 'Medium',
     popularity: 7,
+    length: 0.5,
     Component: VideoPoker,
   },
   {
@@ -98,7 +107,9 @@ const GAMES: GameEntry[] = [
     players: 'Solo',
     type: 'Solitaire',
     skill: 'Mostly skill',
+    difficulty: 'Easy',
     popularity: 2,
+    length: 10,
     Component: Klondike,
   },
   {
@@ -111,7 +122,9 @@ const GAMES: GameEntry[] = [
     players: 'Solo',
     type: 'Guess the card',
     skill: 'Mostly luck',
+    difficulty: 'Easy',
     popularity: 10,
+    length: 1,
     Component: HigherLower,
   },
   {
@@ -124,7 +137,9 @@ const GAMES: GameEntry[] = [
     players: '2 players',
     type: 'Empty your hand',
     skill: 'Mix of both',
+    difficulty: 'Easy',
     popularity: 9,
+    length: 5,
     Component: CrazyEights,
   },
   {
@@ -137,7 +152,9 @@ const GAMES: GameEntry[] = [
     players: '3+ players',
     type: 'Poker',
     skill: 'Mostly skill',
+    difficulty: 'Hard',
     popularity: 3,
+    length: 5,
     Component: Holdem,
   },
   {
@@ -150,7 +167,9 @@ const GAMES: GameEntry[] = [
     players: '2 players',
     type: 'Make sets and runs',
     skill: 'Mostly skill',
+    difficulty: 'Medium',
     popularity: 8,
+    length: 15,
     Component: Gin,
   },
   {
@@ -163,7 +182,9 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Spin the wheel',
     skill: 'Mostly luck',
+    difficulty: 'Easy',
     popularity: 4,
+    length: 0.5,
     Component: Roulette,
   },
   {
@@ -176,7 +197,9 @@ const GAMES: GameEntry[] = [
     players: 'Vs the house',
     type: 'Spin the reels',
     skill: 'Mostly luck',
+    difficulty: 'Easy',
     popularity: 1,
+    length: 0.2,
     Component: Slots,
   },
 ];
@@ -197,6 +220,8 @@ export function App() {
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [sort, setSort] = useState<SortOrder>('default');
   const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin' | 'leaderboard'>('game');
+  // Time spent playing, for the stats: only counted while a game is showing, not the rules or the leaderboard.
+  usePlaytime(activeId, view === 'game');
   const showRules = view !== 'game';
   /** Set once the admin password has been entered. It lasts until the page is reloaded or you log out. */
   const [adminUnlocked, setAdminUnlocked] = useState(false);
@@ -288,7 +313,9 @@ export function App() {
         {/* Games stay mounted when hidden so an unfinished hand isn't lost when switching games. */}
         {GAMES.map(({ id, Component }) => (
           <div key={id} hidden={id !== activeId}>
-            <Component />
+            <GameScope gameId={id}>
+              <Component />
+            </GameScope>
           </div>
         ))}
       </div>

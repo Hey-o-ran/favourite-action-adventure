@@ -4,6 +4,7 @@ import { useI18n } from '../i18n';
 import { useSession } from '../session';
 import { AdminAbuse } from './AdminAbuse';
 import { AdminCoins } from './AdminCoins';
+import { AdminLog } from './AdminLog';
 
 /** Lists accounts waiting for approval, with a button to approve each one. Admins only. */
 export function AdminPanel() {
@@ -106,6 +107,7 @@ export function AdminPanel() {
       )}
       <AdminCoins />
       <AdminAbuse />
+      <AdminLog />
     </section>
   );
 }

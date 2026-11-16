@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWallet } from '../wallet';
+import { useWinMark } from '../bigWins';
 import { newDeck, shuffle, type Card } from '../cards';
 import { useDealLock } from '../useDealLock';
 import { CardView } from '../components/CardView';
@@ -67,6 +68,7 @@ function describeResult(r: HandResult, t: Translate): string {
 
 export function Gin() {
   const { balance, wager, settle } = useWallet();
+  const { markWin } = useWinMark();
   const { t, tx, lang } = useI18n();
   const [bet, setBet] = useState(50);
   const [match, setMatch] = useState<GinMatch | null>(null);
@@ -107,6 +109,12 @@ export function Gin() {
     const timer = window.setTimeout(() => setMatch((m) => (m ? updateHand(m, botStep(m.hand, m.difficulty)) : m)), BOT_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [match]);
+
+  // Going gin (no spare cards at all) is the rare win; it is reported when the match is paid out.
+  const wentGin = match?.hand.result?.kind === 'gin' && match.hand.result.winner === 'player';
+  useEffect(() => {
+    if (wentGin) markWin('ginGin');
+  }, [wentGin, markWin]);
 
   // Pay out once, when the match ends.
   useEffect(() => {

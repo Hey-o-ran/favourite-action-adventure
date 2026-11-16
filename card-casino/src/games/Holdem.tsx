@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useWallet } from '../wallet';
+import { useWinMark } from '../bigWins';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { handText, useI18n, type MessageKey } from '../i18n';
@@ -12,6 +13,7 @@ const BOT_DELAY_MS = 700;
 
 export function Holdem() {
   const { balance, wager, settle } = useWallet();
+  const { markWin } = useWinMark();
   const { t, tx } = useI18n();
   /** Null while you're not sitting at the table. */
   const [hand, setHand] = useState<HoldemState | null>(null);
@@ -50,6 +52,11 @@ export function Holdem() {
   const leave = () => {
     if (!hand?.over) return;
     const chips = hand.seats[0].stack;
+    // You won this hand with a royal or straight flush.
+    if (hand.winners.includes(0)) {
+      if (hand.handNames[0] === 'Royal Flush') markWin('holdemRoyalFlush');
+      else if (hand.handNames[0] === 'Straight Flush') markWin('holdemStraightFlush');
+    }
     settle(chips);
     setHand(null);
     setNotice(

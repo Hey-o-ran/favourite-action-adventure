@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useWallet } from '../wallet';
+import { useWinMark } from '../bigWins';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
 import { BetPanel } from '../components/BetPanel';
@@ -15,6 +16,7 @@ import {
 
 export function VideoPoker() {
   const { balance, wager, settle } = useWallet();
+  const { markWin } = useWinMark();
   const { t } = useI18n();
   const [bet, setBet] = useState(10);
   const [round, setRound] = useState<VideoPokerRound | null>(null);
@@ -32,6 +34,9 @@ export function VideoPoker() {
     if (!round || round.drawn) return;
     const next = drawReplacements(round);
     setRound(next);
+    const handName = evaluateHand(next.hand).name;
+    if (handName === 'Royal Flush') markWin('royalFlush');
+    else if (handName === 'Straight Flush') markWin('straightFlush');
     settle(round.bet * evaluateHand(next.hand).multiplier);
   };
 

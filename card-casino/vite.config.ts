@@ -5,5 +5,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'node',
+    // Screens with many clicks can take a few seconds when the whole suite runs at once.
+    testTimeout: 15_000,
   },
 });

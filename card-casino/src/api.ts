@@ -192,6 +192,16 @@ export const getBalance = async (token: string) =>
 export const saveBalance = async (token: string, req: BalanceResponse, options?: RequestOptions) =>
   (await request<BalanceResponse>('PUT', '/v1/me/balance', req, token, options))!;
 
+export type GameResult = 'win' | 'draw' | 'loss';
+/** A finished game and/or some seconds of play, for the player's stats. */
+export interface StatsReport {
+  game: string;
+  result?: GameResult;
+  seconds?: number;
+}
+export const recordStats = async (token: string, report: StatsReport) =>
+  (await request<{ resultRecorded: boolean; secondsCredited: number }>('POST', '/v1/me/stats', report, token))!;
+
 /** One line of the leaderboard: a player's rank, name and coins. Never an email or account id. */
 export interface LeaderboardEntry {
   rank: number;
@@ -199,6 +209,8 @@ export interface LeaderboardEntry {
   coins: number;
   /** True for admins, who get a blue check next to their name. */
   verified?: boolean;
+  /** Wins, draws, losses and play time for the chosen period. Missing from an older server, which has no stats yet. */
+  stats?: PlayerStats;
 }
 export interface LeaderboardResponse {
   /** The top players, best first. */
@@ -209,5 +221,88 @@ export interface LeaderboardResponse {
   total: number;
 }
 
-export const getLeaderboard = async (token: string) =>
-  (await request<LeaderboardResponse>('GET', '/v1/leaderboard', undefined, token))!;
+// ---- The admin's player log, and big wins
+
+/** What a log entry is about. */
+export type LogType = 'balance' | 'login' | 'adminCoins' | 'account' | 'event' | 'win';
+export interface LogEntry {
+  logId: string;
+  type: LogType;
+  /** When it happened, as an ISO time. */
+  createdAt: string;
+  /** What the entry says. Which fields there are depends on `type`. */
+  details: Record<string, unknown>;
+}
+/** An account the admin can look at, in any state. */
+export interface LogAccount {
+  userId: string;
+  email: string;
+  displayName: string;
+  status: 'UNCONFIRMED' | 'PENDING' | 'ACTIVE';
+}
+export const searchLogAccounts = async (token: string, term: string) =>
+  (await request<{ users: LogAccount[]; truncated: boolean }>('GET', `/v1/admin/log/search?q=${encodeURIComponent(term)}`, undefined, token))!;
+/** `next` is the marker to pass as `before` to read the page after this one. It is missing on the last page. */
+export const getPlayerLog = async (token: string, userId: string, options: { type?: LogType; before?: string } = {}) => {
+  const query = new URLSearchParams();
+  if (options.type) query.set('type', options.type);
+  if (options.before) query.set('before', options.before);
+  const suffix = query.toString() ? `?${query}` : '';
+  return (await request<{ entries: LogEntry[]; next?: string }>('GET', `/v1/admin/log/${encodeURIComponent(userId)}${suffix}`, undefined, token))!;
+};
+
+/** The rare wins that are announced. */
+export type WinKind =
+  | 'royalFlush'
+  | 'straightFlush'
+  | 'slotsJackpot'
+  | 'rouletteNumber'
+  | 'blackjack'
+  | 'landlordSpring'
+  | 'landlordRocket'
+  | 'higherLowerJackpot'
+  | 'holdemRoyalFlush'
+  | 'holdemStraightFlush'
+  | 'ginGin'
+  | 'bigWin';
+export interface WinReportBody {
+  win: WinKind;
+  /** The coins won on top of the bet. */
+  prize: number;
+  bet?: number;
+}
+/** `announced` is false when the balance did not back the win, or the player announced something a moment ago. */
+export const reportWin = async (token: string, body: WinReportBody) =>
+  (await request<{ confirmed: boolean; announced: boolean }>('POST', '/v1/me/wins', body, token))!;
+export interface WinAnnouncement {
+  announcementId: string;
+  displayName: string;
+  verified: boolean;
+  win: WinKind;
+  prize: number;
+  createdAt: string;
+}
+export const listWinAnnouncements = async (token: string) =>
+  (await request<{ announcements: WinAnnouncement[] }>('GET', '/v1/announcements', undefined, token))!;
+
+/** Wins, draws, losses and seconds of play in one game. */
+export interface GameStats {
+  game: string;
+  wins: number;
+  draws: number;
+  losses: number;
+  seconds: number;
+}
+export interface PlayerStats {
+  wins: number;
+  draws: number;
+  losses: number;
+  seconds: number;
+  /** Only the games that were played, the most played first. */
+  games: GameStats[];
+}
+/** Which days the stats cover: today or this month (both UTC), or everything. */
+export type LeaderboardPeriod = 'day' | 'month' | 'all';
+
+export const getLeaderboard = async (token: string, period: LeaderboardPeriod = 'all') =>
+  (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}`, undefined, token))!;

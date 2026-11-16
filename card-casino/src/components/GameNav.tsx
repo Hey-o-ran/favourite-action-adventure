@@ -33,15 +33,22 @@ const FILTER_NAME_KEYS: Record<(typeof FILTER_KEYS)[number], MessageKey> = {
   players: 'filter.players',
   type: 'filter.type',
   skill: 'filter.skill',
+  difficulty: 'filter.difficulty',
 };
-const SORT_NAME_KEYS: Record<SortOrder, MessageKey> = { default: 'nav.sortDefault', popularity: 'nav.sortPopular' };
+const SORT_NAME_KEYS: Record<SortOrder, MessageKey> = {
+  default: 'nav.sortDefault',
+  popularity: 'nav.sortPopular',
+  alphabetical: 'nav.sortAlphabetical',
+  length: 'nav.sortLength',
+};
 
 /** Filter and sort dropdowns plus a row of the games that match, in the chosen order. */
 export function GameNav({ games, activeId, onSelect, filters, onFiltersChange, sort, onSortChange }: GameNavProps) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const matches = sortGames(
     games.filter((g) => matchesFilters(g, filters)),
     sort,
+    lang,
   );
   const active = games.find((g) => g.id === activeId);
   // Keep the game you're playing on screen even if a filter would hide it, so you never lose track of it.

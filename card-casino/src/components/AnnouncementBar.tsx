@@ -3,7 +3,8 @@ import { isLive } from '../abuse';
 import { useAbuseEvents, type EventOutcome } from '../abuseEvents';
 import { eventWords } from '../abuseText';
 import { useCoinNotices } from '../coinNotices';
-import { useI18n, type Translate } from '../i18n';
+import { useI18n, type MessageKey, type Translate } from '../i18n';
+import { useWinAnnouncements } from '../winAnnouncements';
 import type { AbuseEvent } from '../api';
 import { VerifiedBadge } from './VerifiedBadge';
 
@@ -19,14 +20,29 @@ function outcomeText(event: AbuseEvent, outcome: EventOutcome | undefined, t: Tr
 export function AnnouncementBar() {
   const { events, outcomes, protectedNext, lastSaved, dismissSaved } = useAbuseEvents();
   const { notices, dismiss: dismissNotice } = useCoinNotices();
+  const { wins, dismiss: dismissWin } = useWinAnnouncements();
   const { t, tx, lang } = useI18n();
   const [dismissed, setDismissed] = useState<ReadonlySet<string>>(new Set());
 
   const shown = events.filter((e) => isLive(e) && !dismissed.has(e.eventId));
-  if (shown.length === 0 && !protectedNext && lastSaved === null && notices.length === 0) return null;
+  if (shown.length === 0 && !protectedNext && lastSaved === null && notices.length === 0 && wins.length === 0) return null;
 
   return (
     <div className="abuse-bars">
+      {wins.map((w) => {
+        const text = t('announce.bigWin', { name: w.displayName, win: t(`win.${w.win}` as MessageKey), prize: w.prize });
+        return (
+          <div key={w.announcementId} className="abuse-bar saved" role="status">
+            <span className="abuse-title">{t('announce.winTitle')}</span>
+            <span className="abuse-message">{text}</span>
+            {w.verified && <VerifiedBadge />}
+            <button className="abuse-dismiss" onClick={() => dismissWin(w.announcementId)} aria-label={t('announce.dismiss', { text })}>
+              ×
+            </button>
+          </div>
+        );
+      })}
+
       {notices.map((n) => {
         const sent = n.amount >= 0;
         const text = sent

@@ -6,6 +6,7 @@ import {
   filterOptions,
   matchesFilters,
   originLabel,
+  SORT_OPTIONS,
   sortGames,
   type GameFacts,
 } from './gameFilters';
@@ -16,7 +17,9 @@ const game = (over: Partial<GameFacts> = {}): GameFacts => ({
   players: 'Vs the house',
   type: 'Beat the dealer',
   skill: 'Mix of both',
+  difficulty: 'Easy',
   popularity: 1,
+  length: 5,
   ...over,
 });
 
@@ -101,5 +104,101 @@ describe('sorting games', () => {
       { name: 'Z', ...game({ popularity: 2 }) },
     ];
     expect(names(sortGames(tied, 'popularity'))).toBe('YXZ');
+  });
+});
+
+describe('sorting games alphabetically', () => {
+  const named = (...list: string[]) => list.map((name, i) => ({ name, ...game({ popularity: i + 1 }) }));
+  const order = (list: { name: string }[]) => list.map((g) => g.name).join(', ');
+
+  it('puts the games in A to Z order by name', () => {
+    expect(order(sortGames(named('Red Dog', 'Blackjack', 'Gin Rummy', 'Baccarat'), 'alphabetical'))).toBe(
+      'Baccarat, Blackjack, Gin Rummy, Red Dog',
+    );
+  });
+
+  it('ignores capital letters and accents', () => {
+    expect(order(sortGames(named('zebra', 'Éclair', 'apple', 'Banana'), 'alphabetical'))).toBe('apple, Banana, Éclair, zebra');
+  });
+
+  it('puts numbers in number order, not letter by letter', () => {
+    expect(order(sortGames(named('Game 10', 'Game 9', 'Game 2'), 'alphabetical'))).toBe('Game 2, Game 9, Game 10');
+  });
+
+  it('sorts by the name the player sees, so a Chinese player gets pinyin order', () => {
+    // bai (百), de (德), er (二), ya (亚)
+    const chinese = named('二十一点', '百家乐', '德州扑克', '亚');
+    expect(order(sortGames(chinese, 'alphabetical', 'zh-CN'))).toBe('百家乐, 德州扑克, 二十一点, 亚');
+  });
+
+  it('keeps games with the same name in their original order, and leaves the list untouched', () => {
+    const same = [
+      { name: 'Twin', ...game({ popularity: 5 }) },
+      { name: 'Twin', ...game({ popularity: 1 }) },
+      { name: 'Alpha', ...game({ popularity: 3 }) },
+    ];
+    const sorted = sortGames(same, 'alphabetical');
+    expect(sorted.map((g) => g.popularity)).toEqual([3, 5, 1]);
+    expect(same.map((g) => g.popularity)).toEqual([5, 1, 3]);
+  });
+
+  it('offers it in the Sort by choices, after the other two', () => {
+    expect(SORT_OPTIONS.map((o) => o.id)).toEqual(['default', 'popularity', 'alphabetical', 'length']);
+  });
+});
+
+describe('sorting games by how long one game takes', () => {
+  const timed = (...minutes: number[]) => minutes.map((length, i) => ({ name: 'G' + i, ...game({ length }) }));
+  const lengths = (list: { length: number }[]) => list.map((g) => g.length);
+
+  it('puts the shortest game first', () => {
+    expect(lengths(sortGames(timed(15, 0.5, 5, 10), 'length'))).toEqual([0.5, 5, 10, 15]);
+  });
+
+  it('keeps games that take equally long in their original order', () => {
+    const sorted = sortGames(timed(5, 1, 5, 1), 'length');
+    expect(sorted.map((g) => g.name)).toEqual(['G1', 'G3', 'G0', 'G2']);
+  });
+
+  it('leaves the original list untouched', () => {
+    const list = timed(9, 2);
+    sortGames(list, 'length');
+    expect(lengths(list)).toEqual([9, 2]);
+  });
+
+  it('says what the length means: the time for one game, in minutes', () => {
+    expect(game().length).toBeGreaterThan(0);
+  });
+});
+
+describe('filtering by how hard a game is to learn', () => {
+  const games = [
+    game({ difficulty: 'Hard' }),
+    game({ difficulty: 'Easy' }),
+    game({ difficulty: 'Medium' }),
+    game({ difficulty: 'Easy' }),
+  ];
+
+  it('matches only games that are that hard to learn', () => {
+    const easy = { ...NO_FILTERS, difficulty: 'Easy' };
+    expect(games.filter((g) => matchesFilters(g, easy))).toHaveLength(2);
+    expect(games.filter((g) => matchesFilters(g, { ...NO_FILTERS, difficulty: 'Hard' }))).toHaveLength(1);
+  });
+
+  it('counts as an active filter, and clearing it matches everything', () => {
+    expect(activeFilterCount({ ...NO_FILTERS, difficulty: 'Medium' })).toBe(1);
+    expect(activeFilterCount(NO_FILTERS)).toBe(0);
+    expect(NO_FILTERS.difficulty).toBe('');
+  });
+
+  it('works together with the other filters', () => {
+    const both = { ...NO_FILTERS, difficulty: 'Easy', skill: 'Mostly luck' };
+    expect(matchesFilters(game({ difficulty: 'Easy', skill: 'Mostly luck' }), both)).toBe(true);
+    expect(matchesFilters(game({ difficulty: 'Easy', skill: 'Mostly skill' }), both)).toBe(false);
+  });
+
+  it('lists the choices from easiest to hardest, only those some game has', () => {
+    expect(filterOptions('difficulty', games)).toEqual(['Easy', 'Medium', 'Hard']);
+    expect(filterOptions('difficulty', [game({ difficulty: 'Hard' }), game({ difficulty: 'Easy' })])).toEqual(['Easy', 'Hard']);
   });
 });
