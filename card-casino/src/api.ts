@@ -221,6 +221,70 @@ export interface LeaderboardResponse {
   total: number;
 }
 
+// ---- The admin's player log, and big wins
+
+/** What a log entry is about. */
+export type LogType = 'balance' | 'login' | 'adminCoins' | 'account' | 'event' | 'win';
+export interface LogEntry {
+  logId: string;
+  type: LogType;
+  /** When it happened, as an ISO time. */
+  createdAt: string;
+  /** What the entry says. Which fields there are depends on `type`. */
+  details: Record<string, unknown>;
+}
+/** An account the admin can look at, in any state. */
+export interface LogAccount {
+  userId: string;
+  email: string;
+  displayName: string;
+  status: 'UNCONFIRMED' | 'PENDING' | 'ACTIVE';
+}
+export const searchLogAccounts = async (token: string, term: string) =>
+  (await request<{ users: LogAccount[]; truncated: boolean }>('GET', `/v1/admin/log/search?q=${encodeURIComponent(term)}`, undefined, token))!;
+/** `next` is the marker to pass as `before` to read the page after this one. It is missing on the last page. */
+export const getPlayerLog = async (token: string, userId: string, options: { type?: LogType; before?: string } = {}) => {
+  const query = new URLSearchParams();
+  if (options.type) query.set('type', options.type);
+  if (options.before) query.set('before', options.before);
+  const suffix = query.toString() ? `?${query}` : '';
+  return (await request<{ entries: LogEntry[]; next?: string }>('GET', `/v1/admin/log/${encodeURIComponent(userId)}${suffix}`, undefined, token))!;
+};
+
+/** The rare wins that are announced. */
+export type WinKind =
+  | 'royalFlush'
+  | 'straightFlush'
+  | 'slotsJackpot'
+  | 'rouletteNumber'
+  | 'blackjack'
+  | 'landlordSpring'
+  | 'landlordRocket'
+  | 'higherLowerJackpot'
+  | 'holdemRoyalFlush'
+  | 'holdemStraightFlush'
+  | 'ginGin'
+  | 'bigWin';
+export interface WinReportBody {
+  win: WinKind;
+  /** The coins won on top of the bet. */
+  prize: number;
+  bet?: number;
+}
+/** `announced` is false when the balance did not back the win, or the player announced something a moment ago. */
+export const reportWin = async (token: string, body: WinReportBody) =>
+  (await request<{ confirmed: boolean; announced: boolean }>('POST', '/v1/me/wins', body, token))!;
+export interface WinAnnouncement {
+  announcementId: string;
+  displayName: string;
+  verified: boolean;
+  win: WinKind;
+  prize: number;
+  createdAt: string;
+}
+export const listWinAnnouncements = async (token: string) =>
+  (await request<{ announcements: WinAnnouncement[] }>('GET', '/v1/announcements', undefined, token))!;
+
 /** Wins, draws, losses and seconds of play in one game. */
 export interface GameStats {
   game: string;

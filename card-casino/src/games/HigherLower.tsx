@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useWallet } from '../wallet';
+import { useWinMark } from '../bigWins';
 import { useDealLock } from '../useDealLock';
 import { newDeck, shuffle } from '../cards';
 import { CardView } from '../components/CardView';
@@ -17,6 +18,7 @@ import {
 
 export function HigherLower() {
   const { balance, wager, settle } = useWallet();
+  const { markWin } = useWinMark();
   const { t, tx } = useI18n();
   const [bet, setBet] = useState(10);
   const [game, setGame] = useState<HigherLowerState | null>(null);
@@ -55,6 +57,7 @@ export function HigherLower() {
       return;
     }
     setGame(next);
+    markWin('higherLowerJackpot');
     settle(next.pot);
   };
 

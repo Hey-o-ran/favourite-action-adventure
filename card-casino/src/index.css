@@ -614,3 +614,13 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .sl-paytable th .glaggle { width: 26px; height: 26px; }
 .glaggle-row { display: inline-flex; align-items: center; gap: 2px; vertical-align: middle; }
 .rules li .glaggle { width: 24px; height: 24px; }
+
+/* Admin player log */
+.log-view { margin-top: 12px; }
+.log-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.log-chips button[aria-pressed='true'] { background: var(--accent, #f5c542); color: #1a1a1a; }
+.log-entries { list-style: none; margin: 8px 0; padding: 0; }
+.log-entries li { padding: 6px 0; border-top: 1px solid #ffffff1a; word-break: break-word; }
+.log-entries time { color: var(--muted); font-size: 0.85em; }
+.log-entries .log-note { color: var(--muted); }
+.log-entries .log-unconfirmed .log-note { color: #ff8a80; }
