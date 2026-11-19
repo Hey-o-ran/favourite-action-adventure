@@ -312,7 +312,7 @@ export function App() {
         <h1>{t('header.title')}</h1>
         <div className="header-actions">
           <div className="balance" aria-live="polite">
-            {t('header.coins', { amount: balance })}
+            {t('header.coins', { amount: balance })} <small>({lang === 'zh-CN' ? '\u7ec3\u4e60' : 'practice'})</small>
           </div>
           <HeaderMenu items={menuItems} menuLabel={t('menu.menu')} />
         </div>
@@ -373,9 +373,13 @@ export function App() {
         {/* Games stay mounted when hidden so an unfinished hand isn't lost when switching games. */}
         {GAMES.map(({ id, Component }) => (
           <div key={id} hidden={id !== activeId}>
-            <GameScope gameId={id}>
-              <Component />
-            </GameScope>
+            {id === 'slots' ? (
+              <Slots ranked={{ token: session.idToken, active: activeId === id && view === 'game', onUnauthorized: endSession }} />
+            ) : (
+              <GameScope gameId={id}>
+                <Component />
+              </GameScope>
+            )}
           </div>
         ))}
       </div>

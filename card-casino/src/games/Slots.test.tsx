@@ -190,3 +190,31 @@ describe('spinning', () => {
     expect(spinButton()).toBeDisabled();
   });
 });
+
+it('retries a ranked spin with the same bet and ID, then shows the server payout', async () => {
+  const fetch = vi.spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(new Response(JSON.stringify({ balance: 1000, version: 0 })))
+    .mockRejectedValueOnce(new Error('connection lost'))
+    .mockResolvedValueOnce(new Response(JSON.stringify({
+      stops: [15, 15, 15], bet: 10, returned: 1000, balance: 1990, version: 1,
+    })));
+  const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
+  render(
+    <WalletContext.Provider value={wallet(50)}>
+      <Slots ranked={{ token: 'token', active: true, onUnauthorized: vi.fn() }} />
+    </WalletContext.Provider>,
+  );
+  expect(await screen.findByText('Ranked coins: 1,000')).toBeInTheDocument();
+  await user.click(spinButton());
+  await user.click(await screen.findByRole('button', { name: 'Retry spin' }));
+  expect(fetch.mock.calls[1][1]).toMatchObject({ method: 'POST', headers: { authorization: 'Bearer token' } });
+  const { bet, spinId } = JSON.parse(String(fetch.mock.calls[1][1]?.body));
+  expect(bet).toBe(10);
+  expect(spinId).toMatch(/^[0-9a-f-]{36}$/);
+  expect(fetch.mock.calls[2][1]?.body).toEqual(fetch.mock.calls[1][1]?.body);
+  await finish();
+  expect(result()).toHaveTextContent('+990 coins');
+  expect(screen.getByText('Ranked coins: 1,990')).toBeInTheDocument();
+  expect(wager).not.toHaveBeenCalled();
+  expect(settle).not.toHaveBeenCalled();
+});

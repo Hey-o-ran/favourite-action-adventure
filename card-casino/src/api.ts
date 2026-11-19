@@ -212,6 +212,16 @@ export const getBalance = async (token: string) =>
 export const saveBalance = async (token: string, req: BalanceResponse, options?: RequestOptions) =>
   (await request<BalanceResponse>('PUT', '/v1/me/balance', req, token, options))!;
 
+export interface RankedSpin extends BalanceResponse {
+  stops: [number, number, number];
+  bet: number;
+  returned: number;
+}
+export const getRankedBalance = async (token: string) =>
+  (await request<BalanceResponse>('GET', '/v1/me/ranked-balance', undefined, token))!;
+export const spinRankedSlots = async (token: string, spin: { bet: number; spinId: string }) =>
+  (await request<RankedSpin>('POST', '/v1/me/slots/spin', spin, token))!;
+
 export type GameResult = 'win' | 'draw' | 'loss';
 /** A finished game and/or some seconds of play, for the player's stats. */
 export interface StatsReport {
