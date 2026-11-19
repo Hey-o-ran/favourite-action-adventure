@@ -17,8 +17,11 @@ export const enGB = {
   "guide.hide": "Hide guide",
   "guide.start": "Choose a bet and deal. Aim for 21 without going over; face cards count as 10 and aces as 1 or 11.",
   "guide.play": "Hit to take another card, or stand to keep your total. Double doubles your bet, takes one card and ends your turn.",
-  "guide.done": "The hand is over. Compare your total with the dealer?s, then deal again when ready.",
+  "guide.done": "The hand is over. Compare your total with the dealer's, then deal again when ready.",
 
+  "rules.landlord.how.1": "Three players bid for the landlord role. The highest bidder plays alone against the other two; the landlord takes the three bottom cards.",
+  "rules.landlord.how.2": "The landlord leads. Play a higher combination of the same type and size, or pass. After both other players pass, the last player to play leads again.",
+  "rules.landlord.how.3": "The first side to empty a hand wins. Bombs, rockets and a spring increase the multiplier. Optional combinations can be changed in settings.",
   // Page
   'header.title': 'Bintarland Bank - Bibergly Betting Business',
   'header.coins': '{amount} coins',

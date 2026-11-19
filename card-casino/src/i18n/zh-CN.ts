@@ -16,6 +16,9 @@ export const zhCN: Record<MessageKey, string> = {
   "guide.play": "点击要牌再拿一张，或停牌保持当前点数。双倍下注会加倍赌注、拿一张牌并结束你的回合。",
   "guide.done": "本局结束。比较你和庄家的点数，准备好后可以再次发牌。",
 
+  "rules.landlord.how.1": "三名玩家叫分，最高叫分者成为地主，独自对抗另外两名农民，并获得三张底牌。",
+  "rules.landlord.how.2": "地主先出牌。轮到你时，可以用相同类型和张数、更大的牌压过上家，或者选择不要。其他两人都不要后，最后出牌的玩家重新领出。",
+  "rules.landlord.how.3": "一方率先出完手牌即获胜。炸弹、火箭和春天会增加倍数。可选牌型可在设置中调整。",
   // Page
   'header.title': '宾塔兰银行 - 比伯格利博彩事业',
   'header.coins': '{amount} 枚金币',
