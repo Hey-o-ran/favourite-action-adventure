@@ -155,3 +155,18 @@ describe('blackjack still plays normally after the pause', () => {
     expect(() => reactAct(() => vi.advanceTimersByTime(DEAL_LOCK_MS))).not.toThrow();
   });
 });
+
+
+it('shows optional guidance for each stage of a hand', async () => {
+  const user = setup();
+  expect(screen.queryByText(/choose a bet and deal/i)).not.toBeInTheDocument();
+  await user.click(button(/show blackjack guide/i));
+  expect(screen.getByText(/choose a bet and deal/i)).toBeInTheDocument();
+  await user.click(button(/^deal$/i));
+  expect(screen.getByText(/hit to take another card/i)).toBeInTheDocument();
+  await waitForLock();
+  await user.click(button(/^stand$/i));
+  expect(screen.getByText(/the hand is over/i)).toBeInTheDocument();
+  await user.click(button(/hide guide/i));
+  expect(screen.queryByText(/the hand is over/i)).not.toBeInTheDocument();
+});

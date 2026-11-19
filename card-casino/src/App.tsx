@@ -9,6 +9,7 @@ import { Baccarat } from './games/Baccarat';
 import { CrazyEights } from './games/CrazyEights';
 import { Holdem } from './games/Holdem';
 import { Gin } from './games/Gin';
+import { Landlord } from './games/Landlord';
 import { Roulette } from './games/Roulette';
 import { Slots } from './games/Slots';
 import { GameNav } from './components/GameNav';
@@ -48,7 +49,7 @@ const GAMES: GameEntry[] = [
     type: 'Beat the dealer',
     skill: 'Mix of both',
     difficulty: 'Easy',
-    popularity: 5,
+    popularity: 6,
     length: 1,
     Component: Blackjack,
   },
@@ -63,7 +64,7 @@ const GAMES: GameEntry[] = [
     type: 'Bet on a winner',
     skill: 'Mostly luck',
     difficulty: 'Easy',
-    popularity: 6,
+    popularity: 7,
     length: 0.5,
     Component: Baccarat,
   },
@@ -78,7 +79,7 @@ const GAMES: GameEntry[] = [
     type: 'Guess the card',
     skill: 'Mostly luck',
     difficulty: 'Easy',
-    popularity: 11,
+    popularity: 12,
     length: 1,
     Component: RedDog,
   },
@@ -93,7 +94,7 @@ const GAMES: GameEntry[] = [
     type: 'Poker',
     skill: 'Mix of both',
     difficulty: 'Medium',
-    popularity: 7,
+    popularity: 8,
     length: 0.5,
     Component: VideoPoker,
   },
@@ -108,7 +109,7 @@ const GAMES: GameEntry[] = [
     type: 'Solitaire',
     skill: 'Mostly skill',
     difficulty: 'Easy',
-    popularity: 2,
+    popularity: 3,
     length: 10,
     Component: Klondike,
   },
@@ -123,7 +124,7 @@ const GAMES: GameEntry[] = [
     type: 'Guess the card',
     skill: 'Mostly luck',
     difficulty: 'Easy',
-    popularity: 10,
+    popularity: 11,
     length: 1,
     Component: HigherLower,
   },
@@ -138,7 +139,7 @@ const GAMES: GameEntry[] = [
     type: 'Empty your hand',
     skill: 'Mix of both',
     difficulty: 'Easy',
-    popularity: 9,
+    popularity: 10,
     length: 5,
     Component: CrazyEights,
   },
@@ -153,7 +154,7 @@ const GAMES: GameEntry[] = [
     type: 'Poker',
     skill: 'Mostly skill',
     difficulty: 'Hard',
-    popularity: 3,
+    popularity: 4,
     length: 5,
     Component: Holdem,
   },
@@ -168,9 +169,24 @@ const GAMES: GameEntry[] = [
     type: 'Make sets and runs',
     skill: 'Mostly skill',
     difficulty: 'Medium',
-    popularity: 8,
+    popularity: 9,
     length: 15,
     Component: Gin,
+  },
+  {
+    id: 'landlord',
+    name: 'Landlord (Dou Dizhu)',
+    blurb: 'Two bots, one deck. Bid to be the landlord, then empty your hand before the other side does. The landlord plays alone against the two peasants.',
+    category: 'Card games',
+    origin: 'China',
+    originNote: 'Dou Dizhu is a Chinese card game that became hugely popular in the 2000s, when online versions put it on millions of phones and computers.',
+    players: '3+ players',
+    type: 'Empty your hand',
+    skill: 'Mix of both',
+    difficulty: 'Medium',
+    popularity: 2,
+    length: 8,
+    Component: Landlord,
   },
   {
     id: 'roulette',
@@ -183,7 +199,7 @@ const GAMES: GameEntry[] = [
     type: 'Spin the wheel',
     skill: 'Mostly luck',
     difficulty: 'Easy',
-    popularity: 4,
+    popularity: 5,
     length: 0.5,
     Component: Roulette,
   },
@@ -217,6 +233,33 @@ export function App() {
     }
   };
   const [activeId, setActiveId] = useState(GAMES[0].id);
+  const storageKey = `card-casino.games.${session.user.userId}`;
+  const readGames = (kind: string): string[] => {
+    try {
+      const value: unknown = JSON.parse(localStorage.getItem(`${storageKey}.${kind}`) || '[]');
+      return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string' && GAMES.some((game) => game.id === id)) : [];
+    } catch { return []; }
+  };
+  const [favourites, setFavourites] = useState<string[]>(() => readGames('favourites'));
+  const [recent, setRecent] = useState<string[]>(() => readGames('recent'));
+  const saveGames = (kind: string, ids: string[]) => {
+    try { localStorage.setItem(`${storageKey}.${kind}`, JSON.stringify(ids)); } catch { /* Storage may be unavailable. */ }
+  };
+  const selectGame = (id: string) => {
+    setActiveId(id);
+    setRecent((previous) => {
+      const next = [id, ...previous.filter((item) => item !== id)].slice(0, 5);
+      saveGames('recent', next);
+      return next;
+    });
+  };
+  const toggleFavourite = (id: string) => {
+    setFavourites((previous) => {
+      const next = previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id];
+      saveGames('favourites', next);
+      return next;
+    });
+  };
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [sort, setSort] = useState<SortOrder>('default');
   const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin' | 'leaderboard'>('game');
@@ -281,7 +324,7 @@ export function App() {
         <Rules
           games={games}
           gameId={activeId}
-          onSelect={setActiveId}
+          onSelect={selectGame}
           filters={filters}
           onFiltersChange={setFilters}
           sort={sort}
@@ -294,10 +337,27 @@ export function App() {
 
       {/* The game view stays mounted (just hidden) while rules show, so an unfinished hand isn't lost. */}
       <div hidden={showRules}>
+        <section className="personal-games" aria-label={t('dashboard.title')}>
+          <h2>{t('dashboard.title')}</h2>
+          {([['dashboard.favourites', favourites], ['dashboard.recent', recent]] as const).map(([label, ids]) => (
+            <div key={label}>
+              <h3>{t(label)}</h3>
+              {ids.length === 0 ? <p className="muted">{t(label === 'dashboard.favourites' ? 'dashboard.emptyFavourites' : 'dashboard.emptyRecent')}</p> : (
+                <div className="game-nav">{ids.map((id) => {
+                  const game = games.find((item) => item.id === id)!;
+                  return <button key={id} onClick={() => selectGame(id)}>{game.name}</button>;
+                })}</div>
+              )}
+            </div>
+          ))}
+          <button onClick={() => toggleFavourite(activeId)} aria-pressed={favourites.includes(activeId)} aria-label={t(favourites.includes(activeId) ? 'dashboard.remove' : 'dashboard.add', { name: active.name })}>
+            {favourites.includes(activeId) ? '\u2605' : '\u2606'} {active.name}
+          </button>
+        </section>
         <GameNav
           games={games}
           activeId={activeId}
-          onSelect={setActiveId}
+          onSelect={selectGame}
           filters={filters}
           onFiltersChange={setFilters}
           sort={sort}

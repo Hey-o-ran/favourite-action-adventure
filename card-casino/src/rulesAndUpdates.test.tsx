@@ -107,3 +107,13 @@ describe("What's new in Chinese", () => {
     expect(UPDATES[0].id).toBe('big-wins');
   });
 });
+
+
+it('shows the Landlord rules in both languages', () => {
+  const en = renderRules('landlord');
+  expect(en.container.textContent).toContain('highest bidder');
+  en.unmount();
+  const zh = renderRules('landlord', 'zh-CN');
+  expect(zh.container.textContent).not.toMatch(ENGLISH_WORD);
+  expect(zh.container.textContent).not.toContain('????');
+});

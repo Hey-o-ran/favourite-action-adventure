@@ -642,3 +642,8 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .log-entries time { color: var(--muted); font-size: 0.85em; }
 .log-entries .log-note { color: var(--muted); }
 .log-entries .log-unconfirmed .log-note { color: #ff8a80; }
+
+.personal-games { margin: 1rem 0; padding: 1rem; border: 1px solid currentColor; border-radius: 0.75rem; }
+.personal-games h2, .personal-games h3 { margin: 0.5rem 0; }
+.personal-games .game-nav { margin-bottom: 0.75rem; }
+.blackjack-guide { padding: 0.75rem; border: 1px solid currentColor; border-radius: 0.5rem; }
