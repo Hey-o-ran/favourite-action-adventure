@@ -22,6 +22,7 @@ export function Blackjack() {
   const { balance, wager, settle } = useWallet();
   const { markWin } = useWinMark();
   const { t } = useI18n();
+  const [guide, setGuide] = useState(false);
   const [bet, setBet] = useState(50);
   const [round, setRound] = useState<Round | null>(null);
   const { locked, lock } = useDealLock();
@@ -58,6 +59,8 @@ export function Blackjack() {
 
   return (
     <section className="table">
+      <button type="button" onClick={() => setGuide(!guide)} aria-expanded={guide}>{t(guide ? 'guide.hide' : 'guide.show')}</button>
+      {guide && <p className="blackjack-guide" aria-live="polite">{t(!round ? 'guide.start' : round.over ? 'guide.done' : 'guide.play')}</p>}
       <div className="hand">
         <h3>
           {t('blackjack.dealer')}

@@ -243,3 +243,21 @@ describe('leaderboard button', () => {
     expect(screen.getByRole('heading', { name: /the leaderboard!/i })).toBeInTheDocument();
   });
 });
+
+
+describe('personal games', () => {
+  it('saves favourites and recent games across reloads', async () => {
+    const user = userEvent.setup();
+    await renderApp(false);
+    await user.click(screen.getByRole('button', { name: /add blackjack to favourites/i }));
+    await user.click(screen.getByRole('button', { name: /^baccarat$/i }));
+    expect(screen.getByRole('button', { name: /add baccarat to favourites/i })).toBeInTheDocument();
+    cleanup();
+    await renderApp(false);
+    const dashboard = screen.getByRole('region', { name: /your games/i });
+    expect(dashboard).toHaveTextContent('Blackjack');
+    expect(dashboard).toHaveTextContent('Baccarat');
+    await user.click(screen.getByRole('button', { name: /remove blackjack from favourites/i }));
+    expect(screen.getByRole('button', { name: /add blackjack to favourites/i })).toBeInTheDocument();
+  });
+});
