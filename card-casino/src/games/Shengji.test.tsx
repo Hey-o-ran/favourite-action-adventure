@@ -187,7 +187,7 @@ describe('playing a trick', () => {
     playCardsOnScreen(lead);
     engine = (playCards(engine, 0, lead) as { state: HandState }).state;
 
-    expect(handCards()).toHaveLength(24);
+    expect(handCards()).toHaveLength(25 - lead.length);
     expect(document.querySelectorAll('.sj-center .card')).toHaveLength(lead.length);
     expect(result()).toHaveTextContent(/waiting for the left opponent/i);
 
@@ -196,7 +196,7 @@ describe('playing a trick', () => {
       engine = (playCards(engine, engine.turn, botCards(engine)) as { state: HandState }).state;
     }
     expect(engine.tricksPlayed).toBe(1);
-    expect(handCards()).toHaveLength(24);
+    expect(handCards()).toHaveLength(25 - lead.length);
     expect(document.querySelector('.sj-last')).toHaveTextContent(/last trick won by/i);
     expect(document.querySelector('.sj-points')).toHaveTextContent(`The attackers have ${engine.attackerPoints} points`);
     expect(document.querySelector('.sj-points')).toHaveTextContent('1 tricks played');

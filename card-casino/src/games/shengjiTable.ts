@@ -2,10 +2,8 @@ import {
   analyze,
   checkFollow,
   checkThrow,
-  domainOf,
   isThrow,
   isTrump,
-  legalFollow,
   pointsOf,
   positionOf,
   trickWinner,
@@ -183,15 +181,4 @@ function finishTrick(state: HandState): HandState {
 /** What a hand pays the player per coin bet, stake included: nothing if their side lost. */
 export const payoutFor = (result: HandResult): number => (result.winningTeam === teamOf(0) ? payoutMultiple(result.outcome.levels) : 0);
 
-/**
- * A simple bot: it leads its cheapest plain card (or trump if it has no other), and follows with the cheapest legal play.
- * It always makes a legal play, but does not try to win points yet.
- */
-export function botCards(state: HandState): SCard[] {
-  const hand = state.hands[state.turn];
-  const t = state.trump;
-  if (state.trick.length > 0) return legalFollow(hand, analyze(state.trick[0].cards, t), t);
-  const cheap = (a: SCard, b: SCard) => pointsOf(a) - pointsOf(b) || positionOf(a, t) - positionOf(b, t) || a.id - b.id;
-  const plain = hand.filter((c) => domainOf(c, t) !== 'trump').sort(cheap);
-  return [(plain.length > 0 ? plain : [...hand].sort(cheap))[0]];
-}
+export { botCards } from './shengjiBots';
