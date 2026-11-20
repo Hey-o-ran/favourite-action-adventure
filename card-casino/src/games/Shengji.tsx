@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWallet } from '../wallet';
+import { useI18n } from '../i18n';
+import { translateEngine } from './shengjiText';
 import { shuffle } from '../cards';
 import { useDealLock } from '../useDealLock';
 import { BetPanel } from '../components/BetPanel';
@@ -11,7 +13,7 @@ import { botBury, buryKitty, dealOne, declare, declarerCards, startOpening, type
 
 /*
  * The Shengji (80 Points) table: the deal (where you can declare trump by showing a level card), the kitty, and the
- * play against bots. The text will be translated with the rest of the game when it is added to the game list.
+ * play against bots. The rules engine's messages are in English and are translated here by `translateEngine`.
  */
 
 /** How long each card takes to deal, so you have time to declare as the level cards arrive. */
@@ -20,21 +22,25 @@ export const DEAL_MS = 40;
 /** How long a bot takes to play, so you can follow the trick. */
 export const BOT_DELAY_MS = 700;
 
-const SEAT_NAME = ['You', 'Left opponent', 'Partner', 'Right opponent'] as const;
 const SUIT_SYMBOL = { spades: '♠', hearts: '♥', diamonds: '♦', clubs: '♣' } as const;
-const DOMAIN_NAME: Record<Domain, string> = { trump: 'Trumps', spades: 'Spades', hearts: 'Hearts', diamonds: 'Diamonds', clubs: 'Clubs' };
-
-const sideName = (team: number) => (team === teamOf(0) ? 'Your side' : 'The other side');
 
 /** Where a seat sits on the screen, from the player's point of view. */
 const PLACE = ['bottom', 'left', 'top', 'right'] as const;
 
-function trumpText(hand: HandState): string {
-  const level = levelLabel(hand.trump.level);
-  return hand.trump.suit === null ? `No trump suit, level ${level}` : `${SUIT_SYMBOL[hand.trump.suit]} is trump, level ${level}`;
+/** The message for how a hand ended: which side won, and how many levels they moved up (0 means they take over the deal). */
+function resultKey(mine: boolean, levels: number) {
+  const side = mine ? 'you' : 'other';
+  const what = levels === 0 ? 'Take' : levels === 1 ? 'Up1' : 'UpN';
+  return `shengji.result.${side}${what}` as 'shengji.result.youUp1';
 }
 
 export function Shengji() {
+  const { t, tx } = useI18n();
+  const seatName = (seat: number) => t(`shengji.seat.${seat}` as 'shengji.seat.0');
+  const domainName = (d: Domain) => t(`shengji.domain.${d}` as 'shengji.domain.trump');
+  const trumpText = (trump: Trump) =>
+    trump.suit === null ? t('shengji.trump.none', { level: levelLabel(trump.level) }) : t('shengji.trump.suit', { suit: SUIT_SYMBOL[trump.suit], level: levelLabel(trump.level) });
+  const fail = (message: string) => setError(translateEngine(message, t));
   const { balance, wager, settle } = useWallet();
   const [bet, setBet] = useState(50);
   const [standing, setStanding] = useState<Standing | null>(null);
@@ -140,7 +146,7 @@ export function Shengji() {
     const cards = hand.hands[0].filter((c) => selected.has(c.id));
     const out = playCards(hand, 0, cards);
     if (!out.ok) {
-      setError(out.error);
+      fail(out.error);
       return;
     }
     setError('');
@@ -152,7 +158,7 @@ export function Shengji() {
     if (!opening) return;
     const out = declare(opening, 0, opening.hands[0].filter((c) => selected.has(c.id)));
     if (!out.ok) {
-      setError(out.error);
+      fail(out.error);
       return;
     }
     setError('');
@@ -164,7 +170,7 @@ export function Shengji() {
     if (!opening) return;
     const out = buryKitty(opening, declarerCards(opening).filter((c) => selected.has(c.id)));
     if (!out.ok) {
-      setError(out.error);
+      fail(out.error);
       return;
     }
     setError('');
@@ -186,37 +192,34 @@ export function Shengji() {
 
   return (
     <section className="table shengji">
-      <h2>Shengji</h2>
+      <h2>{t('game.shengji.name')}</h2>
 
       {opening && standing && (
         <>
           <p className="scoreboard">
-            Your side is on level <b>{levelLabel(standing.levels[0])}</b> · the other side on <b>{levelLabel(standing.levels[1])}</b> ·{' '}
-            {SEAT_NAME[standing.declarer] === 'You' ? 'You are' : `The ${SEAT_NAME[standing.declarer].toLowerCase()} is`} the declarer.
+            {tx('shengji.levels', { mine: <b>{levelLabel(standing.levels[0])}</b>, theirs: <b>{levelLabel(standing.levels[1])}</b> })} · {t(`shengji.declarer.${standing.declarer}` as 'shengji.declarer.0')}
           </p>
           <p className="hint sj-declaration">
             {dealing
-              ? `Dealing… show a level card (${levelLabel(opening.level)}) to declare trump, or a pair to overrule. ${
-                  opening.declared ? `Declared so far: ${opening.declared.declaration.suit === null ? 'no trump' : SUIT_SYMBOL[opening.declared.declaration.suit]}.` : 'Nobody has declared yet.'
-                }`
+              ? opening.declared
+                ? t('shengji.dealing.declared', { level: levelLabel(opening.level), suit: opening.declared.declaration.suit === null ? t('shengji.noTrump') : SUIT_SYMBOL[opening.declared.declaration.suit] })
+                : t('shengji.dealing.none', { level: levelLabel(opening.level) })
               : opening.trump
-                ? opening.trump.suit === null
-                  ? `No trump suit, level ${levelLabel(opening.trump.level)}`
-                  : `${SUIT_SYMBOL[opening.trump.suit]} is trump, level ${levelLabel(opening.trump.level)}`
+                ? trumpText(opening.trump)
                 : ''}
           </p>
           <div className="sj-table">
             {([2, 1, 3] as const).map((seat) => (
               <div key={seat} className={`sj-seat ${PLACE[seat]}`}>
-                <b>{SEAT_NAME[seat]}</b>
-                <small>{opening.hands[seat].length + (opening.phase === 'kitty' && seat === standing.declarer ? KITTY_SIZE : 0)} cards</small>
+                <b>{seatName(seat)}</b>
+                <small>{t('shengji.cards', { count: opening.hands[seat].length + (opening.phase === 'kitty' && seat === standing.declarer ? KITTY_SIZE : 0) })}</small>
               </div>
             ))}
           </div>
-          <p className="hand-label">Your hand · {myCards.length} cards</p>
+          <p className="hand-label">{t('shengji.handLabel', { count: myCards.length })}</p>
           <div className="sj-hand">
             {groups.map((g) => (
-              <div key={g.domain} className="sj-group" role="group" aria-label={DOMAIN_NAME[g.domain]}>
+              <div key={g.domain} className="sj-group" role="group" aria-label={domainName(g.domain)}>
                 {g.cards.map((c) => (
                   <ShengjiCardView key={c.id} card={c} selected={selected.has(c.id)} onClick={canPick ? () => toggle(c) : undefined} />
                 ))}
@@ -224,9 +227,9 @@ export function Shengji() {
             ))}
           </div>
           <p className="result" aria-live="polite">
-            {opening.log && <>{opening.log} </>}
-            {myKitty && <>You pick up the kitty: choose {KITTY_SIZE} cards to put back.</>}
-            {opening.phase === 'kitty' && !myKitty && <>The {SEAT_NAME[standing.declarer].toLowerCase()} is choosing the kitty…</>}
+            {opening.log && <>{translateEngine(opening.log, t)} </>}
+            {myKitty && <>{t('shengji.pickup', { count: KITTY_SIZE })}</>}
+            {opening.phase === 'kitty' && !myKitty && <>{t(`shengji.choosing.${standing.declarer}` as 'shengji.choosing.1')}</>}
           </p>
           {error && (
             <p role="alert" className="login-error">
@@ -239,21 +242,22 @@ export function Shengji() {
       {hand && standing ? (
         <>
           <p className="scoreboard">
-            Your side is on level <b>{levelLabel(standing.levels[0])}</b> · the other side on <b>{levelLabel(standing.levels[1])}</b> · {trumpText(hand)} ·{' '}
-            {SEAT_NAME[hand.declarer] === 'You' ? 'You are' : `The ${SEAT_NAME[hand.declarer].toLowerCase()} is`} the declarer.
+            {tx('shengji.levels', { mine: <b>{levelLabel(standing.levels[0])}</b>, theirs: <b>{levelLabel(standing.levels[1])}</b> })} · {trumpText(hand.trump)} ·{' '}
+            {t(`shengji.declarer.${hand.declarer}` as 'shengji.declarer.0')}
           </p>
           <p className="hint sj-points">
-            {iAmAttacking ? 'You are attacking.' : 'You are defending.'} The attackers have <b>{hand.attackerPoints}</b> points and need {ATTACK_TARGET}. {hand.tricksPlayed} tricks played.
+            {t(iAmAttacking ? 'shengji.attacking' : 'shengji.defending')}{' '}
+            {tx('shengji.points', { points: <b>{hand.attackerPoints}</b>, target: ATTACK_TARGET, tricks: hand.tricksPlayed })}
           </p>
 
           <div className="sj-table">
             {([2, 1, 3] as const).map((seat) => (
               <div key={seat} className={`sj-seat ${PLACE[seat]}${hand.turn === seat && playing ? ' turn' : ''}`}>
-                <b>{SEAT_NAME[seat]}</b>
-                <small>{hand.hands[seat].length} cards</small>
+                <b>{seatName(seat)}</b>
+                <small>{t('shengji.cards', { count: hand.hands[seat].length })}</small>
               </div>
             ))}
-            <div className="sj-center" aria-label={showingLast ? 'The last trick' : 'The current trick'}>
+            <div className="sj-center" aria-label={t(showingLast ? 'shengji.lastTrick' : 'shengji.currentTrick')}>
               {PLACE.map((place, seat) => {
                 const cards = shownTrick.find((p) => p.seat === seat)?.cards ?? [];
                 return (
@@ -267,17 +271,18 @@ export function Shengji() {
             </div>
             {showingLast && hand.lastTrick && (
               <p className="hint sj-last">
-                Last trick won by {SEAT_NAME[hand.lastTrick.winner].toLowerCase()} ({totalPoints(hand.lastTrick.plays.flatMap((p) => p.cards))} points).
+                {t('shengji.lastTrickWon', { who: t(`shengji.who.${hand.lastTrick.winner}` as 'shengji.who.0'), points: totalPoints(hand.lastTrick.plays.flatMap((p) => p.cards)) })}
               </p>
             )}
           </div>
 
           <p className="hand-label">
-            Your hand · {hand.hands[0].length} cards{myTurn ? ' · your turn' : playing ? ' · waiting' : ''}
+            {t('shengji.handLabel', { count: hand.hands[0].length })}
+            {myTurn ? t('shengji.handTurn') : playing ? t('shengji.handWait') : ''}
           </p>
           <div className="sj-hand">
             {groups.map((g) => (
-              <div key={g.domain} className="sj-group" role="group" aria-label={DOMAIN_NAME[g.domain]}>
+              <div key={g.domain} className="sj-group" role="group" aria-label={domainName(g.domain)}>
                 {g.cards.map((c) => (
                   <ShengjiCardView key={c.id} card={c} selected={selected.has(c.id)} onClick={myTurn ? () => toggle(c) : undefined} />
                 ))}
@@ -286,22 +291,18 @@ export function Shengji() {
           </div>
 
           <p className="result" aria-live="polite">
-            {hand.log && <>{hand.log} </>}
-            {playing && !myTurn && <>Waiting for the {SEAT_NAME[hand.turn].toLowerCase()}…</>}
-            {myTurn && hand.trick.length === 0 && <>Your lead: choose a card, a pair or a tractor.</>}
-            {myTurn && hand.trick.length > 0 && <>Your turn: play {hand.trick[0].cards.length === 1 ? 'a card' : `${hand.trick[0].cards.length} cards`} to follow.</>}
+            {hand.log && <>{translateEngine(hand.log, t)} </>}
+            {playing && !myTurn && <>{t(`shengji.waiting.${hand.turn}` as 'shengji.waiting.1')}</>}
+            {myTurn && hand.trick.length === 0 && <>{t('shengji.yourLead')}</>}
+            {myTurn && hand.trick.length > 0 && <>{hand.trick[0].cards.length === 1 ? t('shengji.followOne') : t('shengji.followMany', { count: hand.trick[0].cards.length })}</>}
             {result && (
               <>
-                The attackers scored {result.attackerScore}
-                {result.kittyBonus > 0 ? ` (${result.kittyBonus} from the kitty)` : ''}.{' '}
-                {sideName(result.winningTeam)} {result.winningTeam === teamOf(0) ? 'win' : 'wins'}
-                {result.outcome.levels > 0
-                  ? ` and ${result.winningTeam === teamOf(0) ? 'move' : 'moves'} up ${result.outcome.levels} level${result.outcome.levels === 1 ? '' : 's'}`
-                  : ' and take over the deal'}.{' '}
+                {result.kittyBonus > 0 ? t('shengji.scoredKitty', { score: result.attackerScore, kitty: result.kittyBonus }) : t('shengji.scored', { score: result.attackerScore })}{' '}
+                {t(resultKey(result.winningTeam === teamOf(0), result.outcome.levels), { levels: result.outcome.levels })}{' '}
                 {payoutFor(result) > 0 ? (
-                  <span className="gain">+{staked * payoutFor(result) - staked} coins</span>
+                  <span className="gain">{t('game.gain', { amount: staked * payoutFor(result) - staked })}</span>
                 ) : (
-                  <span className="loss">-{staked} coins</span>
+                  <span className="loss">{t('game.loss', { amount: staked })}</span>
                 )}
               </>
             )}
@@ -313,7 +314,7 @@ export function Shengji() {
           )}
           {gameWonBy !== null && (
             <p className="result">
-              <b>{sideName(gameWonBy)} won the whole game by winning a hand at ace!</b>
+              <b>{t(gameWonBy === teamOf(0) ? 'shengji.gameWon.you' : 'shengji.gameWon.other')}</b>
             </p>
           )}
         </>
@@ -329,41 +330,41 @@ export function Shengji() {
         {dealing && (
           <>
             <button className="primary" onClick={declareSelected} disabled={selected.size === 0}>
-              Declare
+              {t('shengji.declare')}
             </button>
             <button onClick={() => setSelected(new Set())} disabled={selected.size === 0}>
-              Clear
+              {t('shengji.clear')}
             </button>
           </>
         )}
         {myKitty && (
           <>
             <button className="primary" onClick={buryChosen} disabled={selected.size !== KITTY_SIZE}>
-              {selected.size === KITTY_SIZE ? `Put back ${KITTY_SIZE} cards` : `Choose ${KITTY_SIZE} cards to put back (${selected.size})`}
+              {selected.size === KITTY_SIZE ? t('shengji.putBack', { count: KITTY_SIZE }) : t('shengji.putBackChoose', { count: KITTY_SIZE, chosen: selected.size })}
             </button>
             <button onClick={() => setSelected(new Set())} disabled={selected.size === 0}>
-              Clear
+              {t('shengji.clear')}
             </button>
           </>
         )}
         {myTurn && (
           <>
             <button className="primary" onClick={playSelected} disabled={selected.size === 0}>
-              {selected.size > 0 ? `Play ${selected.size} card${selected.size === 1 ? '' : 's'}` : 'Choose cards to play'}
+              {selected.size > 0 ? t(selected.size === 1 ? 'shengji.play.one' : 'shengji.play.many', { count: selected.size }) : t('shengji.play.choose')}
             </button>
             <button onClick={() => setSelected(new Set())} disabled={selected.size === 0}>
-              Clear
+              {t('shengji.clear')}
             </button>
           </>
         )}
         {hand?.phase === 'over' && gameWonBy === null && (
           <button className="primary" onClick={continueGame} disabled={locked || balance < bet}>
-            Next hand
+            {t('shengji.nextHand')}
           </button>
         )}
         {((!hand && !opening) || gameWonBy !== null) && (
           <button className="primary" onClick={gameWonBy !== null ? newGame : deal} disabled={gameWonBy === null && balance < bet}>
-            {gameWonBy !== null ? 'New game' : 'Deal'}
+            {t(gameWonBy !== null ? 'shengji.newGame' : 'shengji.deal')}
           </button>
         )}
       </div>

@@ -117,3 +117,12 @@ it('shows the Landlord rules in both languages', () => {
   expect(zh.container.textContent).not.toMatch(ENGLISH_WORD);
   expect(zh.container.textContent).not.toContain('????');
 });
+
+it('shows the Shengji rules in both languages', () => {
+  const en = renderRules('shengji');
+  expect(en.container.textContent).toContain('kitty');
+  en.unmount();
+  const zh = renderRules('shengji', 'zh-CN');
+  expect(zh.container.textContent).not.toMatch(ENGLISH_WORD);
+  expect(zh.container.textContent).not.toContain('????');
+});

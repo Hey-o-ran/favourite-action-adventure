@@ -10,6 +10,7 @@ import { CrazyEights } from './games/CrazyEights';
 import { Holdem } from './games/Holdem';
 import { Gin } from './games/Gin';
 import { Landlord } from './games/Landlord';
+import { Shengji } from './games/Shengji';
 import { Roulette } from './games/Roulette';
 import { Slots } from './games/Slots';
 import { GameNav } from './components/GameNav';
@@ -187,6 +188,21 @@ const GAMES: GameEntry[] = [
     popularity: 2,
     length: 8,
     Component: Landlord,
+  },
+  {
+    id: 'shengji',
+    name: 'Shengji (80 Points)',
+    blurb: 'Four players, two decks, two teams. You and your partner face two bots: win tricks, take the points, and climb from level 2 to ace.',
+    category: 'Card games',
+    origin: 'China',
+    originNote: 'Shengji ("moving up") is a Chinese trick-taking game. It is also called Tractor, after its famous run of pairs, and is played across China and by Chinese communities around the world.',
+    players: '3+ players',
+    type: 'Win tricks',
+    skill: 'Mostly skill',
+    difficulty: 'Hard',
+    popularity: 13,
+    length: 20,
+    Component: Shengji,
   },
   {
     id: 'roulette',
