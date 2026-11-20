@@ -201,7 +201,7 @@ it('retries a ranked spin with the same bet and ID, then shows the server payout
   const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
   render(
     <WalletContext.Provider value={wallet(50)}>
-      <Slots ranked={{ token: 'token', active: true, onUnauthorized: vi.fn() }} />
+      <Slots ranked={{ userId: 'player-1', token: 'token', active: true, onUnauthorized: vi.fn() }} />
     </WalletContext.Provider>,
   );
   expect(await screen.findByText('Ranked coins: 1,000')).toBeInTheDocument();
@@ -217,4 +217,39 @@ it('retries a ranked spin with the same bet and ID, then shows the server payout
   expect(screen.getByText('Ranked coins: 1,990')).toBeInTheDocument();
   expect(wager).not.toHaveBeenCalled();
   expect(settle).not.toHaveBeenCalled();
+});
+
+
+it('recovers an uncertain ranked spin after the screen is reloaded', async () => {
+  const fetch = vi.spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(new Response(JSON.stringify({ balance: 1000, version: 0 })))
+    .mockRejectedValueOnce(new Error('connection lost'))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ balance: 990, version: 1 })))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ stops: [0, 1, 2], bet: 10, returned: 0, balance: 990, version: 1 })));
+  const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
+  const mount = () => render(<WalletContext.Provider value={wallet(50)}><Slots ranked={{ userId: 'player-1', token: 'token', active: true, onUnauthorized: vi.fn() }} /></WalletContext.Provider>);
+  const view = mount();
+  expect(await screen.findByText('Ranked coins: 1,000')).toBeInTheDocument();
+  await user.click(spinButton());
+  expect(await screen.findByRole('button', { name: 'Retry spin' })).toBeInTheDocument();
+  const original = fetch.mock.calls[1][1]?.body;
+  view.unmount();
+  mount();
+  await user.click(await screen.findByRole('button', { name: 'Retry spin' }));
+  expect(fetch.mock.calls[3][1]?.body).toEqual(original);
+  await finish();
+  expect(localStorage.getItem('card-casino.pending-ranked-spin.player-1')).toBeNull();
+});
+
+
+it('does not submit a ranked spin when its recovery record cannot be saved', async () => {
+  const fetch = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(JSON.stringify({ balance: 1000, version: 0 })));
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('storage blocked'); });
+  const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
+  render(<WalletContext.Provider value={wallet(50)}><Slots ranked={{ userId: 'player-1', token: 'token', active: true, onUnauthorized: vi.fn() }} /></WalletContext.Provider>);
+  expect(await screen.findByText('Ranked coins: 1,000')).toBeInTheDocument();
+  await user.click(spinButton());
+  expect(screen.getByRole('alert')).toHaveTextContent(/requires browser storage/i);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(spinButton()).toBeDisabled();
 });

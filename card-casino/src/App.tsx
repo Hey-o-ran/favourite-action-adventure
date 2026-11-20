@@ -374,7 +374,7 @@ export function App() {
         {GAMES.map(({ id, Component }) => (
           <div key={id} hidden={id !== activeId}>
             {id === 'slots' ? (
-              <Slots ranked={{ token: session.idToken, active: activeId === id && view === 'game', onUnauthorized: endSession }} />
+              <Slots ranked={{ userId: session.user.userId, token: session.idToken, active: activeId === id && view === 'game', onUnauthorized: endSession }} />
             ) : (
               <GameScope gameId={id}>
                 <Component />

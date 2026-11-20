@@ -313,7 +313,7 @@ export interface WinAnnouncement {
   createdAt: string;
 }
 export const listWinAnnouncements = async (token: string) =>
-  (await request<{ announcements: WinAnnouncement[] }>('GET', '/v1/announcements', undefined, token))!;
+  (await request<{ announcements: WinAnnouncement[] }>('GET', '/v1/announcements?wallet=ranked', undefined, token))!;
 
 /** Wins, draws, losses and seconds of play in one game. */
 export interface GameStats {
@@ -335,4 +335,4 @@ export interface PlayerStats {
 export type LeaderboardPeriod = 'day' | 'month' | 'all';
 
 export const getLeaderboard = async (token: string, period: LeaderboardPeriod = 'all') =>
-  (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}`, undefined, token))!;
+  (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}&wallet=ranked`, undefined, token))!;
