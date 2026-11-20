@@ -4,15 +4,18 @@ import { shuffle } from '../cards';
 import { useDealLock } from '../useDealLock';
 import { BetPanel } from '../components/BetPanel';
 import { ShengjiCardView } from '../components/ShengjiCardView';
-import { domainOf, makeDeck, sortHand, totalPoints, type Domain, type SCard } from './shengjiCards';
-import { ATTACK_TARGET, levelLabel, nextHand, teamOf, type Standing } from './shengjiScoring';
-import { attackingTeam, botCards, payoutFor, playCards, startHand, type HandState } from './shengjiTable';
+import { domainOf, makeDeck, sortHand, totalPoints, type Domain, type SCard, type Trump } from './shengjiCards';
+import { ATTACK_TARGET, KITTY_SIZE, levelLabel, nextHand, teamOf, type Standing } from './shengjiScoring';
+import { attackingTeam, botCards, payoutFor, playCards, type HandState } from './shengjiTable';
+import { botBury, buryKitty, dealOne, declare, declarerCards, startOpening, type Opening } from './shengjiOpening';
 
 /*
- * The Shengji (80 Points) table. Stage 2: you play a whole hand against bots that make legal plays but do not try to win
- * points yet. Declaring trump during the deal and choosing the kitty yourself come in the next stage, and the text will
- * be translated with the rest of the game then.
+ * The Shengji (80 Points) table: the deal (where you can declare trump by showing a level card), the kitty, and the
+ * play against bots. The text will be translated with the rest of the game when it is added to the game list.
  */
+
+/** How long each card takes to deal, so you have time to declare as the level cards arrive. */
+export const DEAL_MS = 40;
 
 /** How long a bot takes to play, so you can follow the trick. */
 export const BOT_DELAY_MS = 700;
@@ -36,6 +39,8 @@ export function Shengji() {
   const [bet, setBet] = useState(50);
   const [standing, setStanding] = useState<Standing | null>(null);
   const [hand, setHand] = useState<HandState | null>(null);
+  /** The deal and kitty, until the hand is ready to play. */
+  const [opening, setOpening] = useState<Opening | null>(null);
   /** The coins staked on the hand being played. */
   const [staked, setStaked] = useState(0);
   const [selected, setSelected] = useState<ReadonlySet<number>>(new Set());
@@ -45,6 +50,8 @@ export function Shengji() {
   const settled = useRef(true);
   const { locked, lock } = useDealLock();
 
+  const dealing = opening?.phase === 'dealing';
+  const myKitty = opening?.phase === 'kitty' && opening.standing.declarer === 0;
   const playing = hand?.phase === 'playing';
   const myTurn = !!playing && hand!.turn === 0;
 
@@ -53,7 +60,8 @@ export function Shengji() {
     settled.current = false;
     setStaked(bet);
     setStanding(next);
-    setHand(startHand(shuffle(makeDeck()), next));
+    setHand(null);
+    setOpening(startOpening(shuffle(makeDeck()), next));
     setSelected(new Set());
     setError('');
     lock();
@@ -75,7 +83,25 @@ export function Shengji() {
     setGameWonBy(null);
     setStanding(null);
     setHand(null);
+    setOpening(null);
   };
+
+  // The cards are dealt one at a time, and the bots declare as they like.
+  useEffect(() => {
+    if (opening?.phase !== 'dealing') return;
+    const timer = window.setTimeout(() => setOpening((o) => (o ? dealOne(o) : o)), DEAL_MS);
+    return () => window.clearTimeout(timer);
+  }, [opening]);
+
+  // A bot declarer buries the kitty a moment after the deal.
+  useEffect(() => {
+    if (opening?.phase !== 'kitty' || opening.standing.declarer === 0) return;
+    const timer = window.setTimeout(() => {
+      setHand(botBury(opening));
+      setOpening(null);
+    }, BOT_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [opening]);
 
   // The bots play a moment after each other.
   useEffect(() => {
@@ -97,8 +123,9 @@ export function Shengji() {
     settle(staked * payoutFor(hand.result));
   }, [hand, staked, settle]);
 
+  const canPick = myTurn || dealing || myKitty;
   const toggle = (card: SCard) => {
-    if (!myTurn) return;
+    if (!canPick) return;
     setError('');
     setSelected((s) => {
       const next = new Set(s);
@@ -121,8 +148,36 @@ export function Shengji() {
     setHand(out.state);
   };
 
-  const mine = hand ? sortHand(hand.hands[0], hand.trump) : [];
-  const groups = hand ? [...new Set(mine.map((c) => domainOf(c, hand.trump)))].map((d) => ({ domain: d, cards: mine.filter((c) => domainOf(c, hand.trump) === d) })) : [];
+  const declareSelected = () => {
+    if (!opening) return;
+    const out = declare(opening, 0, opening.hands[0].filter((c) => selected.has(c.id)));
+    if (!out.ok) {
+      setError(out.error);
+      return;
+    }
+    setError('');
+    setSelected(new Set());
+    setOpening(out.opening);
+  };
+
+  const buryChosen = () => {
+    if (!opening) return;
+    const out = buryKitty(opening, declarerCards(opening).filter((c) => selected.has(c.id)));
+    if (!out.ok) {
+      setError(out.error);
+      return;
+    }
+    setError('');
+    setSelected(new Set());
+    setHand(out.state);
+    setOpening(null);
+  };
+
+  /** While dealing, the trump is only what has been declared so far, and the level cards still count as trump. */
+  const viewTrump: Trump | null = hand?.trump ?? opening?.trump ?? (opening ? { level: opening.level, suit: opening.declared?.declaration.suit ?? null } : null);
+  const myCards = hand ? hand.hands[0] : opening ? (myKitty ? declarerCards(opening) : opening.hands[0]) : [];
+  const mine = viewTrump ? sortHand(myCards, viewTrump) : [];
+  const groups = viewTrump ? [...new Set(mine.map((c) => domainOf(c, viewTrump)))].map((d) => ({ domain: d, cards: mine.filter((c) => domainOf(c, viewTrump) === d) })) : [];
   const shownTrick = hand && hand.trick.length > 0 ? hand.trick : hand?.lastTrick?.plays ?? [];
   const showingLast = !!hand && hand.trick.length === 0 && !!hand.lastTrick;
   const result = hand?.result;
@@ -132,6 +187,54 @@ export function Shengji() {
   return (
     <section className="table shengji">
       <h2>Shengji</h2>
+
+      {opening && standing && (
+        <>
+          <p className="scoreboard">
+            Your side is on level <b>{levelLabel(standing.levels[0])}</b> · the other side on <b>{levelLabel(standing.levels[1])}</b> ·{' '}
+            {SEAT_NAME[standing.declarer] === 'You' ? 'You are' : `The ${SEAT_NAME[standing.declarer].toLowerCase()} is`} the declarer.
+          </p>
+          <p className="hint sj-declaration">
+            {dealing
+              ? `Dealing… show a level card (${levelLabel(opening.level)}) to declare trump, or a pair to overrule. ${
+                  opening.declared ? `Declared so far: ${opening.declared.declaration.suit === null ? 'no trump' : SUIT_SYMBOL[opening.declared.declaration.suit]}.` : 'Nobody has declared yet.'
+                }`
+              : opening.trump
+                ? opening.trump.suit === null
+                  ? `No trump suit, level ${levelLabel(opening.trump.level)}`
+                  : `${SUIT_SYMBOL[opening.trump.suit]} is trump, level ${levelLabel(opening.trump.level)}`
+                : ''}
+          </p>
+          <div className="sj-table">
+            {([2, 1, 3] as const).map((seat) => (
+              <div key={seat} className={`sj-seat ${PLACE[seat]}`}>
+                <b>{SEAT_NAME[seat]}</b>
+                <small>{opening.hands[seat].length + (opening.phase === 'kitty' && seat === standing.declarer ? KITTY_SIZE : 0)} cards</small>
+              </div>
+            ))}
+          </div>
+          <p className="hand-label">Your hand · {myCards.length} cards</p>
+          <div className="sj-hand">
+            {groups.map((g) => (
+              <div key={g.domain} className="sj-group" role="group" aria-label={DOMAIN_NAME[g.domain]}>
+                {g.cards.map((c) => (
+                  <ShengjiCardView key={c.id} card={c} selected={selected.has(c.id)} onClick={canPick ? () => toggle(c) : undefined} />
+                ))}
+              </div>
+            ))}
+          </div>
+          <p className="result" aria-live="polite">
+            {opening.log && <>{opening.log} </>}
+            {myKitty && <>You pick up the kitty: choose {KITTY_SIZE} cards to put back.</>}
+            {opening.phase === 'kitty' && !myKitty && <>The {SEAT_NAME[standing.declarer].toLowerCase()} is choosing the kitty…</>}
+          </p>
+          {error && (
+            <p role="alert" className="login-error">
+              {error}
+            </p>
+          )}
+        </>
+      )}
 
       {hand && standing ? (
         <>
@@ -215,12 +318,34 @@ export function Shengji() {
           )}
         </>
       ) : (
-        <div className="cards">
-          <div className="slot" />
-        </div>
+        !opening && (
+          <div className="cards">
+            <div className="slot" />
+          </div>
+        )
       )}
 
       <div className="actions">
+        {dealing && (
+          <>
+            <button className="primary" onClick={declareSelected} disabled={selected.size === 0}>
+              Declare
+            </button>
+            <button onClick={() => setSelected(new Set())} disabled={selected.size === 0}>
+              Clear
+            </button>
+          </>
+        )}
+        {myKitty && (
+          <>
+            <button className="primary" onClick={buryChosen} disabled={selected.size !== KITTY_SIZE}>
+              {selected.size === KITTY_SIZE ? `Put back ${KITTY_SIZE} cards` : `Choose ${KITTY_SIZE} cards to put back (${selected.size})`}
+            </button>
+            <button onClick={() => setSelected(new Set())} disabled={selected.size === 0}>
+              Clear
+            </button>
+          </>
+        )}
         {myTurn && (
           <>
             <button className="primary" onClick={playSelected} disabled={selected.size === 0}>
@@ -236,14 +361,14 @@ export function Shengji() {
             Next hand
           </button>
         )}
-        {(!hand || gameWonBy !== null) && (
+        {((!hand && !opening) || gameWonBy !== null) && (
           <button className="primary" onClick={gameWonBy !== null ? newGame : deal} disabled={gameWonBy === null && balance < bet}>
             {gameWonBy !== null ? 'New game' : 'Deal'}
           </button>
         )}
       </div>
 
-      <BetPanel value={bet} onChange={setBet} max={balance} disabled={playing} />
+      <BetPanel value={bet} onChange={setBet} max={balance} disabled={playing || !!opening} />
     </section>
   );
 }

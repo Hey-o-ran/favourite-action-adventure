@@ -4,10 +4,11 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import '@testing-library/jest-dom/vitest';
 import { shuffle } from '../cards';
 import { WalletContext, type WalletValue } from '../wallet';
-import { Shengji, BOT_DELAY_MS } from './Shengji';
+import { Shengji, BOT_DELAY_MS, DEAL_MS } from './Shengji';
+import { autoOpening } from './shengjiOpening';
 import { analyze, checkFollow, makeDeck, type SCard } from './shengjiCards';
 import { nextHand, type Standing } from './shengjiScoring';
-import { botCards, payoutFor, playCards, startHand, type HandState } from './shengjiTable';
+import { botCards, payoutFor, playCards, type HandState } from './shengjiTable';
 
 // The deck is whatever the test says, so every hand is known.
 vi.mock('../cards', async (orig) => ({ ...(await orig<typeof import('../cards')>()), shuffle: vi.fn() }));
@@ -39,7 +40,10 @@ const wallet = (balance: number): WalletValue => ({
 });
 
 /** Seat 0 is the player. Math.random decides the first declarer: 0 is you, 0.25 is the player on your left. */
+let declarerSeat = 0;
 function setup(deck: SCard[], declarerRandom = 0, balance = 1000) {
+  declarerSeat = Math.floor(declarerRandom * 4);
+  lastDeck = deck;
   vi.mocked(shuffle).mockReturnValue(deck as never);
   vi.spyOn(Math, 'random').mockReturnValue(declarerRandom);
   render(
@@ -50,11 +54,31 @@ function setup(deck: SCard[], declarerRandom = 0, balance = 1000) {
 }
 
 const START: Standing = { levels: [2, 2], declarer: 0 };
-const deal = () => fireEvent.click(screen.getByRole('button', { name: /^deal$/i }));
 const handCards = () => [...document.querySelectorAll<HTMLElement>('.sj-hand .card')];
 const cardEl = (id: number) => document.querySelector<HTMLElement>(`.sj-hand .card[data-id="${id}"]`)!;
 const pass = (ms: number) => act(() => void vi.advanceTimersByTime(ms));
 const result = () => document.querySelector('.result');
+
+/**
+ * Lets the deal run, then the kitty: a player who is the declarer puts back the cheapest eight (what the rules engine's
+ * auto opening does), and a bot declarer does it after its moment. No player declares trump here; the bots may.
+ */
+function runOpening(deck: SCard[], standing: Standing) {
+  for (let i = 0; i < 100; i++) pass(DEAL_MS);
+  const putBack = screen.queryByRole('button', { name: /^choose 8 cards to put back/i });
+  if (putBack) {
+    for (const c of autoOpening(deck, standing).kitty) fireEvent.click(cardEl(c.id));
+    fireEvent.click(screen.getByRole('button', { name: /^put back 8 cards$/i }));
+  } else if (screen.queryByText(/is choosing the kitty/i)) {
+    pass(BOT_DELAY_MS);
+  }
+}
+/** Presses Deal and runs the opening for the declarer that setup chose. */
+let lastDeck: SCard[] = [];
+const deal = () => {
+  fireEvent.click(screen.getByRole('button', { name: /^deal$/i }));
+  if (screen.queryByRole('button', { name: /^declare$/i })) runOpening(lastDeck, { levels: [2, 2], declarer: declarerSeat });
+};
 const playButton = () => screen.getByRole('button', { name: /^play \d|^choose cards/i });
 
 /** Picks these cards and presses Play, like a player would. */
@@ -92,7 +116,7 @@ describe('dealing a hand', () => {
     const deck = deckFor(3);
     setup(deck);
     deal();
-    const expected = startHand(deck, START).hands[0].map((c) => c.id).sort((a, b) => a - b);
+    const expected = autoOpening(deck, START).hands[0].map((c) => c.id).sort((a, b) => a - b);
     expect(handCards().map((el) => Number(el.dataset.id)).sort((a, b) => a - b)).toEqual(expected);
   });
 
@@ -182,7 +206,7 @@ describe('playing a trick', () => {
     setup(deck);
     deal();
     // Mirror it in the engine.
-    let engine: HandState = startHand(deck, START);
+    let engine: HandState = autoOpening(deck, START);
     const lead = botCards(engine);
     playCardsOnScreen(lead);
     engine = (playCards(engine, 0, lead) as { state: HandState }).state;
@@ -206,11 +230,11 @@ describe('playing a trick', () => {
     const deck = deckFor(2);
     setup(deck);
     deal();
-    playCardsOnScreen(botCards(startHand(deck, START)));
+    playCardsOnScreen(botCards(autoOpening(deck, START)));
     pass(BOT_DELAY_MS - 100);
-    expect(document.querySelectorAll('.sj-center .card').length).toBeLessThanOrEqual(botCards(startHand(deck, START)).length);
+    expect(document.querySelectorAll('.sj-center .card').length).toBeLessThanOrEqual(botCards(autoOpening(deck, START)).length);
     pass(100);
-    expect(document.querySelectorAll('.sj-center .card').length).toBeGreaterThan(botCards(startHand(deck, START)).length - 1);
+    expect(document.querySelectorAll('.sj-center .card').length).toBeGreaterThan(botCards(autoOpening(deck, START)).length - 1);
   });
 
   it('makes you follow suit, saying so when you do not', () => {
@@ -218,7 +242,7 @@ describe('playing a trick', () => {
     let found: { deck: SCard[]; illegal: SCard } | null = null;
     for (let seed = 1; seed <= 60 && !found; seed++) {
       const deck = deckFor(seed);
-      let engine = startHand(deck, { levels: [2, 2], declarer: 1 });
+      let engine = autoOpening(deck, { levels: [2, 2], declarer: 1 });
       for (let i = 0; i < 3; i++) engine = (playCards(engine, engine.turn, botCards(engine)) as { state: HandState }).state;
       const lead = analyze(engine.trick[0].cards, engine.trump);
       const illegal = engine.hands[0].find((c) => checkFollow(engine.hands[0], [c], lead, engine.trump) !== null && lead.combos.length === 1 && lead.combos[0].kind === 'single');
@@ -239,7 +263,7 @@ describe('playing a trick', () => {
 describe('a whole hand', () => {
   /** Plays the hand to the end through the screen, with the engine playing alongside to know what should happen. */
   function playItOut(deck: SCard[], standing: Standing) {
-    let engine = startHand(deck, standing);
+    let engine = autoOpening(deck, standing);
     for (let guard = 0; engine.phase === 'playing' && guard < 400; guard++) {
       if (engine.turn === 0) {
         const cards = botCards(engine);
@@ -290,6 +314,7 @@ describe('a whole hand', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /^next hand$/i }));
     expect(wager).toHaveBeenCalledTimes(2);
+    runOpening(deck, { levels: next.levels, declarer: next.declarer });
     expect(document.querySelector('.scoreboard')).toHaveTextContent(`level ${next.levels[0] === 14 ? 'A' : next.levels[0]}`);
     expect(handCards()).toHaveLength(25);
     expect(settle).toHaveBeenCalledTimes(1); // only the first hand has been paid so far
@@ -302,5 +327,48 @@ describe('a whole hand', () => {
     playItOut(deck, START);
     pass(5000);
     expect(settle).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('the opening', () => {
+  it('lets you declare trump with a level card as it is dealt', () => {
+    // You get the 2 of spades as the first card, and no other 2 until the kitty, so no bot can declare.
+    const all = makeDeck();
+    const twos = all.filter((c) => c.rank === 2 && c.suit !== 'joker');
+    const others = all.filter((c) => !twos.includes(c));
+    const deck = [twos[0], ...others.slice(0, 99), ...others.slice(99), ...twos.slice(1)];
+    setup(deck);
+    fireEvent.click(screen.getByRole('button', { name: /^deal$/i }));
+    pass(DEAL_MS);
+    expect(handCards()).toHaveLength(1);
+    fireEvent.click(handCards()[0]);
+    fireEvent.click(screen.getByRole('button', { name: /^declare$/i }));
+    expect(screen.getByText(/you declare spades/i)).toBeInTheDocument();
+    expect(document.querySelector('.sj-declaration')).toHaveTextContent(/declared so far: ♠/i);
+    for (let i = 0; i < 99; i++) pass(DEAL_MS);
+    expect(document.querySelector('.sj-declaration')).toHaveTextContent(/♠ is trump, level 2/);
+  });
+
+  it('says why a card cannot declare', () => {
+    setup(deckFor(1));
+    fireEvent.click(screen.getByRole('button', { name: /^deal$/i }));
+    pass(DEAL_MS);
+    fireEvent.click(handCards()[0]);
+    fireEvent.click(screen.getByRole('button', { name: /^declare$/i }));
+    // Either the card is not a level card, or it is and the bots had not declared: only the first case should alert.
+    const alert = screen.queryByRole('alert');
+    if (alert) expect(alert).toHaveTextContent(/level card/i);
+  });
+
+  it('makes you choose the 8 cards to put back when you are the declarer', () => {
+    setup(deckFor(2));
+    fireEvent.click(screen.getByRole('button', { name: /^deal$/i }));
+    for (let i = 0; i < 100; i++) pass(DEAL_MS);
+    expect(handCards()).toHaveLength(33);
+    expect(screen.getByRole('button', { name: /choose 8 cards to put back \(0\)/i })).toBeDisabled();
+    for (const el of handCards().slice(0, 8)) fireEvent.click(el);
+    fireEvent.click(screen.getByRole('button', { name: /^put back 8 cards$/i }));
+    expect(handCards()).toHaveLength(25);
+    expect(screen.getByText(/your lead/i)).toBeInTheDocument();
   });
 });
