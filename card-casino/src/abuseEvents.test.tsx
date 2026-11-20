@@ -193,8 +193,8 @@ describe('an unloseable next game', () => {
 
   it('announces it and shows you are protected', async () => {
     await setup();
-    expect(screen.getByText("Everybody's next game is unloseable!")).toBeInTheDocument();
-    expect(screen.getByText(/your next game is unloseable\. it can't cost you any coins/i)).toBeInTheDocument();
+    expect(screen.getByText("Everybody's next practice game is unloseable. Ranked Slots is excluded.")).toBeInTheDocument();
+    expect(screen.getByText(/your next practice game is unloseable\. ranked slots is excluded/i)).toBeInTheDocument();
     expect(balance()).toBe(1000); // nothing is paid yet
   });
 
@@ -211,7 +211,7 @@ describe('an unloseable next game', () => {
     const user = await setup();
     await user.click(screen.getByRole('button', { name: 'Bet 100' }));
     await user.click(screen.getByRole('button', { name: 'Lose' }));
-    expect(screen.queryByText(/your next game is unloseable\. it can't cost/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/your next practice game is unloseable\. ranked slots is excluded/i)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Bet 100' }));
     await user.click(screen.getByRole('button', { name: 'Lose' }));
@@ -232,7 +232,7 @@ describe('an unloseable next game', () => {
     await user.click(screen.getByRole('button', { name: 'Win 250' }));
     expect(balance()).toBe(1150); // 900 plus 250, with no extra top-up
     expect(screen.queryByText(/coins back/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/your next game is unloseable\. it can't cost/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/your next practice game is unloseable\. ranked slots is excluded/i)).not.toBeInTheDocument();
   });
 
   it('covers every wager in the game, such as a double down', async () => {
@@ -248,7 +248,7 @@ describe('an unloseable next game', () => {
     const user = await setup();
     await user.click(screen.getByRole('button', { name: 'Win 250' }));
     expect(balance()).toBe(1250);
-    expect(screen.getByText(/your next game is unloseable\. it can't cost/i)).toBeInTheDocument(); // still protected
+    expect(screen.getByText(/your next practice game is unloseable\. ranked slots is excluded/i)).toBeInTheDocument(); // still protected
   });
 
   it('is only given once per event', async () => {
@@ -267,7 +267,7 @@ describe('an unloseable next game', () => {
     void first;
     cleanup();
     await start([]); // the event is over, but you still carry its protection
-    expect(screen.getByText(/your next game is unloseable\. it can't cost/i)).toBeInTheDocument();
+    expect(screen.getByText(/your next practice game is unloseable\. ranked slots is excluded/i)).toBeInTheDocument();
     const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
     await user.click(screen.getByRole('button', { name: 'Bet 100' }));
     await user.click(screen.getByRole('button', { name: 'Lose' }));

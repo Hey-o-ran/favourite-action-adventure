@@ -212,6 +212,16 @@ export const getBalance = async (token: string) =>
 export const saveBalance = async (token: string, req: BalanceResponse, options?: RequestOptions) =>
   (await request<BalanceResponse>('PUT', '/v1/me/balance', req, token, options))!;
 
+export interface RankedSpin extends BalanceResponse {
+  stops: [number, number, number];
+  bet: number;
+  returned: number;
+}
+export const getRankedBalance = async (token: string) =>
+  (await request<BalanceResponse>('GET', '/v1/me/ranked-balance', undefined, token))!;
+export const spinRankedSlots = async (token: string, spin: { bet: number; spinId: string }) =>
+  (await request<RankedSpin>('POST', '/v1/me/slots/spin', spin, token))!;
+
 export type GameResult = 'win' | 'draw' | 'loss';
 /** A finished game and/or some seconds of play, for the player's stats. */
 export interface StatsReport {
@@ -303,7 +313,7 @@ export interface WinAnnouncement {
   createdAt: string;
 }
 export const listWinAnnouncements = async (token: string) =>
-  (await request<{ announcements: WinAnnouncement[] }>('GET', '/v1/announcements', undefined, token))!;
+  (await request<{ announcements: WinAnnouncement[] }>('GET', '/v1/announcements?wallet=ranked', undefined, token))!;
 
 /** Wins, draws, losses and seconds of play in one game. */
 export interface GameStats {
@@ -325,4 +335,4 @@ export interface PlayerStats {
 export type LeaderboardPeriod = 'day' | 'month' | 'all';
 
 export const getLeaderboard = async (token: string, period: LeaderboardPeriod = 'all') =>
-  (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}`, undefined, token))!;
+  (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}&wallet=ranked`, undefined, token))!;
