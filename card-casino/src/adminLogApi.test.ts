@@ -55,7 +55,7 @@ describe('big wins', () => {
     const fetchMock = reply(200, { announcements: [{ announcementId: 'a', displayName: 'ada', verified: false, win: 'royalFlush', prize: 10, createdAt: 'x' }] });
     vi.stubGlobal('fetch', fetchMock);
     const res = await listWinAnnouncements('tok');
-    expect(fetchMock.mock.calls[0][0]).toMatch(/\/v1\/announcements$/);
+    expect(fetchMock.mock.calls[0][0]).toMatch(/\/v1\/announcements\?wallet=ranked$/);
     expect(res.announcements[0].displayName).toBe('ada');
   });
 });

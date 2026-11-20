@@ -79,7 +79,7 @@ describe('admin abuse form', () => {
     expect(screen.getByText(/everyone gets 2,500 coins!/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: /unloseable game/i }));
-    expect(screen.getByText(/everybody's next game is unloseable!/i)).toBeInTheDocument();
+    expect(screen.getByText(/everybody's next practice game is unloseable\. ranked slots is excluded/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/coins for each player/i)).not.toBeInTheDocument();
   });
 
