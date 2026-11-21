@@ -29,7 +29,7 @@ it('offers optional guidance as a round progresses without changing wagers', asy
   await user.click(screen.getByRole('button', { name: /^start$/i }));
   expect(screen.getByText(/aces are high/i)).toBeInTheDocument();
   await act(() => vi.advanceTimersByTime(DEAL_LOCK_MS));
-  await user.click(screen.getByRole('button', { name: /^higher$/i }));
+  await user.click(screen.getByRole('button', { name: /^higher/i }));
   expect(screen.getByText(/cash out to keep it/i)).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: /cash out/i }));
   expect(screen.getByText(/the round is over/i)).toBeInTheDocument();
