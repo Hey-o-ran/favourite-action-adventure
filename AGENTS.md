@@ -36,7 +36,8 @@ Each list item is one line: `- [ ] <task>, found while working on #<issue>`. Onl
 ## When you finish or hand off
 
 1. Push your branch and open a pull request into `main`.
-   - **If the PR touches neither `card-casino/**` nor `.github/workflows/deploy.yml`**, you may merge it yourself once it's ready (`gh pr merge <n> --squash`).
+   - **Before merging anything**, run the checks in `card-casino/`: `npm ci`, `npm test` and `npm run build`. All three must pass. If any fails, don't merge; fix it or report it on the issue.
+   - **If the PR touches neither `card-casino/**` nor `.github/workflows/deploy.yml`**, you may merge it yourself once the checks pass (`gh pr merge <n> --squash`).
    - **If it touches either of those**, don't merge it. Comment on the PR that it's ready, and the owner will merge and deploy it.
    - Check which files a PR touches with `gh pr diff <n> --name-only` before merging.
 2. Comment on the issue with what's done and what's left, so another agent can continue.
