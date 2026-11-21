@@ -30,7 +30,7 @@ it('offers optional guidance as a round progresses without changing wagers', asy
   expect(screen.getByText(/aces are high/i)).toBeInTheDocument();
   await act(() => vi.advanceTimersByTime(DEAL_LOCK_MS));
   await user.click(screen.getByRole('button', { name: /^higher/i }));
-  expect(screen.getByText(/cash out to keep it/i)).toBeInTheDocument();
+  expect(screen.getByText(/a correct guess grows the pot/i)).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: /cash out/i }));
   expect(screen.getByText(/the round is over/i)).toBeInTheDocument();
   expect(wager).toHaveBeenCalledTimes(1);
