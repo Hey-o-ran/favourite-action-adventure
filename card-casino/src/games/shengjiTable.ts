@@ -2,10 +2,8 @@ import {
   analyze,
   checkFollow,
   checkThrow,
-  domainOf,
   isThrow,
   isTrump,
-  legalFollow,
   pointsOf,
   positionOf,
   trickWinner,
@@ -57,6 +55,8 @@ export interface HandState {
   turn: number;
   /** The cards played so far in this trick, in order. The first one is the lead. */
   trick: Play[];
+  /** Every card from the tricks already finished. Everyone at the table has seen these, so the bots may use them. */
+  played: SCard[];
   /** The trick before, and who took it, so a screen can show it. */
   lastTrick: { plays: Play[]; winner: number } | null;
   /** Points each side has won in tricks so far. */
@@ -72,29 +72,23 @@ export interface HandState {
 export const attackingTeam = (s: Pick<HandState, 'declarer'>) => 1 - teamOf(s.declarer);
 
 /** Picks the 8 cards to bury: the cheapest ones, keeping trumps and points. */
-function cheapestEight(cards: readonly SCard[], t: Trump): SCard[] {
+export function cheapestEight(cards: readonly SCard[], t: Trump): SCard[] {
   return [...cards]
     .sort((a, b) => Number(isTrump(a, t)) - Number(isTrump(b, t)) || pointsOf(a) - pointsOf(b) || positionOf(a, t) - positionOf(b, t) || a.id - b.id)
     .slice(0, KITTY_SIZE);
 }
 
-/** Deals a hand. The declarer deals first, the kitty names the trump suit, and the declarer buries 8 cards. */
-export function startHand(deck: readonly SCard[], standing: Standing): HandState {
-  const level = handLevel(standing);
-  const { hands: dealt, kitty: found } = deal(deck, standing.declarer);
-  const trump: Trump = { level, suit: trumpFromKitty(found, level) };
-  const hands = dealt.map((h) => [...h]);
-  const all = [...hands[standing.declarer], ...found];
-  const buried = cheapestEight(all, trump);
-  hands[standing.declarer] = all.filter((c) => !buried.some((b) => b.id === c.id));
+/** The table once the kitty is buried and play is about to begin. The declarer leads. */
+export function playFrom(standing: Standing, trump: Trump, hands: SCard[][], kitty: SCard[]): HandState {
   return {
     standing,
     trump,
     declarer: standing.declarer,
     hands,
-    kitty: buried,
+    kitty,
     turn: standing.declarer,
     trick: [],
+    played: [],
     lastTrick: null,
     attackerPoints: 0,
     defenderPoints: 0,
@@ -103,6 +97,18 @@ export function startHand(deck: readonly SCard[], standing: Standing): HandState
     result: null,
     log: '',
   };
+}
+
+/** Deals a hand with no declaring: the kitty names the trump suit, and the declarer buries their cheapest 8 cards. */
+export function startHand(deck: readonly SCard[], standing: Standing): HandState {
+  const level = handLevel(standing);
+  const { hands: dealt, kitty: found } = deal(deck, standing.declarer);
+  const trump: Trump = { level, suit: trumpFromKitty(found, level) };
+  const hands = dealt.map((h) => [...h]);
+  const all = [...hands[standing.declarer], ...found];
+  const buried = cheapestEight(all, trump);
+  hands[standing.declarer] = all.filter((c) => !buried.some((b) => b.id === c.id));
+  return playFrom(standing, trump, hands, buried);
 }
 
 export type PlayOutcome = { ok: true; state: HandState } | { ok: false; error: string };
@@ -158,6 +164,7 @@ function finishTrick(state: HandState): HandState {
   const next: HandState = {
     ...state,
     trick: [],
+    played: [...state.played, ...state.trick.flatMap((p) => p.cards)],
     lastTrick: { plays: state.trick, winner },
     attackerPoints,
     defenderPoints,
@@ -179,15 +186,4 @@ function finishTrick(state: HandState): HandState {
 /** What a hand pays the player per coin bet, stake included: nothing if their side lost. */
 export const payoutFor = (result: HandResult): number => (result.winningTeam === teamOf(0) ? payoutMultiple(result.outcome.levels) : 0);
 
-/**
- * A simple bot: it leads its cheapest plain card (or trump if it has no other), and follows with the cheapest legal play.
- * It always makes a legal play, but does not try to win points yet.
- */
-export function botCards(state: HandState): SCard[] {
-  const hand = state.hands[state.turn];
-  const t = state.trump;
-  if (state.trick.length > 0) return legalFollow(hand, analyze(state.trick[0].cards, t), t);
-  const cheap = (a: SCard, b: SCard) => pointsOf(a) - pointsOf(b) || positionOf(a, t) - positionOf(b, t) || a.id - b.id;
-  const plain = hand.filter((c) => domainOf(c, t) !== 'trump').sort(cheap);
-  return [(plain.length > 0 ? plain : [...hand].sort(cheap))[0]];
-}
+export { botCards } from './shengjiBots';

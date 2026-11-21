@@ -324,6 +324,12 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
   };
 
   const pages: Record<string, ReactNode> = {
+    shengji: (
+      <Section title={title('shengji')} diagram={null}>
+        <h3>{t('rules.how')}</h3>
+        <Items prefix="rules.shengji.how" count={4} />
+      </Section>
+    ),
     landlord: (
       <Section title={title('landlord')} diagram={null}>
         <h3>{t('rules.how')}</h3>
