@@ -19,3 +19,9 @@ This is a working list of frontend ideas, not a commitment to implement every it
 ## Handoff for Sonnet
 
 The first change is scoped to game navigation CSS, not individual game tables. Start with the browser and keyboard check above, then choose one candidate with the owner and claim its issue before coding. Do not treat unchecked ideas as approved specifications. Check `AGENTS.md` and the in-progress issue list before touching shared files.
+
+## Validation for issue #60
+
+- Production build passed.
+- Game filter and navigation tests passed (36 tests).
+- Still needed: real-browser visual and keyboard checks on narrow screens, including Chinese labels.
