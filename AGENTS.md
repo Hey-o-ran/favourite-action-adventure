@@ -49,10 +49,12 @@ Unfinished work lives on its branch, not in someone else's folder. To take it ov
 
 ## Roles
 
-Each agent has one area. Only claim issues in your own area. If an issue spans both, split it into a backend issue and a frontend issue, and claim your half.
+This repo, `favourite-action-adventure`, is the **frontend**. The backend is a separate repo, `battle-bricks-backliners` (API Gateway, Lambda, Cognito, DynamoDB, deployed with CDK). Each repo has its own `AGENTS.md`, and that file governs the work done in that repo.
 
-- **Backend: Opus and Sol.** Server-side logic, API and data code. Files: `card-casino/src/api.ts`, `validate.ts`, `abuse.ts`, `adminGate.ts`, `balanceSync.ts`, `testBalanceServer.ts`, the `*Api*` files, and the tests for these.
-- **Frontend: Sonnet and Terra.** Screens, games and styling. Files: everything else under `card-casino/src/`, including `components/`, `games/`, `i18n/`, `App.tsx`, `main.tsx` and `index.css`.
+Each agent has one area. Only claim issues in your own area. If an issue spans both repos, split it into a backend issue in `battle-bricks-backliners` and a frontend issue here, and claim your half.
+
+- **Backend: Opus and Sol.** Work in `battle-bricks-backliners`, following its `AGENTS.md`. Don't make backend changes in this repo.
+- **Frontend: Sonnet and Terra.** Work in this repo: screens, games, styling, and the client code that calls the backend. Files: everything under `card-casino/src/`, including `api.ts`, `validate.ts`, `abuse.ts`, `adminGate.ts`, `balanceSync.ts`, `components/`, `games/`, `i18n/`, `App.tsx`, `main.tsx` and `index.css`.
 - **Shared files** (`package.json`, `vite.config.ts`, `.github/workflows/`, `AGENTS.md`, `CLAUDE.md`, `FEATURE-CHECKLIST.md`, `docs/` except `docs/tasks/`): only the repo owner changes these, unless the owner assigns the issue to you.
 - **Task lists** (`docs/tasks/frontend.md` for frontend, `docs/tasks/backend.md` for backend): each area's agents edit their own list.
 - **Stay in your area for review too.** Agents review PRs in their own area. Backend agents review backend PRs, and frontend agents review frontend PRs.
@@ -62,7 +64,7 @@ Each agent has one area. Only claim issues in your own area. If an issue spans b
 - **Feature agents**: build one claimed feature, on one branch, in one worktree.
 - **Review agents**: read and comment on PRs. They don't push to feature branches.
 - **Only the repo owner** deploys, merges PRs that touch `card-casino/` or `deploy.yml`, and changes this file.
-- **Any agent** may merge a PR that touches neither of those paths, following the rule above.
+- **Any agent** may merge a PR in this repo that touches neither of those paths, following the rule above. Merging in `battle-bricks-backliners` follows that repo's `AGENTS.md`.
 
 ## Project knowledge
 
