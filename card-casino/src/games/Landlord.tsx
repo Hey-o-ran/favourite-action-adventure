@@ -79,6 +79,7 @@ export function Landlord() {
     if (!table || table.phase !== 'bidding' || !table.bidding.redeal) return;
     setNotice(t('landlord.redealt'));
     const timer = window.setTimeout(() => {
+      setNotice('');
       setTable((current) => (current ? redeal(current, freshDeck(), randomSeat()) : current));
     }, REDEAL_DELAY_MS);
     return () => window.clearTimeout(timer);

@@ -107,7 +107,7 @@ export function pairsIn(cards: readonly SCard[], t: Trump): Pair[] {
 }
 
 /** A run of `length` pairs whose strengths follow each other. Returns the pairs, highest first, or null. */
-function findChain(pairs: readonly Pair[], length: number, aboveKey = -1): Pair[] | null {
+export function findChain(pairs: readonly Pair[], length: number, aboveKey = -1): Pair[] | null {
   for (const start of pairs) {
     if (start.position <= aboveKey) continue;
     const chain = [start];

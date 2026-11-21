@@ -59,6 +59,10 @@ export function Shengji() {
   const dealing = opening?.phase === 'dealing';
   const myKitty = opening?.phase === 'kitty' && opening.standing.declarer === 0;
   const playing = hand?.phase === 'playing';
+
+  // Picks belong to one step: dealing, kitty and play must each start with nothing selected.
+  const stage = opening?.phase ?? hand?.phase;
+  useEffect(() => setSelected(new Set()), [stage]);
   const myTurn = !!playing && hand!.turn === 0;
 
   const begin = (next: Standing) => {
