@@ -15,12 +15,15 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
 
 - **Stay inside your claim.** Only edit the files your issue needs. If you need a file another agent has claimed, stop and comment on the issue instead of editing it.
 - **Commit small and often.** Small commits make handoffs possible. Uncommitted work stays in your worktree and can't be picked up by anyone else.
-- **Never run `deploy.yml` or trigger a deployment.** Deploys are owned by the repo owner.
+- **Never run `deploy.yml` or trigger a deployment.** Deploys are owned by the repo owner. Merging to `main` starts `deploy.yml` when the change touches `card-casino/**` or `.github/workflows/deploy.yml`, so those changes count as deploys.
 - **Never commit secrets.** No passwords, API keys, account IDs or login details go into any file in the repo, including this one, issues, PRs, or commit messages. If you see one in the repo, tell the owner rather than copying it anywhere.
 
 ## When you finish or hand off
 
-1. Push your branch and open a pull request into `main`. Don't merge it yourself unless the owner tells you to.
+1. Push your branch and open a pull request into `main`.
+   - **If the PR touches neither `card-casino/**` nor `.github/workflows/deploy.yml`**, you may merge it yourself once it's ready (`gh pr merge <n> --squash`).
+   - **If it touches either of those**, don't merge it. Comment on the PR that it's ready, and the owner will merge and deploy it.
+   - Check which files a PR touches with `gh pr diff <n> --name-only` before merging.
 2. Comment on the issue with what's done and what's left, so another agent can continue.
 3. Remove the `in-progress` label and your assignment (`gh issue edit <n> --remove-label in-progress --remove-assignee @me`).
 
@@ -32,7 +35,8 @@ Unfinished work lives on its branch, not in someone else's folder. To take it ov
 
 - **Feature agents**: build one claimed feature, on one branch, in one worktree.
 - **Review agents**: read and comment on PRs. They don't push to feature branches.
-- **Only the repo owner** deploys, merges to `main`, and changes this file.
+- **Only the repo owner** deploys, merges PRs that touch `card-casino/` or `deploy.yml`, and changes this file.
+- **Any agent** may merge a PR that touches neither of those paths, following the rule above.
 
 ## Project knowledge
 
