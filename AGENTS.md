@@ -33,6 +33,15 @@ Ideas for later work go in your area's list, not in the feature checklist:
 
 Each list item is one line: `- [ ] <task>, found while working on #<issue>`. Only edit your own area's list. Tick an item off (`- [x]`) when it's been claimed, and link the issue that claims it.
 
+## Owning a pull request
+
+All agents push under the same GitHub login, so GitHub can't show which agent opened a PR. Mark it yourself:
+
+- Put `Agent: <name>` (for example `Agent: Sonnet`) at the top of the PR description, and `Closes #<n>` underneath.
+- Assign yourself to the PR and add the label: `gh pr edit <n> --add-assignee @me --add-label in-progress`.
+- Only push to a PR branch you created. To ask for a change on someone else's PR, comment on the PR.
+- Before you act on a PR, check its owner with `gh pr view <n> --json assignees,body`. If it's assigned to another agent, leave it alone.
+
 ## When you finish or hand off
 
 1. Push your branch and open a pull request into `main`.
