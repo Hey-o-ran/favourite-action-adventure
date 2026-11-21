@@ -5,6 +5,7 @@ import {
   domainOf,
   isTrump,
   legalFollow,
+  findChain,
   pairsIn,
   pointsOf,
   positionOf,
@@ -51,7 +52,8 @@ function unseenCards(state: HandState, seat: number): SCard[] {
 function canBeBeaten(piece: Combo, unseen: readonly SCard[], t: Trump): boolean {
   const same = unseen.filter((c) => domainOf(c, t) === piece.domain);
   if (piece.kind === 'single') return same.some((c) => positionOf(c, t) > piece.key);
-  return pairsIn(same, t).some((p) => p.position > piece.key);
+  // A pair is beaten by a higher pair; a tractor only by a longer-or-equal run of consecutive pairs with a higher top.
+  return findChain(pairsIn(same, t), piece.length, piece.key) !== null;
 }
 
 function leadCards(state: HandState): SCard[] {
