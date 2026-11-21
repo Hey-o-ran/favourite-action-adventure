@@ -31,6 +31,15 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
 
 Unfinished work lives on its branch, not in someone else's folder. To take it over, check out the branch in a new worktree and continue there. Don't copy another agent's files by hand.
 
+## Roles
+
+Each agent has one area. Only claim issues in your own area. If an issue spans both, split it into a backend issue and a frontend issue, and claim your half.
+
+- **Backend: Opus and Sol.** Server-side logic, API and data code. Files: `card-casino/src/api.ts`, `validate.ts`, `abuse.ts`, `adminGate.ts`, `balanceSync.ts`, `testBalanceServer.ts`, the `*Api*` files, and the tests for these.
+- **Frontend: Sonnet and Terra.** Screens, games and styling. Files: everything else under `card-casino/src/`, including `components/`, `games/`, `i18n/`, `App.tsx`, `main.tsx` and `index.css`.
+- **Shared files** (`package.json`, `vite.config.ts`, `.github/workflows/`, `AGENTS.md`, `CLAUDE.md`, `FEATURE-CHECKLIST.md`, `docs/`): only the repo owner changes these, unless the owner assigns the issue to you.
+- **Stay in your area for review too.** Agents review PRs in their own area. Backend agents review backend PRs, and frontend agents review frontend PRs.
+
 ## Boundaries by role
 
 - **Feature agents**: build one claimed feature, on one branch, in one worktree.
