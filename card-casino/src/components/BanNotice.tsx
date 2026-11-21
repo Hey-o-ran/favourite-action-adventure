@@ -21,7 +21,8 @@ export function BanNotice({ ban, onLogout, onRetry, onBack }: BanNoticeProps) {
   const { t } = useI18n();
   const [now, setNow] = useState(() => Date.now());
   const end = Date.parse(ban.until);
-  const left = Math.max(0, Math.ceil((end - now) / 1000));
+  // An unreadable end time is treated as still banned, never as over.
+  const left = Number.isNaN(end) ? Infinity : Math.max(0, Math.ceil((end - now) / 1000));
 
   useEffect(() => {
     if (left <= 0) return;
@@ -35,7 +36,7 @@ export function BanNotice({ ban, onLogout, onRetry, onBack }: BanNoticeProps) {
         <h1>{t('ban.noticeTitle')}</h1>
         <h2 className="ban-title">{ban.title}</h2>
         <p className="ban-description">{ban.description}</p>
-        {left > 0 ? (
+        {left === Infinity ? null : left > 0 ? (
           <p className="ban-time" aria-live="polite">
             {t('ban.endsIn', { time: formatDuration(left, t) })}
             <small>{t('ban.endsAt', { date: new Date(end).toLocaleString() })}</small>

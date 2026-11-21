@@ -5,6 +5,7 @@ import '@testing-library/jest-dom/vitest';
 import { shuffle } from '../cards';
 import { WalletContext, type WalletValue } from '../wallet';
 import { Shengji, BOT_DELAY_MS, DEAL_MS } from './Shengji';
+import { LanguageProvider, STORAGE_KEY } from '../i18n';
 import { autoOpening } from './shengjiOpening';
 import { analyze, checkFollow, makeDeck, type SCard } from './shengjiCards';
 import { nextHand, type Standing } from './shengjiScoring';
@@ -370,5 +371,30 @@ describe('the opening', () => {
     fireEvent.click(screen.getByRole('button', { name: /^put back 8 cards$/i }));
     expect(handCards()).toHaveLength(25);
     expect(screen.getByText(/your lead/i)).toBeInTheDocument();
+  });
+});
+
+describe('in Chinese', () => {
+  it('shows the deal, the kitty and the first lead in Chinese', () => {
+    window.localStorage.setItem(STORAGE_KEY, 'zh-CN');
+    vi.mocked(shuffle).mockReturnValue(deckFor(2) as never);
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    render(
+      <LanguageProvider>
+        <WalletContext.Provider value={wallet(1000)}>
+          <Shengji />
+        </WalletContext.Provider>
+      </LanguageProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '发牌' }));
+    pass(DEAL_MS);
+    expect(document.querySelector('.sj-declaration')).toHaveTextContent(/发牌中/);
+    for (let i = 0; i < 99; i++) pass(DEAL_MS);
+    expect(screen.getByRole('button', { name: /选 8 张牌扣回去/ })).toBeDisabled();
+    for (const el of handCards().slice(0, 8)) fireEvent.click(el);
+    fireEvent.click(screen.getByRole('button', { name: '扣回 8 张牌' }));
+    expect(screen.getByText(/轮到你先出/)).toBeInTheDocument();
+    expect(document.querySelector('.scoreboard')).toHaveTextContent(/你是庄家/);
+    window.localStorage.removeItem(STORAGE_KEY);
   });
 });
