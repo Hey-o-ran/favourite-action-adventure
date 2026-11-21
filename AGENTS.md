@@ -10,6 +10,7 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
    `git worktree add ../favourite-action-adventure-<topic> -b <topic>`
    Never edit files in the main checkout (`D:\Haoran\projects\favourite-action-adventure`).
 4. **Sync first.** Run `git pull --rebase` before you start, and `git status` before each edit.
+5. **Read the history.** Check the newest entries in `docs/agents/history.md` so you don't repeat or undo another agent's work.
 
 ## While you work
 
@@ -23,6 +24,7 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
 1. Push your branch and open a pull request into `main`. Don't merge it yourself unless the owner tells you to.
 2. Comment on the issue with what's done and what's left, so another agent can continue.
 3. Remove the `in-progress` label and your assignment (`gh issue edit <n> --remove-label in-progress --remove-assignee @me`).
+4. Add one line at the top of `docs/agents/history.md` (newest first): date, your tool and model, branch or issue, and a one-sentence summary. If you hit a merge conflict on that file, keep every agent's line.
 
 ## Taking over unfinished work
 
@@ -37,5 +39,6 @@ Unfinished work lives on its branch, not in someone else's folder. To take it ov
 ## Project knowledge
 
 - Product ideas and the feature list: `FEATURE-CHECKLIST.md`.
+- Work history of every agent: `docs/agents/history.md`.
 - Domain terms: `GLOSSARY.md` (if present). Decisions: `docs/adr/`.
 - Issue tracker and triage labels: `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`.
