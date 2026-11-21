@@ -72,27 +72,20 @@ export interface HandState {
 export const attackingTeam = (s: Pick<HandState, 'declarer'>) => 1 - teamOf(s.declarer);
 
 /** Picks the 8 cards to bury: the cheapest ones, keeping trumps and points. */
-function cheapestEight(cards: readonly SCard[], t: Trump): SCard[] {
+export function cheapestEight(cards: readonly SCard[], t: Trump): SCard[] {
   return [...cards]
     .sort((a, b) => Number(isTrump(a, t)) - Number(isTrump(b, t)) || pointsOf(a) - pointsOf(b) || positionOf(a, t) - positionOf(b, t) || a.id - b.id)
     .slice(0, KITTY_SIZE);
 }
 
-/** Deals a hand. The declarer deals first, the kitty names the trump suit, and the declarer buries 8 cards. */
-export function startHand(deck: readonly SCard[], standing: Standing): HandState {
-  const level = handLevel(standing);
-  const { hands: dealt, kitty: found } = deal(deck, standing.declarer);
-  const trump: Trump = { level, suit: trumpFromKitty(found, level) };
-  const hands = dealt.map((h) => [...h]);
-  const all = [...hands[standing.declarer], ...found];
-  const buried = cheapestEight(all, trump);
-  hands[standing.declarer] = all.filter((c) => !buried.some((b) => b.id === c.id));
+/** The table once the kitty is buried and play is about to begin. The declarer leads. */
+export function playFrom(standing: Standing, trump: Trump, hands: SCard[][], kitty: SCard[]): HandState {
   return {
     standing,
     trump,
     declarer: standing.declarer,
     hands,
-    kitty: buried,
+    kitty,
     turn: standing.declarer,
     trick: [],
     played: [],
@@ -104,6 +97,18 @@ export function startHand(deck: readonly SCard[], standing: Standing): HandState
     result: null,
     log: '',
   };
+}
+
+/** Deals a hand with no declaring: the kitty names the trump suit, and the declarer buries their cheapest 8 cards. */
+export function startHand(deck: readonly SCard[], standing: Standing): HandState {
+  const level = handLevel(standing);
+  const { hands: dealt, kitty: found } = deal(deck, standing.declarer);
+  const trump: Trump = { level, suit: trumpFromKitty(found, level) };
+  const hands = dealt.map((h) => [...h]);
+  const all = [...hands[standing.declarer], ...found];
+  const buried = cheapestEight(all, trump);
+  hands[standing.declarer] = all.filter((c) => !buried.some((b) => b.id === c.id));
+  return playFrom(standing, trump, hands, buried);
 }
 
 export type PlayOutcome = { ok: true; state: HandState } | { ok: false; error: string };

@@ -1,4 +1,5 @@
 import type { MouseEvent } from 'react';
+import { useI18n } from '../i18n';
 import { cardName, type SCard } from '../games/shengjiCards';
 
 const SYMBOL = { spades: '♠', hearts: '♥', diamonds: '♦', clubs: '♣' } as const;
@@ -13,6 +14,7 @@ interface ShengjiCardViewProps {
 
 /** A card from the two-deck Shengji pack, which also has jokers. Click it to pick it for a play. */
 export function ShengjiCardView({ card, selected, faded, onClick }: ShengjiCardViewProps) {
+  const { t } = useI18n();
   const clickable = onClick !== undefined;
   const joker = card.suit === 'joker';
   const red = card.suit === 'hearts' || card.suit === 'diamonds' || (joker && card.rank === 16);
@@ -27,7 +29,7 @@ export function ShengjiCardView({ card, selected, faded, onClick }: ShengjiCardV
       role={clickable ? 'button' : 'img'}
       tabIndex={clickable ? 0 : undefined}
       aria-pressed={clickable ? !!selected : undefined}
-      aria-label={joker ? (card.rank === 16 ? 'Big joker' : 'Small joker') : `${label} of ${card.suit}`}
+      aria-label={joker ? t(card.rank === 16 ? 'shengji.card.big' : 'shengji.card.small') : t('shengji.card.of', { rank: label, suit: t(`shengji.suit.${card.suit}` as 'shengji.suit.spades') })}
       onClick={onClick}
       onKeyDown={
         clickable

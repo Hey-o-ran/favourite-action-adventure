@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { ApiError, login } from '../api';
+import { ApiError, banOf, login, type BanDetails } from '../api';
 import { clearSession, loadSession, saveSession, SessionContext, type Session } from '../session';
 import { RegisterForm } from './RegisterForm';
-import { banOf, type BanDetails } from '../api';
 import { useI18n, type Translate } from '../i18n';
 import { BanNotice } from './BanNotice';
 
