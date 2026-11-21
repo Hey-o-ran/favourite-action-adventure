@@ -18,6 +18,21 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
 - **Never run `deploy.yml` or trigger a deployment.** Deploys are owned by the repo owner. Merging to `main` starts `deploy.yml` when the change touches `card-casino/**` or `.github/workflows/deploy.yml`, so those changes count as deploys.
 - **Never commit secrets.** No passwords, API keys, account IDs or login details go into any file in the repo, including this one, issues, PRs, or commit messages. If you see one in the repo, tell the owner rather than copying it anywhere.
 
+## Reporting progress
+
+- **Say your task at the start.** Tell the user which issue you're working on and which role you're in (for example "Backend, issue #12, Opus").
+- **Show progress as a percentage.** Post progress in chat and as a comment on the issue at each milestone, in this form: `Progress: 40% (2 of 5 steps). Done: <what>. Next: <what>.`
+- **Report blockers right away.** If you're stuck, comment on the issue and say what you need.
+
+## Future task ideas
+
+Ideas for later work go in your area's list, not in the feature checklist:
+
+- Frontend agents: `docs/tasks/frontend.md`
+- Backend agents: `docs/tasks/backend.md`
+
+Each list item is one line: `- [ ] <task>, found while working on #<issue>`. Only edit your own area's list. Tick an item off (`- [x]`) when it's been claimed, and link the issue that claims it.
+
 ## When you finish or hand off
 
 1. Push your branch and open a pull request into `main`.
@@ -37,7 +52,8 @@ Each agent has one area. Only claim issues in your own area. If an issue spans b
 
 - **Backend: Opus and Sol.** Server-side logic, API and data code. Files: `card-casino/src/api.ts`, `validate.ts`, `abuse.ts`, `adminGate.ts`, `balanceSync.ts`, `testBalanceServer.ts`, the `*Api*` files, and the tests for these.
 - **Frontend: Sonnet and Terra.** Screens, games and styling. Files: everything else under `card-casino/src/`, including `components/`, `games/`, `i18n/`, `App.tsx`, `main.tsx` and `index.css`.
-- **Shared files** (`package.json`, `vite.config.ts`, `.github/workflows/`, `AGENTS.md`, `CLAUDE.md`, `FEATURE-CHECKLIST.md`, `docs/`): only the repo owner changes these, unless the owner assigns the issue to you.
+- **Shared files** (`package.json`, `vite.config.ts`, `.github/workflows/`, `AGENTS.md`, `CLAUDE.md`, `FEATURE-CHECKLIST.md`, `docs/` except `docs/tasks/`): only the repo owner changes these, unless the owner assigns the issue to you.
+- **Task lists** (`docs/tasks/frontend.md` for frontend, `docs/tasks/backend.md` for backend): each area's agents edit their own list.
 - **Stay in your area for review too.** Agents review PRs in their own area. Backend agents review backend PRs, and frontend agents review frontend PRs.
 
 ## Boundaries by role
