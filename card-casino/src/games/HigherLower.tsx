@@ -20,6 +20,7 @@ export function HigherLower() {
   const { balance, wager, settle } = useWallet();
   const { markWin } = useWinMark();
   const { t, tx } = useI18n();
+  const [guide, setGuide] = useState(false);
   const [bet, setBet] = useState(10);
   const [game, setGame] = useState<HigherLowerState | null>(null);
   const { locked, lock } = useDealLock();
@@ -64,6 +65,10 @@ export function HigherLower() {
   return (
     <section className="table">
       <h2>{t('game.higher-lower.name')}</h2>
+      <button type="button" onClick={() => setGuide((shown) => !shown)} aria-expanded={guide}>
+        {t(guide ? 'hilo.guide.hide' : 'hilo.guide.show')}
+      </button>
+      {guide && <p className="blackjack-guide" aria-live="polite">{t(!game ? 'hilo.guide.start' : !playing ? 'hilo.guide.end' : game.streak === 0 ? 'hilo.guide.first' : 'hilo.guide.streak')}</p>}
 
       <div className="cards">
         {game && <CardView card={game.current} />}
