@@ -23,6 +23,7 @@ This is a working list of frontend ideas, not a commitment to implement every it
 - [ ] Currency presentation: explore the planned Blibbucks, Bintar and Gigglebucks denominations. Confirm their relationship to existing practice and ranked balances before displaying or converting them.
 - [ ] Expand the game catalogue with well-known board, card or arcade games; agree the first game and its rules before implementation.
 - [ ] Competitive events or tournaments: only consider these after server-authoritative game results and wallet settlement are available for the relevant games. Clearly distinguish ranked standings from practice statistics.
+- [ ] Change username: a name field on the profile or settings screen, messages for invalid and taken names in English and Chinese, and a confirmation step. Build after the backend endpoint in `docs/tasks/backend.md` exists. Idea source: `FEATURE-CHECKLIST.md`, "Account and profile".
 
 ## Real-life feature ideas (UI side)
 
