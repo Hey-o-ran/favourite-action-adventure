@@ -34,7 +34,7 @@ If a task is too big for one agent, or touches several areas (for example UI and
 2. **Keep parts small.** Each part should fit on one branch in one worktree, and parts should not edit the same files.
 3. **Name the dependencies.** For example, "part 2 needs the API from part 1". Start the parts that have no dependencies first.
 4. **Claim one part at a time.** Claim a part with its own branch and worktree, and note the part number in the issue. Don't work on a part another agent has claimed.
-5. **Shared files.** Keep edits to the shared files (`AGENTS.md`, `FEATURE-CHECKLIST.md`, `frontend.md`, `backend.md`) small and commit them quickly. When you merge, keep every agent's lines.
+5. **Shared files.** Keep edits to the shared files (`AGENTS.md`, `FEATURE-CHECKLIST.md`, `frontend.md`, `docs/tasks/backend.md`) small and commit them quickly. When you merge, keep every agent's lines.
 6. **Report your part.** When you finish a part, use the "After each task" steps below. Say which part is done and which parts are still open.
 
 ## After each task
@@ -43,7 +43,7 @@ As soon as you finish a task or hand it off, before you end your turn:
 
 1. **Summarise what you did.** Say which files changed, the branch or PR, the tests or checks you ran and their results, and anything you did not verify.
 2. **Suggest what comes next.** Give one or two concrete next steps, and say which of them need the owner's decision.
-3. **Add the new tasks to the right file.** Write each follow-up as an unchecked `- [ ]` item in `frontend.md` (UI, CSS, screens, and browser checks) or `backend.md` (API, money, rules, timers, and stored state). Add the issue number if one exists. Do not claim an issue or add the `in-progress` label for these items. The owner decides which ones to start.
+3. **Add the new tasks to the right file.** Write each follow-up as an unchecked `- [ ]` item in `frontend.md` (UI, CSS, screens, and browser checks) or `docs/tasks/backend.md` (API, money, rules, timers, and stored state). Add the issue number if one exists. Do not claim an issue or add the `in-progress` label for these items. The owner decides which ones to start.
 
 ## Taking over unfinished work
 
@@ -58,7 +58,7 @@ Unfinished work lives on its branch, not in someone else's folder. To take it ov
 ## Project knowledge
 
 - Product ideas and the feature list: `FEATURE-CHECKLIST.md`.
-- Frontend and backend task lists: `frontend.md` and `backend.md`.
+- Frontend and backend task lists: `frontend.md` and `docs/tasks/backend.md`.
 - Work history of every agent: `docs/agents/history.md`.
 - Domain terms: `GLOSSARY.md` (if present). Decisions: `docs/adr/`.
 - Issue tracker and triage labels: `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`.

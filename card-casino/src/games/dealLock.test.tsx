@@ -77,20 +77,20 @@ describe('Higher or Lower: a double-click on Start must not make a guess for you
   it('keeps the buttons switched off for a moment, then enables them', async () => {
     const user = setup(<HigherLower />, deck);
     await user.click(button(/^start$/i));
-    for (const name of [/higher/i, /lower/i, /cash out/i, /jackpot/i]) expect(button(name)).toBeDisabled();
+    for (const name of [/^higher/i, /^lower/i, /cash out/i, /jackpot/i]) expect(button(name)).toBeDisabled();
     await waitForLock();
-    expect(button(/higher/i)).toBeEnabled();
+    expect(button(/^higher/i)).toBeEnabled();
     expect(button(/jackpot/i)).toBeEnabled();
   });
 
   it('ignores a second click straight after the start, and takes it once the lock is over', async () => {
     const user = setup(<HigherLower />, deck);
     await user.dblClick(button(/^start$/i));
-    expect(button(/higher/i)).toBeInTheDocument();
+    expect(button(/^higher/i)).toBeInTheDocument();
     expect(document.querySelector('.result')).toHaveTextContent(/streak 0/i);
 
     await waitForLock();
-    await user.click(button(/higher/i));
+    await user.click(button(/^higher/i));
     expect(document.querySelector('.result')).not.toHaveTextContent(/streak 0/i);
   });
 });

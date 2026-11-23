@@ -22,6 +22,12 @@ export const enGB = {
   "rules.landlord.how.1": "Three players bid for the landlord role. The highest bidder plays alone against the other two; the landlord takes the three bottom cards.",
   "rules.landlord.how.2": "The landlord leads. Play a higher combination of the same type and size, or pass. After both other players pass, the last player to play leads again.",
   "rules.landlord.how.3": "The first side to empty a hand wins. Bombs, rockets and a spring increase the multiplier. Optional combinations can be changed in settings.",
+  "hilo.guide.show": "Show Higher or Lower guide",
+  "hilo.guide.hide": "Hide guide",
+  "hilo.guide.start": "Choose a bet and start. A card is dealt face up.",
+  "hilo.guide.first": "Guess whether the next card is higher or lower. Aces are high; an equal rank or a wrong guess loses the bet. Jackpot guesses the same rank and ends the round.",
+  "hilo.guide.streak": "A correct guess grows the pot. Cash out to keep it, or guess again and risk losing your bet. Jackpot guesses the same rank and ends the round.",
+  "hilo.guide.end": "The round is over. Start again when you are ready.",
   // Page
   'header.title': 'Bintarland Bank - Bibergly Betting Business',
   'header.coins': '{amount} coins',

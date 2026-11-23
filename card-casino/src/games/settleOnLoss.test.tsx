@@ -53,7 +53,7 @@ describe('a lost game tells the wallet it is over', () => {
     renderGame(<HigherLower />);
     await startHigherLower(user); // the ace (high) is showing
     expect(wager).toHaveBeenCalledTimes(1);
-    await user.click(screen.getByRole('button', { name: /higher/i })); // next card is a 2, so higher is wrong
+    await user.click(screen.getByRole('button', { name: /^higher/i })); // next card is a 2, so higher is wrong
     expect(settle).toHaveBeenCalledTimes(1);
     expect(settle).toHaveBeenCalledWith(0);
     expect(screen.getByText(/you lost/i)).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe('a lost game tells the wallet it is over', () => {
     const user = userEvent.setup({ advanceTimers: (ms) => vi.advanceTimersByTime(ms) });
     renderGame(<HigherLower />);
     await startHigherLower(user);
-    await user.click(screen.getByRole('button', { name: /lower/i })); // ace is high, so a 2 is lower: correct
+    await user.click(screen.getByRole('button', { name: /^lower/i })); // ace is high, so a 2 is lower: correct
     expect(settle).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: /cash out/i }));
     expect(settle).toHaveBeenCalledTimes(1);
