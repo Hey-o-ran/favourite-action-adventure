@@ -10,6 +10,7 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
    `git worktree add ../favourite-action-adventure-<topic> -b <topic>`
    Never edit files in the main checkout (`D:\Haoran\projects\favourite-action-adventure`).
 4. **Sync first.** Run `git pull --rebase` before you start, and `git status` before each edit.
+5. **Read the history.** Check the newest entries in `docs/agents/history.md` so you don't repeat or undo another agent's work.
 
 ## While you work
 
@@ -24,15 +25,6 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
 - **Show progress as a percentage.** Post progress in chat and as a comment on the issue at each milestone, in this form: `Progress: 40% (2 of 5 steps). Done: <what>. Next: <what>.`
 - **Report blockers right away.** If you're stuck, comment on the issue and say what you need.
 
-## Future task ideas
-
-Ideas for later work go in your area's list, not in the feature checklist:
-
-- Frontend agents: `docs/tasks/frontend.md`
-- Backend agents: `docs/tasks/backend.md`
-
-Each list item is one line: `- [ ] <task>, found while working on #<issue>`. Only edit your own area's list. Tick an item off (`- [x]`) when it's been claimed, and link the issue that claims it.
-
 ## Owning a pull request
 
 All agents push under the same GitHub login, so GitHub can't show which agent opened a PR. Mark it yourself:
@@ -45,12 +37,32 @@ All agents push under the same GitHub login, so GitHub can't show which agent op
 ## When you finish or hand off
 
 1. Push your branch and open a pull request into `main`.
-   - **Before merging anything**, run the checks in `card-casino/`: `npm ci`, `npm test` and `npm run build`. All three must pass. If any fails, don't merge; fix it or report it on the issue.
+   - **Before merging anything**, run the checks in `card-casino/`: `npm ci`, `npm test` and `npm run build`. All three must pass. If any fails, don't merge it; fix it or report it on the issue.
    - **If the PR touches neither `card-casino/**` nor `.github/workflows/deploy.yml`**, you may merge it yourself once the checks pass (`gh pr merge <n> --squash`).
    - **If it touches either of those**, don't merge it. Comment on the PR that it's ready, and the owner will merge and deploy it.
    - Check which files a PR touches with `gh pr diff <n> --name-only` before merging.
 2. Comment on the issue with what's done and what's left, so another agent can continue.
 3. Remove the `in-progress` label and your assignment (`gh issue edit <n> --remove-label in-progress --remove-assignee @me`).
+4. Add one line at the top of `docs/agents/history.md` (newest first): date, your tool and model, branch or issue, and a one-sentence summary. If you hit a merge conflict on that file, keep every agent's line.
+
+## Splitting big tasks
+
+If a task is too big for one agent, or touches several areas (for example UI and API, or several screens), split it into parts before you write code:
+
+1. **Write the parts down.** Add them as a numbered checklist in the GitHub issue. Each part needs a clear goal, the files it will change, and what "done" means.
+2. **Keep parts small.** Each part should fit on one branch in one worktree, and parts should not edit the same files.
+3. **Name the dependencies.** For example, "part 2 needs the API from part 1". Start the parts that have no dependencies first.
+4. **Claim one part at a time.** Claim a part with its own branch and worktree, and note the part number in the issue. Don't work on a part another agent has claimed.
+5. **Shared files.** Keep edits to the shared files (`AGENTS.md`, `FEATURE-CHECKLIST.md`, `frontend.md`, `docs/tasks/backend.md`) small and commit them quickly. When you merge, keep every agent's lines.
+6. **Report your part.** When you finish a part, use the "After each task" steps below. Say which part is done and which parts are still open.
+
+## After each task
+
+As soon as you finish a task or hand it off, before you end your turn:
+
+1. **Summarise what you did.** Say which files changed, the branch or PR, the tests or checks you ran and their results, and anything you did not verify.
+2. **Suggest what comes next.** Give one or two concrete next steps, and say which of them need the owner's decision.
+3. **Add the new tasks to the right file.** Write each follow-up as an unchecked `- [ ]` item in `frontend.md` (UI, CSS, screens, and browser checks) or `docs/tasks/backend.md` (API, money, rules, timers, and stored state). Add the issue number if one exists. Do not claim an issue or add the `in-progress` label for these items. The owner decides which ones to start.
 
 ## Taking over unfinished work
 
@@ -63,20 +75,22 @@ This repo, `favourite-action-adventure`, is the **frontend**. The backend is a s
 Each agent has one area. Only claim issues in your own area. If an issue spans both repos, split it into a backend issue in `battle-bricks-backliners` and a frontend issue here, and claim your half.
 
 - **Backend: Opus and Sol.** Work in `battle-bricks-backliners`, following its `AGENTS.md`. Don't make backend changes in this repo.
-- **Frontend: Sonnet and Terra.** Work in this repo: screens, games, styling, and the client code that calls the backend. Files: everything under `card-casino/src/`, including `api.ts`, `validate.ts`, `abuse.ts`, `adminGate.ts`, `balanceSync.ts`, `components/`, `games/`, `i18n/`, `App.tsx`, `main.tsx` and `index.css`.
-- **Shared files** (`package.json`, `vite.config.ts`, `.github/workflows/`, `AGENTS.md`, `CLAUDE.md`, `FEATURE-CHECKLIST.md`, `docs/` except `docs/tasks/`): only the repo owner changes these, unless the owner assigns the issue to you.
-- **Task lists** (`docs/tasks/frontend.md` for frontend, `docs/tasks/backend.md` for backend): each area's agents edit their own list.
-- **Stay in your area for review too.** Agents review PRs in their own area. Backend agents review backend PRs, and frontend agents review frontend PRs.
+- **Frontend: Sonnet and Terra.** Work in this repo: screens, games, styling, and the client code that calls the backend, which is everything under `card-casino/src/`.
+- **Shared files** (`package.json`, `vite.config.ts`, `.github/workflows/`, `AGENTS.md`, `CLAUDE.md`, `FEATURE-CHECKLIST.md`, and `docs/` except the task lists): only the repo owner changes these, unless the owner assigns the issue to you.
+- **Task lists** (`frontend.md` for frontend, `docs/tasks/backend.md` for backend): each area's agents edit their own list.
+- **Stay in your area for review too.** Agents review PRs in their own area.
 
 ## Boundaries by role
 
 - **Feature agents**: build one claimed feature, on one branch, in one worktree.
 - **Review agents**: read and comment on PRs. They don't push to feature branches.
 - **Only the repo owner** deploys, merges PRs that touch `card-casino/` or `deploy.yml`, and changes this file.
-- **Any agent** may merge a PR in this repo that touches neither of those paths, following the rule above. Merging in `battle-bricks-backliners` follows that repo's `AGENTS.md`.
+- **Any agent** may merge a PR in this repo that touches neither of those paths, following the rule above.
 
 ## Project knowledge
 
 - Product ideas and the feature list: `FEATURE-CHECKLIST.md`.
+- Frontend and backend task lists: `frontend.md` and `docs/tasks/backend.md`.
+- Work history of every agent: `docs/agents/history.md`.
 - Domain terms: `GLOSSARY.md` (if present). Decisions: `docs/adr/`.
 - Issue tracker and triage labels: `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md`.

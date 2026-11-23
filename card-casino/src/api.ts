@@ -90,6 +90,7 @@ async function request<T>(
   if (token) headers.authorization = `Bearer ${token}`;
 
   let res: Response;
+  let text: string;
   try {
     res = await fetch(`${BASE_URL}${path}`, {
       method,
@@ -97,11 +98,11 @@ async function request<T>(
       body: body === undefined ? undefined : JSON.stringify(body),
       keepalive: options.keepalive,
     });
+    text = await res.text();
   } catch {
     throw new ApiError(0, 'NETWORK_ERROR', 'Could not reach the server');
   }
 
-  const text = await res.text();
   let data: unknown;
   try {
     data = text ? JSON.parse(text) : undefined;

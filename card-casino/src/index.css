@@ -647,3 +647,13 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .personal-games h2, .personal-games h3 { margin: 0.5rem 0; }
 .personal-games .game-nav { margin-bottom: 0.75rem; }
 .blackjack-guide { padding: 0.75rem; border: 1px solid currentColor; border-radius: 0.5rem; }
+
+/* Keep the game picker and personal shortcuts usable on narrow screens. */
+@media (max-width: 480px) {
+  .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .filters .filter { min-width: 0; }
+  .filters select { width: 100%; min-width: 0; min-height: 44px; }
+  .filters > button { min-height: 44px; }
+  .game-nav button, .personal-games > button { min-height: 44px; }
+  .personal-games { padding: 0.75rem; }
+}
