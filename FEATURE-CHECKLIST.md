@@ -60,7 +60,13 @@ Design rules for everything in this section: money stays in-game (Gigglebucks, B
 - [ ] Pets: pets need food and vet visits, which cost money.
 - [ ] Gifts: send small gifts to friends (ties into Friends above).
 
+### Account and profile
+- [ ] Change username: a player can change their display name. Names must be unique and follow length and character rules. (UI: the name field and messages are in `frontend.md`.)
+- [ ] Username changes: limit how often a name can change, and decide whether a change costs in-game currency. Balance numbers are placeholders.
+
 #### Open questions for the owner
 - [ ] Should a jailed player be blocked from ranked or PvP games, or only from crimes and jobs?
 - [ ] Should the bank's loan rates depend on credit score, location, or both?
 - [ ] Should robbery and crimes be shown as clearly fictional, with no real-world references?
+- [ ] Should changing a username cost in-game currency, and how often can it change?
+- [ ] Should usernames be unique, and should a profanity filter apply to them?
