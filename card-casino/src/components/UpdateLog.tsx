@@ -14,6 +14,20 @@ interface Update {
  * and add the same `id` with its Chinese text to `i18n/zh-CN.updates.ts` (a test checks that every one has it).
  */
 export const UPDATES: Update[] = [
+  { id: 'shengji', date: '20 November 2026', title: 'Shengji is here!', points: [
+    'Play Shengji (80 Points) with a robot partner against two other robots. Declare trump, choose the kitty and work together to win tricks.',
+    'Find Shengji in the game picker and read its rules to learn about pairs, tractors and scoring.',
+  ] },
+  { id: 'landlord-shortcuts', date: '19 November 2026', title: 'Landlord and game shortcuts', points: [
+    'Play Landlord (Dou Dizhu) against two robots. Bid to be the landlord, then try to empty your hand before the other side.',
+    'Mark games as favourites and find recently played games from the game picker.',
+  ] },
+  { id: 'leaderboard-stats', date: '16 November 2026', title: 'More leaderboard stats', points: [
+    'The leaderboard now shows win rates and time played. Open player stats to see a breakdown by game.',
+  ] },
+  { id: 'finder-options', date: '16 November 2026', title: 'More ways to find a game', points: [
+    'Sort games alphabetically or put the shortest games first. You can also filter by how hard a game is to learn.',
+  ] },
   {
     id: 'big-wins',
     date: '16 November 2026',

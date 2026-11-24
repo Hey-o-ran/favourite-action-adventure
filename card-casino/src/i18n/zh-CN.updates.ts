@@ -3,6 +3,20 @@
  * needs the same number of points as the English update (a test checks this).
  */
 export const ZH_UPDATES: Record<string, { date: string; title: string; points: string[] }> = {
+  shengji: { date: '2026年11月20日', title: '升级来啦！', points: [
+    '和机器人队友一起玩升级（80分），对战另外两个机器人。亮主、扣底，再齐心协力赢得牌墩。',
+    '在游戏选择器中找到升级，阅读规则了解对子、拖拉机和计分方式。',
+  ] },
+  'landlord-shortcuts': { date: '2026年11月19日', title: '斗地主和游戏快捷方式', points: [
+    '和两个机器人玩斗地主。叫地主后，抢先在对方之前出完手里的牌。',
+    '把游戏加入收藏，也可以在游戏选择器中找到最近玩过的游戏。',
+  ] },
+  'leaderboard-stats': { date: '2026年11月16日', title: '排行榜上的更多统计', points: [
+    '排行榜现在显示胜率和游戏时间。打开玩家的统计信息，还能查看各个游戏的详情。',
+  ] },
+  'finder-options': { date: '2026年11月16日', title: '更多找游戏的方法', points: [
+    '可以按字母顺序排列游戏，或者把时间最短的游戏排在前面。还可以按学习难度筛选。',
+  ] },
   'big-wins': {
     date: '2026年11月16日',
     title: '大奖让大家都看见！',
