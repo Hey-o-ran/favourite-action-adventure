@@ -15,6 +15,46 @@ interface Update {
  */
 export const UPDATES: Update[] = [
   {
+    id: 'game-guides',
+    date: '22 November 2026',
+    title: 'Game guides and easier navigation',
+    points: [
+      'Turn on the guides in Blackjack and Higher or Lower for help with what to do next.',
+      'The game navigation is easier to use on smaller screens.',
+    ],
+  },
+  {
+    id: 'ranked-slots',
+    date: '20 November 2026',
+    title: 'Ranked Slots',
+    points: [
+      'Slots now has ranked play with a separate ranked coin balance. The server handles each spin and can recover an interrupted spin.',
+      'Unloseable protection applies to practice games.',
+    ],
+  },
+  { id: 'shengji', date: '20 November 2026', title: 'Shengji is here!', points: [
+    'Play Shengji (80 Points) with a robot partner against two other robots. Declare trump, choose the kitty and work together to win tricks.',
+    'Find Shengji in the game picker and read its rules to learn about pairs, tractors and scoring.',
+  ] },
+  { id: 'landlord-shortcuts', date: '19 November 2026', title: 'Landlord and game shortcuts', points: [
+    'Play Landlord (Dou Dizhu) against two robots. Bid to be the landlord, then try to empty your hand before the other side.',
+    'Mark games as favourites and find recently played games from the game picker.',
+  ] },
+  { id: 'leaderboard-stats', date: '16 November 2026', title: 'More leaderboard stats', points: [
+    'The leaderboard now shows win rates and time played. Open player stats to see a breakdown by game.',
+  ] },
+  {
+    id: 'language-switch',
+    date: '16 November 2026',
+    title: 'Choose your language',
+    points: [
+      'Choose British English or Simplified Chinese from the menu. Games, rules and the leaderboard appear in your chosen language.',
+    ],
+  },
+  { id: 'finder-options', date: '16 November 2026', title: 'More ways to find a game', points: [
+    'Sort games alphabetically or put the shortest games first. You can also filter by how hard a game is to learn.',
+  ] },
+  {
     id: 'big-wins',
     date: '16 November 2026',
     title: 'Big wins for everyone to see!',
