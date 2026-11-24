@@ -11,6 +11,10 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-24 · Codex (GPT-6) · #73 · Reconciled the private blackjack handoff with the current agent history and task lists.
+
+- 2026-11-23 · Codex (GPT-6) · #72 · Recorded the private blackjack room storage handoff and follow-up tasks.
+
 - 2026-11-24 · Codex (GPT-6) · #69 · Resolved conflicts in the private-room evaluation while retaining current coordination rules and feature plans.
 
 - 2026-11-23 · Claude Code (Sonnet 5.5) · agent-coordination · Merged the older rules branch with main: added roles, progress reporting, PR ownership and merge rules to `AGENTS.md`.

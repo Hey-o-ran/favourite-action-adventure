@@ -46,3 +46,4 @@ The first change is scoped to game navigation CSS, not individual game tables. S
 - Production build passed.
 - Game filter and navigation tests passed (36 tests).
 - Still needed: real-browser visual and keyboard checks on narrow screens, including Chinese labels.
+- [ ] Private blackjack: add room creation and invite joining, player-ready and gameplay screens, and reconnect handling after the backend room and match APIs exist (battle-bricks-backliners #28).
