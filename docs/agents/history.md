@@ -11,6 +11,8 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-24 · Claude Code (Sonnet 5.5) · rules-tables · Added tables to the Landlord (plays, multiplier and score) and Shengji (trump order, levels, payouts) rules pages, English and Chinese.
+
 - 2026-11-24 · Claude Code (Sonnet 5.5) · rules-landlord-shengji · Expanded the Landlord and Shengji rules pages (more "How to play" steps plus Tips, English and Chinese).
 
 - 2026-11-24 · Claude Code (Sonnet 5.5) · track-update-log · Added a frontend.md task for the missing What's new entries (Landlord, Shengji, leaderboard stats, game finder).
