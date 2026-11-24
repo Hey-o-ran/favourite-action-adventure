@@ -11,6 +11,8 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-24 · Claude Code (Sonnet 5.5) · followups-rules-log · Added two frontend.md tasks: a phone-width check of the new rules tables and update log, and a ranked Slots update entry.
+
 - 2026-11-24 · Claude Code (Opus 5.5) · backend-tasks-name-change · Ticked the JSON audit and change-username items in `docs/tasks/backend.md` (backend PR #47), added the name-change price decision, and opened #83 for the name-change screen.
 - 2026-11-24 · Codex (GPT-6.1) · #77 · Added bilingual update log entries for games, leaderboard stats and game finder options.
 
