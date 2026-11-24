@@ -16,12 +16,31 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
 
 - **Stay inside your claim.** Only edit the files your issue needs. If you need a file another agent has claimed, stop and comment on the issue instead of editing it.
 - **Commit small and often.** Small commits make handoffs possible. Uncommitted work stays in your worktree and can't be picked up by anyone else.
-- **Never run `deploy.yml` or trigger a deployment.** Deploys are owned by the repo owner.
+- **Never run `deploy.yml` or trigger a deployment.** Deploys are owned by the repo owner. Merging to `main` starts `deploy.yml` when the change touches `card-casino/**` or `.github/workflows/deploy.yml`, so those changes count as deploys.
 - **Never commit secrets.** No passwords, API keys, account IDs or login details go into any file in the repo, including this one, issues, PRs, or commit messages. If you see one in the repo, tell the owner rather than copying it anywhere.
+
+## Reporting progress
+
+- **Say your task at the start.** Tell the user which issue you're working on and which role you're in (for example "Backend, issue #12, Opus").
+- **Show progress as a percentage.** Post progress in chat and as a comment on the issue at each milestone, in this form: `Progress: 40% (2 of 5 steps). Done: <what>. Next: <what>.`
+- **Report blockers right away.** If you're stuck, comment on the issue and say what you need.
+
+## Owning a pull request
+
+All agents push under the same GitHub login, so GitHub can't show which agent opened a PR. Mark it yourself:
+
+- Put `Agent: <name>` (for example `Agent: Sonnet`) at the top of the PR description, and `Closes #<n>` underneath.
+- Assign yourself to the PR and add the label: `gh pr edit <n> --add-assignee @me --add-label in-progress`.
+- Only push to a PR branch you created. To ask for a change on someone else's PR, comment on the PR.
+- Before you act on a PR, check its owner with `gh pr view <n> --json assignees,body`. If it's assigned to another agent, leave it alone.
 
 ## When you finish or hand off
 
-1. Push your branch and open a pull request into `main`. Don't merge it yourself unless the owner tells you to.
+1. Push your branch and open a pull request into `main`.
+   - **Before merging anything**, run the checks in `card-casino/`: `npm ci`, `npm test` and `npm run build`. All three must pass. If any fails, don't merge it; fix it or report it on the issue.
+   - **If the PR touches neither `card-casino/**` nor `.github/workflows/deploy.yml`**, you may merge it yourself once the checks pass (`gh pr merge <n> --squash`).
+   - **If it touches either of those**, don't merge it. Comment on the PR that it's ready, and the owner will merge and deploy it.
+   - Check which files a PR touches with `gh pr diff <n> --name-only` before merging.
 2. Comment on the issue with what's done and what's left, so another agent can continue.
 3. Remove the `in-progress` label and your assignment (`gh issue edit <n> --remove-label in-progress --remove-assignee @me`).
 4. Add one line at the top of `docs/agents/history.md` (newest first): date, your tool and model, branch or issue, and a one-sentence summary. If you hit a merge conflict on that file, keep every agent's line.
@@ -49,11 +68,24 @@ As soon as you finish a task or hand it off, before you end your turn:
 
 Unfinished work lives on its branch, not in someone else's folder. To take it over, check out the branch in a new worktree and continue there. Don't copy another agent's files by hand.
 
+## Roles
+
+This repo, `favourite-action-adventure`, is the **frontend**. The backend is a separate repo, `battle-bricks-backliners` (API Gateway, Lambda, Cognito, DynamoDB, deployed with CDK). Each repo has its own `AGENTS.md`, and that file governs the work done in that repo.
+
+Each agent has one area. Only claim issues in your own area. If an issue spans both repos, split it into a backend issue in `battle-bricks-backliners` and a frontend issue here, and claim your half.
+
+- **Backend: Opus and Sol.** Work in `battle-bricks-backliners`, following its `AGENTS.md`. Don't make backend changes in this repo.
+- **Frontend: Sonnet and Terra.** Work in this repo: screens, games, styling, and the client code that calls the backend, which is everything under `card-casino/src/`.
+- **Shared files** (`package.json`, `vite.config.ts`, `.github/workflows/`, `AGENTS.md`, `CLAUDE.md`, `FEATURE-CHECKLIST.md`, and `docs/` except the task lists): only the repo owner changes these, unless the owner assigns the issue to you.
+- **Task lists** (`frontend.md` for frontend, `docs/tasks/backend.md` for backend): each area's agents edit their own list.
+- **Stay in your area for review too.** Agents review PRs in their own area.
+
 ## Boundaries by role
 
 - **Feature agents**: build one claimed feature, on one branch, in one worktree.
 - **Review agents**: read and comment on PRs. They don't push to feature branches.
-- **Only the repo owner** deploys, merges to `main`, and changes this file.
+- **Only the repo owner** deploys, merges PRs that touch `card-casino/` or `deploy.yml`, and changes this file.
+- **Any agent** may merge a PR in this repo that touches neither of those paths, following the rule above.
 
 ## Project knowledge
 
