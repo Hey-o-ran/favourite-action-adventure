@@ -3,6 +3,21 @@
  * needs the same number of points as the English update (a test checks this).
  */
 export const ZH_UPDATES: Record<string, { date: string; title: string; points: string[] }> = {
+  'ranked-slots': {
+    date: '2026年11月20日',
+    title: '老虎机排位模式',
+    points: ['老虎机现在支持排位游戏，并使用单独的排位金币余额。旋转结果由服务器处理，连接中断时可以恢复。', '不败保护适用于练习游戏。'],
+  },
+  'game-guides': {
+    date: '2026年11月22日',
+    title: '游戏提示和更方便的导航',
+    points: ['二十一点和猜大小有可开关的游戏提示，帮助你了解下一步。', '游戏导航在小屏幕上更方便使用。'],
+  },
+  'language-switch': {
+    date: '2026年11月16日',
+    title: '选择你的语言',
+    points: ['从菜单中选择英国英语或简体中文。游戏、规则和排行榜都会显示所选语言。'],
+  },
   shengji: { date: '2026年11月20日', title: '升级来啦！', points: [
     '和机器人队友一起玩升级（80分），对战另外两个机器人。亮主、扣底，再齐心协力赢得牌墩。',
     '在游戏选择器中找到升级，阅读规则了解对子、拖拉机和计分方式。',

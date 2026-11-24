@@ -60,7 +60,7 @@ describe('in British English, nothing has changed', () => {
     );
     const previousUpdates = container.cloneNode(true) as HTMLElement;
     previousUpdates.querySelectorAll('.update').forEach((entry, index) => {
-      if (index < 4) entry.remove();
+      if (index < 7) entry.remove();
     });
     expect(grab(previousUpdates)).toEqual(english.updates);
   });
@@ -108,7 +108,7 @@ describe("What's new in Chinese", () => {
   });
 
   it('puts the newest first, in both languages', () => {
-    expect(UPDATES[0].id).toBe('shengji');
+    expect(UPDATES[0].id).toBe('game-guides');
   });
 });
 
