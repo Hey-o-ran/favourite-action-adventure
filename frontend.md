@@ -47,3 +47,4 @@ The first change is scoped to game navigation CSS, not individual game tables. S
 - Game filter and navigation tests passed (36 tests).
 - Still needed: real-browser visual and keyboard checks on narrow screens, including Chinese labels.
 - [ ] Private blackjack: add room creation and invite joining, player-ready and gameplay screens, and reconnect handling after the backend room and match APIs exist (battle-bricks-backliners #28).
+- [ ] Update log: add "What's new" entries, with Chinese text in `zh-CN.updates.ts`, for Landlord and the shortcuts, Shengji, leaderboard stats, and the game finder changes (Alphabetical and Shortest-game-first sorts, "How hard to learn" filter); the newest entry is still 16 November. Ask the owner first whether to include ranked Slots, and check that Shengji shows in the game picker.
