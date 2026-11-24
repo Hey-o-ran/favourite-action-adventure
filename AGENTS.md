@@ -15,15 +15,20 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
 ## While you work
 
 - **Stay inside your claim.** Only edit the files your issue needs. If you need a file another agent has claimed, stop and comment on the issue instead of editing it.
-- **Commit small and often.** Small commits make handoffs possible. Uncommitted work stays in your worktree and can't be picked up by anyone else.
+- **Commit small and often.** Small commits make handoffs possible. Uncommitted work stays in your worktree and can't be picked up by anyone else. Commit only the files your task changed, and check `git status` before each commit so no stray or generated files get in.
 - **Never run `deploy.yml` or trigger a deployment.** Deploys are owned by the repo owner. Merging to `main` starts `deploy.yml` when the change touches `card-casino/**` or `.github/workflows/deploy.yml`, so those changes count as deploys.
 - **Never commit secrets.** No passwords, API keys, account IDs or login details go into any file in the repo, including this one, issues, PRs, or commit messages. If you see one in the repo, tell the owner rather than copying it anywhere.
+- **Both languages.** Put every player-facing text into both `card-casino/src/i18n/en-GB.ts` and `card-casino/src/i18n/zh-CN.ts`.
+- **The server decides results and money.** The browser never decides ranked results, balances or settlement. Show what the backend returns.
+- **No new dependencies without approval.** Don't add a package to `card-casino/` without the owner's OK, and say why you need it.
+- **Narrow widths for UI changes.** Check the screen at phone width, including long translated labels, before you open the PR.
+- **Saved data needs a plan.** If your change alters data that is already stored, describe the migration in the PR and flag it for the owner.
 
 ## Reporting progress
 
 - **Say your task at the start.** Tell the user which issue you're working on and which role you're in (for example "Backend, issue #12, Opus").
 - **Show progress as a percentage.** Post progress in chat and as a comment on the issue at each milestone, in this form: `Progress: 40% (2 of 5 steps). Done: <what>. Next: <what>.`
-- **Report blockers right away.** If you're stuck, comment on the issue and say what you need.
+- **Report blockers right away.** If you're stuck, comment on the issue and say what you need. If the same step fails twice, stop and report what you tried. Don't guess.
 
 ## Owning a pull request
 
@@ -43,7 +48,7 @@ All agents push under the same GitHub login, so GitHub can't show which agent op
    - Check which files a PR touches with `gh pr diff <n> --name-only` before merging.
 2. Comment on the issue with what's done and what's left, so another agent can continue.
 3. Remove the `in-progress` label and your assignment (`gh issue edit <n> --remove-label in-progress --remove-assignee @me`).
-4. Add one line at the top of `docs/agents/history.md` (newest first): date, your tool and model, branch or issue, and a one-sentence summary. If you hit a merge conflict on that file, keep every agent's line.
+4. Add one line at the top of `docs/agents/history.md` (newest first): date, your tool and model, branch or issue, and a one-sentence summary. If you hit a merge conflict on that file, keep every agent's line. Never edit or delete another agent's history line.
 
 ## Splitting big tasks
 

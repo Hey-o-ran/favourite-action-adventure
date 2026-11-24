@@ -11,6 +11,8 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-24 · Claude Code (Haiku 5.5) · owner-agent-rules · Added seven rules to `AGENTS.md`: both languages, server decides results and money, no new dependencies, narrow-width checks, saved-data plans, stop after a repeated failure, and never edit another agent's history line.
+
 - 2026-11-24 · Codex (GPT-6) · #73 · Reconciled the private blackjack handoff with the current agent history and task lists.
 
 - 2026-11-23 · Codex (GPT-6) · #72 · Recorded the private blackjack room storage handoff and follow-up tasks.
