@@ -337,3 +337,45 @@ export type LeaderboardPeriod = 'day' | 'month' | 'all';
 
 export const getLeaderboard = async (token: string, period: LeaderboardPeriod = 'all') =>
   (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}&wallet=ranked`, undefined, token))!;
+
+
+export type PrivateBlackjackMode = 'dealer' | 'competitive';
+export type PrivateBlackjackAction = 'start' | 'hit' | 'stand' | 'double' | 'split';
+type BlackjackCard = { rank: string; suit: import('./cards').Suit };
+export type PrivateBlackjackHand = {
+  cards: BlackjackCard[];
+  result?: 'blackjack' | 'win' | 'push' | 'lose' | 'bust';
+};
+export interface PrivateBlackjackRoom {
+  code: string;
+  host: string;
+  guest?: string;
+  mode: PrivateBlackjackMode;
+  expiresAt: number;
+  version?: number;
+  roundNumber?: number;
+  scores?: [number, number];
+  complete?: boolean;
+  round?: {
+    dealer: BlackjackCard[];
+    players: [PrivateBlackjackHand[], PrivateBlackjackHand[]];
+    turn: 0 | 1;
+    hand: number;
+    over: boolean;
+  };
+}
+
+const blackjackRoomsPath = '/v1/blackjack/rooms';
+const blackjackRoomPath = (code: string) => blackjackRoomsPath + '/' + encodeURIComponent(code);
+
+export const createPrivateBlackjackRoom = async (token: string, mode: PrivateBlackjackMode) =>
+  (await request<PrivateBlackjackRoom>('POST', blackjackRoomsPath, { mode }, token))!;
+
+export const joinPrivateBlackjackRoom = async (token: string, code: string) =>
+  (await request<PrivateBlackjackRoom>('POST', blackjackRoomPath(code) + '/join', undefined, token))!;
+
+export const getPrivateBlackjackRoom = async (token: string, code: string) =>
+  (await request<PrivateBlackjackRoom>('GET', blackjackRoomPath(code), undefined, token))!;
+
+export const playPrivateBlackjack = async (token: string, code: string, version: number, action: PrivateBlackjackAction) =>
+  (await request<PrivateBlackjackRoom>('POST', blackjackRoomPath(code) + '/actions', { version, action }, token))!;

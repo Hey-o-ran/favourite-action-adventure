@@ -1,6 +1,7 @@
 import { useState, type ComponentType } from 'react';
 import { useWallet } from './wallet';
 import { Blackjack } from './games/Blackjack';
+import { BlackjackModes } from './games/PrivateBlackjack';
 import { Klondike } from './games/Klondike';
 import { VideoPoker } from './games/VideoPoker';
 import { HigherLower } from './games/HigherLower';
@@ -393,7 +394,12 @@ export function App() {
               <Slots ranked={{ userId: session.user.userId, token: session.idToken, active: activeId === id && view === 'game', onUnauthorized: endSession }} />
             ) : (
               <GameScope gameId={id}>
-                <Component />
+                {id === 'blackjack' ? (
+                  <BlackjackModes key={session.user.userId} userId={session.user.userId} token={session.idToken}
+                    active={activeId === id && view === 'game'} onUnauthorized={endSession}>
+                    <Component />
+                  </BlackjackModes>
+                ) : <Component />}
               </GameScope>
             )}
           </div>
