@@ -327,13 +327,17 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
     shengji: (
       <Section title={title('shengji')} diagram={null}>
         <h3>{t('rules.how')}</h3>
-        <Items prefix="rules.shengji.how" count={4} />
+        <Items prefix="rules.shengji.how" count={9} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.shengji.tip" count={5} />
       </Section>
     ),
     landlord: (
       <Section title={title('landlord')} diagram={null}>
         <h3>{t('rules.how')}</h3>
-        <Items prefix="rules.landlord.how" count={3} />
+        <Items prefix="rules.landlord.how" count={10} />
+        <h3>{t('rules.tips')}</h3>
+        <Items prefix="rules.landlord.tip" count={5} />
       </Section>
     ),
     blackjack: (
