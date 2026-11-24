@@ -15,6 +15,53 @@ interface Update {
  */
 export const UPDATES: Update[] = [
   {
+    id: 'shengji',
+    date: '21 November 2026',
+    title: 'Shengji is here!',
+    points: [
+      'Shengji is a Chinese card game for four players and two decks. You and your partner play against two robots.',
+      'Win tricks, collect the points in the cards, and climb from level 2 all the way up to ace. A win pays 2 to 4 times your bet.',
+      'Not sure how it works? Press Rules while you play. It explains the trumps, the points and the levels.',
+    ],
+  },
+  {
+    id: 'shortcuts',
+    date: '19 November 2026',
+    title: 'Your own shortcuts!',
+    points: [
+      'Press the star beside a game\'s name to save it to your Favourites.',
+      'The games you played most recently show up under Recently played, so you can jump straight back in.',
+    ],
+  },
+  {
+    id: 'landlord',
+    date: '19 November 2026',
+    title: 'Landlord is here!',
+    points: [
+      'Landlord (Dou Dizhu) is a Chinese card game for three. You play against two robots with one deck.',
+      'First everybody bids to be the landlord. Then the landlord plays alone against the other two, and the first one to empty their hand wins!',
+      'Open the Rules page for Landlord to see how to play and a few tips.',
+    ],
+  },
+  {
+    id: 'leaderboard-stats',
+    date: '16 November 2026',
+    title: 'Leaderboard stats!',
+    points: [
+      'The leaderboard now shows each player\'s win rate and how long they have played.',
+      'It also has bars that show which games they play the most.',
+    ],
+  },
+  {
+    id: 'finder',
+    date: '16 November 2026',
+    title: 'Finding a game is easier',
+    points: [
+      'The Sort by box has two new choices: Alphabetical (A–Z), and Shortest game first for when you only have a few minutes.',
+      'The new How hard to learn filter shows only the games that are easy, medium or hard to pick up.',
+    ],
+  },
+  {
     id: 'big-wins',
     date: '16 November 2026',
     title: 'Big wins for everyone to see!',
