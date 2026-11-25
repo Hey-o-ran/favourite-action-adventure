@@ -337,3 +337,10 @@ export type LeaderboardPeriod = 'day' | 'month' | 'all';
 
 export const getLeaderboard = async (token: string, period: LeaderboardPeriod = 'all') =>
   (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}&wallet=ranked`, undefined, token))!;
+
+/** The update awaiting this player's acknowledgement, if any. */
+export interface PlayerUpdate { version: string; message: string }
+export const getPlayerUpdate = async (token: string) =>
+  (await request<{ update: PlayerUpdate | null }>('GET', '/v1/me/update', undefined, token))!;
+export const dismissPlayerUpdate = async (token: string, version: string) =>
+  request<void>('POST', `/v1/me/update/${encodeURIComponent(version)}/dismiss`, undefined, token);
