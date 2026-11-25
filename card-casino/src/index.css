@@ -328,6 +328,7 @@ button.primary {
 .rules-section .paytable.rulestable td { padding: 6px 14px 6px 0; vertical-align: top; border-bottom: 1px solid #ffffff1a; }
 .rules-section .paytable.rulestable td:first-child { font-weight: 600; width: 38%; }
 .rules-section .paytable.rulestable td:last-child { color: var(--ink); text-align: left; padding-right: 0; }
+.rules-section .paytable.rulestable + .paytable.rulestable { margin-top: 18px; }
 
 .updates { display: grid; gap: 14px; }
 .updates h2 { margin: 0; color: var(--gold); }
