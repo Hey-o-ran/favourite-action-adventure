@@ -11,6 +11,8 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-25 · Codex (GPT-6) · #83 part 2 · Handed off the display-name screen pending phone-width and App test checks.
+
 - 2026-11-25 · Codex (GPT-6) · #83 part 1 · Added display-name API and session support with serialized wallet charge handling.
 
 - 2026-11-24 · Claude Code (Sonnet 5.5) · rules-landlord-shengji · Expanded the Landlord and Shengji rules pages (more "How to play" steps plus Tips, English and Chinese).

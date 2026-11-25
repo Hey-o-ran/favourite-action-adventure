@@ -10,6 +10,10 @@ This is a working list of frontend ideas, not a commitment to implement every it
 
 - [ ] Issue #79: Show and dismiss the signed-in update banner with bilingual text and tests.
 
+- [ ] Issue #83: Verify the display-name screen at a real phone-width viewport in English and Chinese, and investigate the App test timeout before opening its PR.
+
+- [ ] Verify the deployed update log and Shengji picker in both languages when live access is available.
+
 ## Candidate next features
 
 - [ ] More guided first-game tutorials, starting with another game after checking which players find difficult. Follow the existing optional Blackjack guide and support both languages.
