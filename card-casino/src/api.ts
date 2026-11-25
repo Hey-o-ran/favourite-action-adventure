@@ -346,12 +346,20 @@ export type PrivateBlackjackHand = {
   cards: BlackjackCard[];
   result?: 'blackjack' | 'win' | 'push' | 'lose' | 'bust';
 };
+/** How a room ended. 'refunded' and 'split' return each stake; 'won' and 'forfeit' pay the whole pot to `winner`. */
+export type PrivateBlackjackSettlement = { outcome: 'won' | 'split' | 'forfeit' | 'refunded'; winner?: string };
+/** The practice-coin stake each player puts in a competitive room: a whole number in this range, or 0 for free play. */
+export const MIN_BLACKJACK_STAKE = 10;
+export const MAX_BLACKJACK_STAKE = 10_000;
 export interface PrivateBlackjackRoom {
   code: string;
   host: string;
   guest?: string;
   mode: PrivateBlackjackMode;
   expiresAt: number;
+  /** Practice coins each player put in. 0 for a free room. */
+  stake?: number;
+  settlement?: PrivateBlackjackSettlement;
   version?: number;
   roundNumber?: number;
   scores?: [number, number];
@@ -368,8 +376,9 @@ export interface PrivateBlackjackRoom {
 const blackjackRoomsPath = '/v1/blackjack/rooms';
 const blackjackRoomPath = (code: string) => blackjackRoomsPath + '/' + encodeURIComponent(code);
 
-export const createPrivateBlackjackRoom = async (token: string, mode: PrivateBlackjackMode) =>
-  (await request<PrivateBlackjackRoom>('POST', blackjackRoomsPath, { mode }, token))!;
+/** A free room sends no stake. A staked room takes the host's stake from the practice wallet straight away. */
+export const createPrivateBlackjackRoom = async (token: string, mode: PrivateBlackjackMode, stake = 0) =>
+  (await request<PrivateBlackjackRoom>('POST', blackjackRoomsPath, stake > 0 ? { mode, stake } : { mode }, token))!;
 
 export const joinPrivateBlackjackRoom = async (token: string, code: string) =>
   (await request<PrivateBlackjackRoom>('POST', blackjackRoomPath(code) + '/join', undefined, token))!;
@@ -379,3 +388,15 @@ export const getPrivateBlackjackRoom = async (token: string, code: string) =>
 
 export const playPrivateBlackjack = async (token: string, code: string, version: number, action: PrivateBlackjackAction) =>
   (await request<PrivateBlackjackRoom>('POST', blackjackRoomPath(code) + '/actions', { version, action }, token))!;
+
+/** Before the first round a guest gets their stake back and a host closes the room. Mid-match, leaving forfeits. */
+export const leavePrivateBlackjackRoom = async (token: string, code: string) =>
+  (await request<PrivateBlackjackRoom>('POST', blackjackRoomPath(code) + '/leave', undefined, token))!;
+
+/** Takes the pot when the other player has been idle on their move for two minutes; earlier, it fails with TOO_EARLY. */
+export const claimPrivateBlackjackForfeit = async (token: string, code: string) =>
+  (await request<PrivateBlackjackRoom>('POST', blackjackRoomPath(code) + '/claim-forfeit', undefined, token))!;
+
+/** When a TOO_EARLY claim could be made (milliseconds since 1970), or undefined if the error says nothing. */
+export const claimableAtOf = (err: unknown): number | undefined =>
+  err instanceof ApiError && err.code === 'TOO_EARLY' && typeof err.details?.claimableAt === 'number' ? err.details.claimableAt : undefined;

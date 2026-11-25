@@ -238,7 +238,7 @@ const GAMES: GameEntry[] = [
 ];
 
 export function App() {
-  const { balance, flush } = useWallet();
+  const { balance, flush, refresh } = useWallet();
   const { session, logout: endSession } = useSession();
   const { t, lang, setLang } = useI18n();
   /** Saves any unsaved coin change first, so logging out never loses it. */
@@ -396,7 +396,8 @@ export function App() {
               <GameScope gameId={id}>
                 {id === 'blackjack' ? (
                   <BlackjackModes key={session.user.userId} userId={session.user.userId} token={session.idToken}
-                    active={activeId === id && view === 'game'} onUnauthorized={endSession}>
+                    active={activeId === id && view === 'game'} onUnauthorized={endSession}
+                    balance={balance} flushBalance={flush} reloadBalance={refresh}>
                     <Component />
                   </BlackjackModes>
                 ) : <Component />}

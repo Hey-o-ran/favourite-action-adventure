@@ -52,3 +52,5 @@ The first change is scoped to game navigation CSS, not individual game tables. S
 - [ ] Check Shengji in the game picker in a real browser (#77).
 - [ ] For local frontend tests on this machine, run npx vitest run --pool=forks --poolOptions.forks.minForks=1 --poolOptions.forks.maxForks=3 to avoid worker hangs.
 - [ ] Check the new Landlord and Shengji rules tables (`.rulestable` style, PRs #81 and #92) inside the running app on a real phone. A 390px render of the Rules page in Chrome, in English and Chinese, showed no overflow; the full app, login and menu were not checked.
+- [ ] Check the private blackjack stake picker, leave warning and claim countdown inside the running app with two accounts, on a phone, once the backend stakes (battle-bricks-backliners #51) are deployed. A 320px render of the lobby, a staked match with the leave warning and claim countdown, and a settled match showed no overflow; the deployed API was not tried.
+- [ ] If the backend puts the idle deadline on the room response (`claimableAt`, now only in the `TOO_EARLY` error), start the claim countdown without needing one failed claim first (battle-bricks-backliners #52).

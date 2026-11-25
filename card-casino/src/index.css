@@ -674,3 +674,8 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .private-blackjack code { overflow-wrap: anywhere; user-select: all; }
 .private-blackjack .actions { flex-wrap: wrap; }
 .private-blackjack-hand[aria-current="true"] { border-inline-start: 2px solid currentColor; padding-inline-start: 0.5rem; }
+.private-blackjack-note { margin: 0; max-width: 24rem; color: var(--muted); font-size: 0.85rem; }
+.private-blackjack-warning { max-width: 24rem; padding: 0.6rem 0.75rem; border: 1px solid var(--gold); border-radius: 8px; }
+.private-blackjack-warning p { margin: 0 0 0.5rem; }
+.private-blackjack-claim p { margin: 0.4rem 0 0; max-width: 24rem; color: var(--muted); font-size: 0.85rem; }
+.private-blackjack-settlement { font-weight: 600; }

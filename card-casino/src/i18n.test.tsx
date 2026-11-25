@@ -53,6 +53,14 @@ describe('the two languages stay in step', () => {
     for (const key of keys) expect(placeholders(zhCN[key]), key).toEqual(placeholders(enGB[key]));
   });
 
+  it('has no text whose characters were lost and turned into question marks', () => {
+    // A file saved in the wrong encoding turns every non-ASCII character into "?": "Other player?s turn", "????".
+    for (const key of keys) {
+      expect(zhCN[key], key).not.toMatch(/\?\?/);
+      expect(enGB[key], key).not.toMatch(/[a-z]\?[a-z]/);
+    }
+  });
+
   it('offers exactly British English and Simplified Chinese, each named in its own language', () => {
     expect(LANGUAGES.map((l) => [l.id, l.label])).toEqual([
       ['en-GB', 'English (UK)'],
