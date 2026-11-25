@@ -16,6 +16,7 @@ import { Slots } from './games/Slots';
 import { GameNav } from './components/GameNav';
 import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
+import { DisplayName } from './components/DisplayName';
 import { AdminPanel } from './components/AdminPanel';
 import { AdminGate } from './components/AdminGate';
 import { Leaderboard } from './components/Leaderboard';
@@ -278,14 +279,14 @@ export function App() {
   };
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [sort, setSort] = useState<SortOrder>('default');
-  const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin' | 'leaderboard'>('game');
+  const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin' | 'leaderboard' | 'display-name'>('game');
   // Time spent playing, for the stats: only counted while a game is showing, not the rules or the leaderboard.
   usePlaytime(activeId, view === 'game');
   const showRules = view !== 'game';
   /** Set once the admin password has been entered. It lasts until the page is reloaded or you log out. */
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   /** Clicking the button for the page you're already on takes you back to the games. */
-  const toggleView = (target: 'rules' | 'updates' | 'admin' | 'leaderboard') => setView((v) => (v === target ? 'game' : target));
+  const toggleView = (target: 'rules' | 'updates' | 'admin' | 'leaderboard' | 'display-name') => setView((v) => (v === target ? 'game' : target));
   /** The games with their names, blurbs and history in the chosen language. The facts stay as they are: filters match on them. */
   const games = GAMES.map((g) => ({
     ...g,
@@ -296,7 +297,7 @@ export function App() {
   const active = games.find((g) => g.id === activeId)!;
 
   /** Everything that used to sit along the top of the screen. The page you're on turns into "Back to game". */
-  const page = (target: 'updates' | 'leaderboard' | 'rules' | 'admin', label: string): MenuItem => ({
+  const page = (target: 'updates' | 'leaderboard' | 'rules' | 'admin' | 'display-name', label: string): MenuItem => ({
     id: target,
     label: view === target ? t('menu.back') : label,
     current: view === target,
@@ -308,6 +309,7 @@ export function App() {
     // A placeholder for now: the shop isn't built yet.
     { id: 'shop', label: t('menu.shop'), disabled: true, onSelect: () => {} },
     page('rules', t('menu.rules')),
+    page('display-name', t('nameChange.title')),
     ...(session.user.isAdmin ? [page('admin', t('menu.admin'))] : []),
     ...LANGUAGES.map(
       ({ id, label }, i): MenuItem => ({
@@ -348,6 +350,7 @@ export function App() {
         />
       )}
       {view === 'updates' && <UpdateLog />}
+      {view === 'display-name' && <DisplayName />}
       {view === 'leaderboard' && <Leaderboard />}
       {view === 'admin' && session.user.isAdmin && (adminUnlocked ? <AdminPanel /> : <AdminGate onUnlock={() => setAdminUnlocked(true)} onCancel={() => setView('game')} />)}
 

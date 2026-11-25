@@ -6,6 +6,23 @@ import { rulesEn } from './rules';
  * `{name}` marks a value that is filled in when the text is shown.
  */
 export const enGB = {
+  "nameChange.title": "Change display name",
+  "nameChange.loading": "Loading name settings…",
+  "nameChange.label": "New display name",
+  "nameChange.hint": "Use 3–20 letters, digits, spaces, underscores or hyphens.",
+  "nameChange.cost": "A change costs {cost} practice coins.",
+  "nameChange.next": "Next change available: {date}",
+  "nameChange.submit": "Change name",
+  "nameChange.confirm": "Change your name to {name} for {cost} practice coins?",
+  "nameChange.confirmButton": "Confirm and pay",
+  "nameChange.cancel": "Cancel",
+  "nameChange.saving": "Changing name…",
+  "nameChange.saved": "Your display name has been changed.",
+  "nameChange.invalid": "Choose a valid name with 3–20 permitted characters and no blocked words.",
+  "nameChange.taken": "That display name is already taken.",
+  "nameChange.same": "That is already your display name.",
+  "nameChange.notEnough": "You do not have enough practice coins for this change.",
+  "nameChange.tooSoon": "You cannot change your name again yet.",
   "dashboard.title": "Your games",
   "dashboard.favourites": "Favourites",
   "dashboard.recent": "Recently played",

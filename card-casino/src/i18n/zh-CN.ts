@@ -3,6 +3,23 @@ import { rulesZh } from './rules.zh';
 
 /** Simplified Chinese. It must have every key that `en-GB.ts` has, and use the same {values}. */
 export const zhCN: Record<MessageKey, string> = {
+  "nameChange.title": "更改显示名称",
+  "nameChange.loading": "正在加载名称设置…",
+  "nameChange.label": "新的显示名称",
+  "nameChange.hint": "使用 3–20 个字母、数字、空格、下划线或连字符。",
+  "nameChange.cost": "更改一次需要 {cost} 个练习币。",
+  "nameChange.next": "下次可更改时间：{date}",
+  "nameChange.submit": "更改名称",
+  "nameChange.confirm": "花费 {cost} 个练习币将名称改为 {name}？",
+  "nameChange.confirmButton": "确认并支付",
+  "nameChange.cancel": "取消",
+  "nameChange.saving": "正在更改名称…",
+  "nameChange.saved": "显示名称已更改。",
+  "nameChange.invalid": "请输入 3–20 个允许的字符，且不能包含禁用词。",
+  "nameChange.taken": "该显示名称已被使用。",
+  "nameChange.same": "这已经是你的显示名称。",
+  "nameChange.notEnough": "你的练习币不足以更改名称。",
+  "nameChange.tooSoon": "现在还不能再次更改名称。",
   "dashboard.title": "我的游戏",
   "dashboard.favourites": "收藏",
   "dashboard.recent": "最近玩过",
