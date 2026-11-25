@@ -27,6 +27,7 @@ export interface WalletValue {
   settle(returned: number): void;
   /** Saves any change to the server right now. */
   flush(): Promise<void>;
+  applyExternalChange?: <T extends { balance: number; version: number }>(operation: () => Promise<T>) => Promise<T>;
   /** Saves any change, then shows the balance the server holds, for when it was changed from outside (an admin gift). */
   refresh(): Promise<void>;
   /** `failed` while the latest balance has not reached the server yet. */
@@ -117,6 +118,11 @@ export function WalletProvider({ children, saveDelayMs }: { children: ReactNode;
       if (err instanceof ApiError && err.status === 401) logout();
     }
   }, [logout]);
+  const applyExternalChange = useCallback(<T extends { balance: number; version: number },>(operation: () => Promise<T>): Promise<T> => {
+    const sync = syncRef.current;
+    if (!sync) return Promise.reject(new Error('Wallet is not ready'));
+    return sync.applyExternalChange(operation);
+  }, []);
   const dismissNotice = useCallback(() => syncRef.current?.clearNotice(), []);
 
   const value = useMemo<WalletValue>(
@@ -125,12 +131,13 @@ export function WalletProvider({ children, saveDelayMs }: { children: ReactNode;
       wager,
       settle,
       flush,
+      applyExternalChange,
       refresh,
       status: state.status,
       notice: state.notice,
       dismissNotice,
     }),
-    [state.balance, state.status, state.notice, wager, settle, flush, refresh, dismissNotice],
+    [state.balance, state.status, state.notice, wager, settle, flush, applyExternalChange, refresh, dismissNotice],
   );
 
   if (!state.loaded) {
