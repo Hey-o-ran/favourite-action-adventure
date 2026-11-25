@@ -65,6 +65,7 @@ export function loadSession(now: number = Date.now()): Session | null {
 export interface SessionContextValue {
   session: Session;
   logout: () => void;
+  updateDisplayName?: (displayName: string) => void;
 }
 
 export const SessionContext = createContext<SessionContextValue | null>(null);

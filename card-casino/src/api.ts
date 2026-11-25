@@ -337,3 +337,18 @@ export type LeaderboardPeriod = 'day' | 'month' | 'all';
 
 export const getLeaderboard = async (token: string, period: LeaderboardPeriod = 'all') =>
   (await request<LeaderboardResponse>('GET', `/v1/leaderboard?period=${period}&wallet=ranked`, undefined, token))!;
+
+/** Display-name settings and the authoritative result of a name change. */
+export interface DisplayNameSettings {
+  displayName: string;
+  cost: number;
+  nextChangeAt: string | null;
+}
+export interface DisplayNameChange extends DisplayNameSettings {
+  balance: number;
+  version: number;
+}
+export const getDisplayName = async (token: string): Promise<DisplayNameSettings> =>
+  (await request<DisplayNameSettings>('GET', '/v1/me/display-name', undefined, token))!;
+export const changeDisplayName = async (token: string, displayName: string): Promise<DisplayNameChange> =>
+  (await request<DisplayNameChange>('PUT', '/v1/me/display-name', { displayName }, token))!;

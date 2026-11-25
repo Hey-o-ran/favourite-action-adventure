@@ -276,3 +276,31 @@ describe('when saving fails', () => {
     expect(save).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('server-side charges', () => {
+  it('preserves play during the charge and saves it against the returned version', async () => {
+    const { sync, api } = setup();
+    await sync.load();
+    let finish!: (value: { balance: number; version: number }) => void;
+    const operation = vi.fn(() => new Promise<{ balance: number; version: number }>((resolve) => { finish = resolve; }));
+    const changing = sync.applyExternalChange(operation);
+    await vi.waitFor(() => expect(operation).toHaveBeenCalled());
+    sync.set(900);
+    await vi.advanceTimersByTimeAsync(600);
+    expect(api.save).not.toHaveBeenCalled();
+    finish({ balance: 500, version: 1 });
+    await changing;
+    expect(sync.state).toMatchObject({ balance: 400, version: 1 });
+    await vi.advanceTimersByTimeAsync(500);
+    expect(api.save).toHaveBeenCalledWith(400, 1, undefined);
+  });
+
+  it('does not charge when pending balance changes failed to save', async () => {
+    const { sync } = setup({ save: vi.fn().mockRejectedValue(new Error('offline')) } as never);
+    await sync.load();
+    sync.set(900);
+    const operation = vi.fn();
+    await expect(sync.applyExternalChange(operation)).rejects.toThrow();
+    expect(operation).not.toHaveBeenCalled();
+  });
+});

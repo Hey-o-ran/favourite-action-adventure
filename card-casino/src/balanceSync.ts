@@ -40,6 +40,7 @@ export class BalanceSync {
   private inFlight?: Promise<void>;
   private failures = 0;
   private disposed = false;
+  private externalPending?: Promise<void>;
 
   constructor(
     private readonly api: BalanceApi,
@@ -82,9 +83,30 @@ export class BalanceSync {
   /** Saves right now (used on logout and when the page is closing). */
   async flush(options?: { keepalive?: boolean }): Promise<void> {
     this.clearTimers();
+    if (this.externalPending) await this.externalPending;
     if (this.inFlight) await this.inFlight;
     this.clearTimers();
     await this.save(options);
+  }
+
+  /** Serialises a server-side charge with balance saves while retaining play during the request. */
+  async applyExternalChange<T extends { balance: number; version: number }>(operation: () => Promise<T>): Promise<T> {
+    await this.flush();
+    if (this.externalPending || this.current.status !== 'saved' || this.unsaved !== 0) {
+      throw new Error('Balance changes must be saved before this operation');
+    }
+    let release!: () => void;
+    this.externalPending = new Promise<void>((resolve) => { release = resolve; });
+    this.clearTimers();
+    try {
+      const result = await operation();
+      this.adopt(result.balance, result.version, this.unsaved);
+      return result;
+    } finally {
+      this.externalPending = undefined;
+      release();
+      this.scheduleSave();
+    }
   }
 
   dispose(): void {
@@ -111,6 +133,7 @@ export class BalanceSync {
   }
 
   private save(options?: { keepalive?: boolean }): Promise<void> {
+    if (this.externalPending) return Promise.resolve();
     if (this.inFlight) return this.inFlight;
     if (this.current.balance === this.savedBalance) return Promise.resolve();
 

@@ -48,7 +48,16 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(timer);
   }, [session, logout]);
 
-  const value = useMemo(() => (session ? { session, logout } : null), [session, logout]);
+  const updateDisplayName = useCallback((displayName: string) => {
+    setSession((current) => {
+      if (!current) return current;
+      const next = { ...current, user: { ...current.user, displayName } };
+      saveSession(next);
+      return next;
+    });
+  }, []);
+
+  const value = useMemo(() => (session ? { session, logout, updateDisplayName } : null), [session, logout, updateDisplayName]);
 
   if (value) return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
   if (ban) return <BanNotice ban={ban} onBack={() => setBan(null)} />;
