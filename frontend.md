@@ -10,7 +10,7 @@ This is a working list of frontend ideas, not a commitment to implement every it
 
 - [ ] Issue #79: Show and dismiss the signed-in update banner with bilingual text and tests.
 
-- [ ] Issue #83: Verify the display-name screen at a real phone-width viewport in English and Chinese, and investigate the App test timeout before opening its PR.
+- [ ] Issue #83: Verify the display-name confirmation at 360 px in English and Chinese with a 20-character name. Two headless Edge runs could not complete the check. Recheck the App tests before opening the screen PR.
 
 - [ ] Verify the deployed update log and Shengji picker in both languages when live access is available.
 
