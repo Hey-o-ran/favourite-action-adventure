@@ -11,6 +11,8 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-25 · Claude Code (Sonnet 5.5) · repo housekeeping · Deleted the leftover branches blackjack-room-handoff, shengji-bots, landlord-screen and login-and-admin-panel (all merged or superseded) and two finished worktrees.
+
 - 2026-11-24 · Claude Code (Sonnet 5.5) · followups-rules-log · Added a frontend.md task for a phone-width check of the new rules tables, and ticked the update log task done in #78.
 
 - 2026-11-25 · Claude Code (Sonnet 5.5) · rules-tables-2 · Added tables to the Landlord (plays, multiplier and score) and Shengji (trump order, levels, payouts) rules pages, English and Chinese; replaces closed #87.
