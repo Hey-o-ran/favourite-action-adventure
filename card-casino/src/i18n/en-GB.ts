@@ -6,6 +6,9 @@ import { rulesEn } from './rules';
  * `{name}` marks a value that is filled in when the text is shown.
  */
 export const enGB = {
+  "playerUpdate.title": "UPDATE!",
+  "playerUpdate.dismiss": "Dismiss update",
+  "playerUpdate.error": "Could not dismiss the update. Please try again.",
   "dashboard.title": "Your games",
   "dashboard.favourites": "Favourites",
   "dashboard.recent": "Recently played",

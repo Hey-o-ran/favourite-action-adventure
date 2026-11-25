@@ -664,3 +664,6 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
   .game-nav button, .personal-games > button { min-height: 44px; }
   .personal-games { padding: 0.75rem; }
 }
+
+.player-update { overflow-wrap: anywhere; }
+.player-update .abuse-message { min-width: 0; }

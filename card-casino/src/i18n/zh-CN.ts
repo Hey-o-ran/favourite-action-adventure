@@ -3,6 +3,9 @@ import { rulesZh } from './rules.zh';
 
 /** Simplified Chinese. It must have every key that `en-GB.ts` has, and use the same {values}. */
 export const zhCN: Record<MessageKey, string> = {
+  "playerUpdate.title": "更新！",
+  "playerUpdate.dismiss": "关闭更新",
+  "playerUpdate.error": "无法关闭更新，请重试。",
   "dashboard.title": "我的游戏",
   "dashboard.favourites": "收藏",
   "dashboard.recent": "最近玩过",
