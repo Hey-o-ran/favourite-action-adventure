@@ -42,6 +42,35 @@ const Note = ({ x, y, children, anchor = 'middle' }: { x: number; y: number; chi
 /** The keys `<prefix>.1`, `<prefix>.2` ... `<prefix>.<count>` in the dictionary. */
 const keys = (prefix: string, count: number) => Array.from({ length: count }, (_, i) => `${prefix}.${i + 1}` as MessageKey);
 
+/**
+ * A table of numbered rows, with two texts each: `${prefix}.1.a` and `${prefix}.1.b`, and so on.
+ * With `head`, the first row of texts is `${prefix}.head.a` and `${prefix}.head.b`.
+ */
+function RulesTable({ prefix, count, head }: { prefix: string; count: number; head?: boolean }) {
+  const { t } = useI18n();
+  const cell = (row: number | 'head', col: 'a' | 'b') => t(`${prefix}.${row}.${col}` as MessageKey);
+  return (
+    <table className="paytable rulestable">
+      {head && (
+        <thead>
+          <tr>
+            <th>{cell('head', 'a')}</th>
+            <th>{cell('head', 'b')}</th>
+          </tr>
+        </thead>
+      )}
+      <tbody>
+        {Array.from({ length: count }, (_, i) => i + 1).map((row) => (
+          <tr key={row}>
+            <td>{cell(row, 'a')}</td>
+            <td>{cell(row, 'b')}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 /** A bullet list of texts with **bold** parts. */
 function Items({ prefix, count, values }: { prefix: string; count: number; values?: Record<string, string> }) {
   const { tb } = useI18n();
@@ -328,6 +357,11 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
       <Section title={title('shengji')} diagram={null}>
         <h3>{t('rules.how')}</h3>
         <Items prefix="rules.shengji.how" count={9} />
+        <h3>{t('rules.shengji.trumps.title')}</h3>
+        <RulesTable prefix="rules.shengji.trumps" count={5} />
+        <h3>{t('rules.shengji.levels.title')}</h3>
+        <RulesTable prefix="rules.shengji.levels" count={7} head />
+        <RulesTable prefix="rules.shengji.pays" count={3} head />
         <h3>{t('rules.tips')}</h3>
         <Items prefix="rules.shengji.tip" count={5} />
       </Section>
@@ -336,6 +370,10 @@ export function Rules({ games, gameId, onSelect, filters, onFiltersChange, sort,
       <Section title={title('landlord')} diagram={null}>
         <h3>{t('rules.how')}</h3>
         <Items prefix="rules.landlord.how" count={10} />
+        <h3>{t('rules.landlord.plays.title')}</h3>
+        <RulesTable prefix="rules.landlord.plays" count={9} />
+        <h3>{t('rules.landlord.score.title')}</h3>
+        <RulesTable prefix="rules.landlord.score" count={6} />
         <h3>{t('rules.tips')}</h3>
         <Items prefix="rules.landlord.tip" count={5} />
       </Section>
