@@ -50,4 +50,4 @@ The first change is scoped to game navigation CSS, not individual game tables. S
 - [x] Added bilingual update log entries for Landlord, Shengji, leaderboard stats and game finder improvements (#77).
 - [ ] Check Shengji in the game picker in a real browser (#77).
 - [ ] For local frontend tests on this machine, run npx vitest run --pool=forks --poolOptions.forks.minForks=1 --poolOptions.forks.maxForks=3 to avoid worker hangs.
-- [ ] Browser check at phone width, and in Chinese, of the new Landlord and Shengji rules tables (`.rulestable` style, PRs #81 and #87); fix the table layout if the text overflows.
+- [ ] Check the new Landlord and Shengji rules tables (`.rulestable` style, PRs #81 and #87) inside the running app on a real phone. A 390px render of the Rules page in Chrome, in English and Chinese, showed no overflow; the full app, login and menu were not checked.
