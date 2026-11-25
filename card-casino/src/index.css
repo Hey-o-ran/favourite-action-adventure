@@ -322,6 +322,13 @@ button.primary {
 .paytable { border-collapse: collapse; margin: 8px 0; min-width: 240px; }
 .paytable td { padding: 3px 14px 3px 0; color: var(--ink); }
 .paytable td:last-child { color: var(--gold); text-align: right; padding-right: 0; }
+/* A rules table of words rather than payouts: the text stays left-aligned and wraps on a phone. */
+.rules-section .paytable.rulestable { width: 100%; max-width: 560px; min-width: 0; }
+.rules-section .paytable.rulestable th { padding: 3px 14px 3px 0; text-align: left; color: var(--muted); font-weight: 600; border-bottom: 1px solid #ffffff1a; }
+.rules-section .paytable.rulestable td { padding: 6px 14px 6px 0; vertical-align: top; border-bottom: 1px solid #ffffff1a; }
+.rules-section .paytable.rulestable td:first-child { font-weight: 600; width: 38%; }
+.rules-section .paytable.rulestable td:last-child { color: var(--ink); text-align: left; padding-right: 0; }
+.rules-section .paytable.rulestable + .paytable.rulestable { margin-top: 18px; }
 
 .updates { display: grid; gap: 14px; }
 .updates h2 { margin: 0; color: var(--gold); }
