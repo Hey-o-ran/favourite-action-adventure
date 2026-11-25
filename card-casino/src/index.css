@@ -679,3 +679,5 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .private-blackjack-warning p { margin: 0 0 0.5rem; }
 .private-blackjack-claim p { margin: 0.4rem 0 0; max-width: 24rem; color: var(--muted); font-size: 0.85rem; }
 .private-blackjack-settlement { font-weight: 600; }
+.player-update { overflow-wrap: anywhere; }
+.player-update .abuse-message { min-width: 0; }

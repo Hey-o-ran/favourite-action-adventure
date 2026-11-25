@@ -21,6 +21,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { AdminGate } from './components/AdminGate';
 import { Leaderboard } from './components/Leaderboard';
 import { AnnouncementBar } from './components/AnnouncementBar';
+import { PlayerUpdateBanner } from './components/PlayerUpdateBanner';
 import { SaveStatus } from './components/SaveStatus';
 import { GameScope, usePlaytime } from './statsRecorder';
 import { HeaderMenu, type MenuItem } from './components/HeaderMenu';
@@ -325,6 +326,7 @@ export function App() {
   return (
     <div className="app">
       <AnnouncementBar />
+      <PlayerUpdateBanner />
       <header>
         <h1>{t('header.title')}</h1>
         <div className="header-actions">
