@@ -417,3 +417,9 @@ export const claimPrivateBlackjackForfeit = async (token: string, code: string) 
 /** When a TOO_EARLY claim could be made (milliseconds since 1970), or undefined if the error says nothing. */
 export const claimableAtOf = (err: unknown): number | undefined =>
   err instanceof ApiError && err.code === 'TOO_EARLY' && typeof err.details?.claimableAt === 'number' ? err.details.claimableAt : undefined;
+/** The update awaiting this player's acknowledgement, if any. */
+export interface PlayerUpdate { version: string; message: string }
+export const getPlayerUpdate = async (token: string) =>
+  (await request<{ update: PlayerUpdate | null }>('GET', '/v1/me/update', undefined, token))!;
+export const dismissPlayerUpdate = async (token: string, version: string) =>
+  request<void>('POST', `/v1/me/update/${encodeURIComponent(version)}/dismiss`, undefined, token);
