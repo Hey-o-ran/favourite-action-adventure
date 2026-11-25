@@ -11,6 +11,8 @@ This is a working list of frontend ideas, not a commitment to implement every it
 
 - [ ] Issue #79: Build and phone-check the signed-in update banner using the update API client.
 
+- [ ] Issue #79: Verify the update banner at a real phone-width viewport in English and Chinese, and run the full suite before opening its PR.
+
 ## Candidate next features
 
 - [ ] More guided first-game tutorials, starting with another game after checking which players find difficult. Follow the existing optional Blackjack guide and support both languages.
