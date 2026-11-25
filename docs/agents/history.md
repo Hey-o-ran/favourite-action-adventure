@@ -11,6 +11,8 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-25 · Claude Code (Haiku 5.5) · player-profile-plan · Agreed the player profile design (last-online, profile page, clickable names), filed #95 and battle-bricks-backliners #56, and added the keep-cheap rule to AGENTS.md and CLAUDE.md.
+
 - 2026-11-25 · Claude Code (Sonnet 5.5) · repo housekeeping · Deleted the leftover branches blackjack-room-handoff, shengji-bots, landlord-screen and login-and-admin-panel (all merged or superseded) and two finished worktrees.
 
 - 2026-11-24 · Claude Code (Sonnet 5.5) · followups-rules-log · Added a frontend.md task for a phone-width check of the new rules tables, and ticked the update log task done in #78.

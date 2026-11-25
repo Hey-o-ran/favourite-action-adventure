@@ -7,6 +7,7 @@ This is a working list of frontend ideas, not a commitment to implement every it
 - [x] Improve narrow-screen game finder filters and shortcut touch targets (issue #60). The filters use a two-column layout on small screens; game shortcuts and controls have larger touch targets.
 - [x] Landlord, favourites, recent games, a Blackjack guide, and server-settled ranked Slots are present on main.
 - [ ] Verify the mobile game finder in a real browser at narrow widths, including long translated labels and keyboard navigation. The current change has not been visually checked in a browser.
+- [ ] Player profile page with last-online, rough time labels, clickable player names, and the free-coins wording change (issue #95). Waits for battle-bricks-backliners #56 (last-seen field and profile route).
 
 ## Candidate next features
 
