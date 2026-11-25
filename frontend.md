@@ -1,4 +1,4 @@
-﻿# Frontend priorities and handoff
+# Frontend priorities and handoff
 
 This is a working list of frontend ideas, not a commitment to implement every item. Check open GitHub issues and claims before starting work.
 
@@ -7,6 +7,8 @@ This is a working list of frontend ideas, not a commitment to implement every it
 - [x] Improve narrow-screen game finder filters and shortcut touch targets (issue #60). The filters use a two-column layout on small screens; game shortcuts and controls have larger touch targets.
 - [x] Landlord, favourites, recent games, a Blackjack guide, and server-settled ranked Slots are present on main.
 - [ ] Verify the mobile game finder in a real browser at narrow widths, including long translated labels and keyboard navigation. The current change has not been visually checked in a browser.
+
+- [ ] Issue #79: Build and phone-check the signed-in update banner using the update API client.
 
 ## Candidate next features
 
