@@ -19,6 +19,7 @@ This repo is worked on by several AI agents at once (Claude Code and Codex sessi
 - **Never run `deploy.yml` or trigger a deployment.** Deploys are owned by the repo owner. Merging to `main` starts `deploy.yml` when the change touches `card-casino/**` or `.github/workflows/deploy.yml`, so those changes count as deploys.
 - **Never commit secrets.** No passwords, API keys, account IDs or login details go into any file in the repo, including this one, issues, PRs, or commit messages. If you see one in the repo, tell the owner rather than copying it anywhere.
 - **Both languages.** Put every player-facing text into both `card-casino/src/i18n/en-GB.ts` and `card-casino/src/i18n/zh-CN.ts`.
+- **New games must be unlike the existing ones.** Check the game list in `card-casino/src/App.tsx` first. A new game must be popular and well known (see `FEATURE-CHECKLIST.md`) and use a mechanic the site doesn't have yet. Another blackjack, poker or solitaire variant is not a new game; extend the existing one instead.
 - **The server decides results and money.** The browser never decides ranked results, balances or settlement. Show what the backend returns.
 - **No new dependencies without approval.** Don't add a package to `card-casino/` without the owner's OK, and say why you need it.
 - **Narrow widths for UI changes.** Check the screen at phone width, including long translated labels, before you open the PR.

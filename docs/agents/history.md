@@ -11,6 +11,7 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-26 · Claude Code (Haiku 5.5) · game-ideas-and-priority · Put game features first in `frontend.md` with five game ideas that use new mechanics, and added an `AGENTS.md` rule that new games must be unlike the existing ones.
 - 2026-11-26 · Claude Code (Sonnet 5.5) · blackjack-stakes (backend #52) · Private blackjack now uses `awaiting` and `claimableAt` from the room and has a "Check the room" button that previews an invite's stake before joining (needs backend PR #58 deployed).
 - 2026-11-25 · Claude Code (Sonnet 5.5) · blackjack-stakes · Added the stake picker, leave warning, claim button and balance reload to private blackjack (backend issue #52), and fixed the lobby text that lost its characters (English `?`, Chinese `?????`).
 
