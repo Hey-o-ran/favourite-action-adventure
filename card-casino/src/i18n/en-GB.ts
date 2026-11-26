@@ -33,6 +33,7 @@ export const enGB = {
   'privateBlackjack.stakeCoins': "{stake} coins each",
   'privateBlackjack.stakeHelp': "Each player puts in the stake from their practice coins, and the winner takes the pot.",
   'privateBlackjack.joinStakeNote': "If the room has a stake, it is taken from your practice coins when you join.",
+  'privateBlackjack.checkRoom': "Check the room",
   'privateBlackjack.stakeLine': "Stake: {stake} coins each, pot {pot} coins",
   'privateBlackjack.leaveRoom': "Leave room",
   'privateBlackjack.leaveWarning': "Leaving now forfeits the match, and the other player takes the whole pot.",

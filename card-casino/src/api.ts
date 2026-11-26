@@ -360,6 +360,9 @@ export interface PrivateBlackjackRoom {
   /** Practice coins each player put in. 0 for a free room. */
   stake?: number;
   settlement?: PrivateBlackjackSettlement;
+  /** While a match is live: the user id of the player who must act, and when the other player may claim the win (milliseconds since 1970). Left out otherwise. */
+  awaiting?: string;
+  claimableAt?: number;
   version?: number;
   roundNumber?: number;
   scores?: [number, number];
@@ -379,6 +382,20 @@ const blackjackRoomPath = (code: string) => blackjackRoomsPath + '/' + encodeURI
 /** A free room sends no stake. A staked room takes the host's stake from the practice wallet straight away. */
 export const createPrivateBlackjackRoom = async (token: string, mode: PrivateBlackjackMode, stake = 0) =>
   (await request<PrivateBlackjackRoom>('POST', blackjackRoomsPath, stake > 0 ? { mode, stake } : { mode }, token))!;
+
+/** What an invite shows before anyone joins. `joined` is true if the caller already holds the guest seat. */
+export interface PrivateBlackjackPreview {
+  code: string;
+  mode: PrivateBlackjackMode;
+  /** Practice coins each player puts in. 0 for a free room. */
+  stake: number;
+  expiresAt: number;
+  joined: boolean;
+}
+
+/** Looks at an invite without joining or paying. Fails with 404 for a room that cannot be joined. Throttled, so call it on demand. */
+export const previewPrivateBlackjackRoom = async (token: string, code: string) =>
+  (await request<PrivateBlackjackPreview>('GET', blackjackRoomPath(code) + '/preview', undefined, token))!;
 
 export const joinPrivateBlackjackRoom = async (token: string, code: string) =>
   (await request<PrivateBlackjackRoom>('POST', blackjackRoomPath(code) + '/join', undefined, token))!;

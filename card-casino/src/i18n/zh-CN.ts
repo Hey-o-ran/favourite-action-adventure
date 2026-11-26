@@ -30,6 +30,7 @@ export const zhCN: Record<MessageKey, string> = {
   'privateBlackjack.stakeCoins': "每人 {stake} 金币",
   'privateBlackjack.stakeHelp': "每位玩家从练习金币中拿出赌注，赢家拿走奖池。",
   'privateBlackjack.joinStakeNote': "如果房间有赌注，加入时会从你的练习金币中扣除。",
+  'privateBlackjack.checkRoom': "查看房间",
   'privateBlackjack.stakeLine': "赌注：每人 {stake} 金币，奖池 {pot} 金币",
   'privateBlackjack.leaveRoom': "离开房间",
   'privateBlackjack.leaveWarning': "现在离开会放弃这场比赛，对方将拿走全部奖池。",

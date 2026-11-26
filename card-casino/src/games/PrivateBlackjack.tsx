@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ApiError, claimableAtOf, claimPrivateBlackjackForfeit, createPrivateBlackjackRoom, getPrivateBlackjackRoom, joinPrivateBlackjackRoom,
-  leavePrivateBlackjackRoom, MAX_BLACKJACK_STAKE, MIN_BLACKJACK_STAKE, playPrivateBlackjack,
-  type PrivateBlackjackAction, type PrivateBlackjackHand, type PrivateBlackjackMode, type PrivateBlackjackRoom,
+  leavePrivateBlackjackRoom, MAX_BLACKJACK_STAKE, MIN_BLACKJACK_STAKE, playPrivateBlackjack, previewPrivateBlackjackRoom,
+  type PrivateBlackjackAction, type PrivateBlackjackHand, type PrivateBlackjackMode, type PrivateBlackjackPreview, type PrivateBlackjackRoom,
 } from '../api';
 import { CardView } from '../components/CardView';
 import { useI18n, type MessageKey } from '../i18n';
@@ -70,11 +70,14 @@ function PrivateBlackjack({ userId, token, active, onUnauthorized, balance, flus
   const [mode, setMode] = useState<PrivateBlackjackMode>('dealer');
   const [stake, setStake] = useState(0);
   const [room, setRoom] = useState<PrivateBlackjackRoom>();
+  // What the invite typed in the join form shows, once checked. It only counts while the typed code is still that one.
+  const [preview, setPreview] = useState<PrivateBlackjackPreview>();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<MessageKey>();
   // Leaving mid-match forfeits it, so the first press only asks.
   const [confirmingLeave, setConfirmingLeave] = useState(false);
-  // When the server will accept a claim (milliseconds since 1970), learned from a claim that came too early.
+  // When the server will accept a claim (milliseconds since 1970), learned from a claim that came too early. Only a fallback:
+  // a room response with `claimableAt` says it without a failed claim.
   const [claimableAt, setClaimableAt] = useState<number>();
   const [now, setNow] = useState(() => Date.now());
   // The settlement we already reloaded the balance for, so it happens once per match.
@@ -132,11 +135,32 @@ function PrivateBlackjack({ userId, token, active, onUnauthorized, balance, flus
     setConfirmingLeave(false);
   }, [code, room?.version]);
 
+  // The server says who must act and when a claim will work; before it does, we rely on the TOO_EARLY reply.
+  const awaitingOther = room?.awaiting !== undefined && room.awaiting !== userId;
+  const claimDeadline = (awaitingOther ? room?.claimableAt : undefined) ?? claimableAt;
   useEffect(() => {
-    if (claimableAt === undefined || claimableAt <= Date.now()) return;
+    if (claimDeadline === undefined || claimDeadline <= Date.now()) return;
+    setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
-  }, [claimableAt]);
+  }, [claimDeadline]);
+
+  async function checkRoom(invitation: string) {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setBusy(true);
+    setMessage(undefined);
+    setPreview(undefined);
+    try {
+      setPreview(await previewPrivateBlackjackRoom(token, invitation));
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) onUnauthorized();
+      else setMessage(error instanceof ApiError && error.status === 404 ? 'privateBlackjack.unavailable' : 'privateBlackjack.connection');
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
+  }
 
   /**
    * Sends one request about the room. `coins` is for requests that take a stake out of the practice wallet or
@@ -210,8 +234,13 @@ function PrivateBlackjack({ userId, token, active, onUnauthorized, balance, flus
   const ownHand = round?.turn === seat && !round.over ? round.players[seat][round.hand] : undefined;
   const canSplit = ownHand?.cards.length === 2 && ownHand.cards[0].rank === ownHand.cards[1].rank && round!.players[seat].length < 4;
   // The other player holds the move: it is their turn, or between rounds when the host must deal (and we are the guest).
-  const opponentToMove = matchOn && !!room?.guest && room.mode === 'competitive' && (round!.over ? !isHost : round!.turn !== seat);
-  const claimWait = claimableAt === undefined ? 0 : Math.max(0, claimableAt - now);
+  // The server's `awaiting` wins when it sends one; the board is the fallback for a server that does not.
+  const opponentToMove = matchOn && !!room?.guest && room.mode === 'competitive'
+    && (room.awaiting !== undefined ? awaitingOther : round!.over ? !isHost : round!.turn !== seat);
+  const claimWait = claimDeadline === undefined ? 0 : Math.max(0, claimDeadline - now);
+  const invitePreview = preview?.code === normalized ? preview : undefined;
+  const previewStake = invitePreview?.stake ?? 0;
+  const cannotCover = previewStake > balance;
   const roomStake = room?.stake ?? 0;
   const settlement = room?.settlement;
   const settlementText: MessageKey | undefined = !settlement ? undefined
@@ -265,7 +294,18 @@ function PrivateBlackjack({ userId, token, active, onUnauthorized, balance, flus
           <input value={invite} onChange={event => setInvite(event.target.value)} autoComplete="off" spellCheck={false} />
         </label>
         <p className="private-blackjack-note">{t('privateBlackjack.joinStakeNote')}</p>
-        <button type="submit" disabled={busy || !validCode.test(normalized)}>{t('privateBlackjack.join')}</button>
+        {invitePreview && <p role="status" className="private-blackjack-preview">
+          {t(invitePreview.mode === 'competitive' ? 'privateBlackjack.competitiveMode' : 'privateBlackjack.dealerMode')}
+          {' · '}
+          {previewStake > 0 ? t('privateBlackjack.stakeLine', { stake: previewStake, pot: previewStake * 2 }) : t('privateBlackjack.stakeFree')}
+          {cannotCover && ' ' + t('privateBlackjack.notEnough')}
+        </p>}
+        <div className="actions">
+          <button type="button" disabled={busy || !validCode.test(normalized)} onClick={() => void checkRoom(normalized)}>
+            {t('privateBlackjack.checkRoom')}
+          </button>
+          <button type="submit" disabled={busy || !validCode.test(normalized) || cannotCover}>{t('privateBlackjack.join')}</button>
+        </div>
       </form>
     </> : <>
       <p>{t('privateBlackjack.invite')} <code>{code}</code></p>

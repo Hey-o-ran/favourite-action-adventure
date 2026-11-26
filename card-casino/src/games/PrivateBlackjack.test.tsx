@@ -199,6 +199,75 @@ test('a claim that comes too early counts down to when it will work', async () =
   expect(claim).toHaveBeenCalledTimes(1);
 });
 
+test('counts down to the deadline the room response carries, without a failed claim', async () => {
+  const waiting = { ...activeRoom, awaiting: 'host', claimableAt: Date.now() + 90_000 };
+  vi.spyOn(api, 'getPrivateBlackjackRoom').mockResolvedValue(waiting);
+  vi.spyOn(api, 'joinPrivateBlackjackRoom').mockResolvedValue(waiting);
+  const claim = vi.spyOn(api, 'claimPrivateBlackjackForfeit');
+  open('guest');
+  fireEvent.change(screen.getByLabelText('Invite code'), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Join room' }));
+  expect(await screen.findByText('The other player still has time to move. You can claim in 1:30.')).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Claim the win' })).toBeDisabled();
+  expect(claim).not.toHaveBeenCalled();
+});
+
+test('trusts the server about whose move it is, and offers the claim once the deadline has passed', async () => {
+  // The board says it is the host's turn, but the server says the guest must act: no claim for the guest.
+  const mine = { ...activeRoom, awaiting: 'guest', claimableAt: Date.now() + 90_000 };
+  vi.spyOn(api, 'getPrivateBlackjackRoom').mockResolvedValue(mine);
+  vi.spyOn(api, 'joinPrivateBlackjackRoom').mockResolvedValue(mine);
+  open('guest');
+  fireEvent.change(screen.getByLabelText('Invite code'), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Join room' }));
+  expect(await screen.findByText('Other player’s turn.')).toBeVisible();
+  expect(screen.queryByRole('button', { name: 'Claim the win' })).not.toBeInTheDocument();
+  cleanup();
+  sessionStorage.clear();
+
+  const overdue = { ...activeRoom, awaiting: 'host', claimableAt: Date.now() - 1000 };
+  vi.spyOn(api, 'getPrivateBlackjackRoom').mockResolvedValue(overdue);
+  vi.spyOn(api, 'joinPrivateBlackjackRoom').mockResolvedValue(overdue);
+  open('guest');
+  fireEvent.change(screen.getByLabelText('Invite code'), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Join room' }));
+  expect(await screen.findByRole('button', { name: 'Claim the win' })).toBeEnabled();
+});
+
+test('shows the mode and stake of an invite before joining, without joining', async () => {
+  const preview = vi.spyOn(api, 'previewPrivateBlackjackRoom')
+    .mockResolvedValue({ code, mode: 'competitive', stake: 100, expiresAt: 4_000_000_000, joined: false });
+  const join = vi.spyOn(api, 'joinPrivateBlackjackRoom');
+  open('guest');
+  fireEvent.change(screen.getByLabelText('Invite code'), { target: { value: ' ' + code.toUpperCase() + ' ' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Check the room' }));
+  expect(await screen.findByText(/Stake: 100 coins each, pot 200 coins/)).toBeVisible();
+  expect(preview).toHaveBeenCalledWith('test-token', code);
+  expect(join).not.toHaveBeenCalled();
+  expect(screen.getByRole('button', { name: 'Join room' })).toBeEnabled();
+  // Typing another code drops what was shown for the first one.
+  fireEvent.change(screen.getByLabelText('Invite code'), { target: { value: 'b'.repeat(32) } });
+  expect(screen.queryByText(/Stake: 100 coins each/)).not.toBeInTheDocument();
+});
+
+test('does not let a player join an invite whose stake they cannot cover', async () => {
+  vi.spyOn(api, 'previewPrivateBlackjackRoom')
+    .mockResolvedValue({ code, mode: 'competitive', stake: 500, expiresAt: 4_000_000_000, joined: false });
+  open('guest', 100);
+  fireEvent.change(screen.getByLabelText('Invite code'), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Check the room' }));
+  expect(await screen.findByText(/You don’t have enough practice coins/)).toBeVisible();
+  expect(screen.getByRole('button', { name: 'Join room' })).toBeDisabled();
+});
+
+test('says the room is unavailable when the invite cannot be previewed', async () => {
+  vi.spyOn(api, 'previewPrivateBlackjackRoom').mockRejectedValue(new api.ApiError(404, 'NOT_FOUND', 'Room unavailable.'));
+  open('guest');
+  fireEvent.change(screen.getByLabelText('Invite code'), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Check the room' }));
+  expect(await screen.findByText(/Room unavailable/)).toBeVisible();
+});
+
 test('a claim that works shows the result and loads the balance again, once however often the room is polled', async () => {
   const live: api.PrivateBlackjackRoom = { ...activeRoom, stake: 100 };
   const settled: api.PrivateBlackjackRoom = { ...live, version: 2, settlement: { outcome: 'forfeit', winner: 'guest' } };
