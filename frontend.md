@@ -11,6 +11,13 @@ This is a working list of frontend ideas, not a commitment to implement every it
 
 ## Candidate next features
 
+Game features come first for now. Each new game must be popular and well known, and must use a mechanic the site doesn't have yet (see `AGENTS.md`). The owner picks which game is built next.
+
+- [ ] Snake (arcade, real-time): `snake.html` at the repo root is untracked and unclaimed. Port it into `card-casino/` as a React game with no money involved, and check it against the rule above. It would be the first real-time, reaction-based game on the site.
+- [ ] Liar's Dice: dice, bluffing and hidden rolls, with bots for solo play. The site has no dice or bluffing game yet.
+- [ ] Mahjong solitaire: matching tiles in a layout. The site has no tile game yet, so it needs a new tile component.
+- [ ] Cribbage: card pegging on a scoring board. Its pegging and counting are different from rummy and crazy eights.
+- [ ] Battleship: turn-based guessing on hidden grids. It is a candidate for the first PvP game, after the private room design and backend work exist.
 - [ ] More guided first-game tutorials, starting with another game after checking which players find difficult. Follow the existing optional Blackjack guide and support both languages.
 - [ ] Achievements or personal challenges for exploring different games. Agree the goals and rewards before implementation; avoid tying rewards to unverified results.
 - [ ] Practice experience: make the distinction between practice coins and ranked Slots clearer throughout the interface. Confirm the desired flow and wallet behavior before changing it.
@@ -22,7 +29,6 @@ This is a working list of frontend ideas, not a commitment to implement every it
 - [ ] Friends and sharing: explore a friends list and ways to invite or share with friends. Coordinate account, privacy and backend requirements before designing flows.
 - [ ] Card cosmetics: let players choose card-front and card-back styles; decide how preferences and any unlocks are saved.
 - [ ] Currency presentation: explore the planned Blibbucks, Bintar and Gigglebucks denominations. Confirm their relationship to existing practice and ranked balances before displaying or converting them.
-- [ ] Expand the game catalogue with well-known board, card or arcade games; agree the first game and its rules before implementation.
 - [ ] Competitive events or tournaments: only consider these after server-authoritative game results and wallet settlement are available for the relevant games. Clearly distinguish ranked standings from practice statistics.
 - [ ] Change username: a name field on the profile or settings screen, messages for invalid and taken names in English and Chinese, and a confirmation step. Build after the backend endpoint in `docs/tasks/backend.md` exists. Idea source: `FEATURE-CHECKLIST.md`, "Account and profile".
 
