@@ -4,6 +4,7 @@ This is a working list of frontend ideas, not a commitment to implement every it
 
 ## Current work
 
+- [ ] Check the private blackjack lobby and match at 320 px in both languages before opening the PR, then smoke-test a host and guest on the deployed API (issue #80).
 - [x] Improve narrow-screen game finder filters and shortcut touch targets (issue #60). The filters use a two-column layout on small screens; game shortcuts and controls have larger touch targets.
 - [x] Landlord, favourites, recent games, a Blackjack guide, and server-settled ranked Slots are present on main.
 - [ ] Verify the mobile game finder in a real browser at narrow widths, including long translated labels and keyboard navigation. The current change has not been visually checked in a browser.
@@ -51,3 +52,6 @@ The first change is scoped to game navigation CSS, not individual game tables. S
 - [ ] Check Shengji in the game picker in a real browser (#77).
 - [ ] For local frontend tests on this machine, run npx vitest run --pool=forks --poolOptions.forks.minForks=1 --poolOptions.forks.maxForks=3 to avoid worker hangs.
 - [ ] Check the new Landlord and Shengji rules tables (`.rulestable` style, PRs #81 and #92) inside the running app on a real phone. A 390px render of the Rules page in Chrome, in English and Chinese, showed no overflow; the full app, login and menu were not checked.
+- [ ] Check the private blackjack stake picker, leave warning and claim countdown inside the running app with two accounts, on a phone, once the backend stakes (battle-bricks-backliners #51) are deployed. A 320px render of the lobby, a staked match with the leave warning and claim countdown, and a settled match showed no overflow; the deployed API was not tried.
+- [ ] Once backend PR #58 (battle-bricks-backliners) is deployed, try the "Check the room" button and the claim countdown that starts straight away (`awaiting`/`claimableAt`) against the real API with two accounts. The join form with the new button row and the longest preview text was rendered at 320 px in both languages with no overflow (static markup and the built CSS, not the running app). Until then the claim button falls back to the board and the `TOO_EARLY` reply, and "Check the room" shows "Room unavailable" because the route does not exist yet. Then the fallback can be removed (PR #97).
+- [ ] If the backend puts the idle deadline on the room response (`claimableAt`, now only in the `TOO_EARLY` error), start the claim countdown without needing one failed claim first (battle-bricks-backliners #52).

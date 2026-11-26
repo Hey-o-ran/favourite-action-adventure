@@ -1,6 +1,7 @@
 import { useState, type ComponentType } from 'react';
 import { useWallet } from './wallet';
 import { Blackjack } from './games/Blackjack';
+import { BlackjackModes } from './games/PrivateBlackjack';
 import { Klondike } from './games/Klondike';
 import { VideoPoker } from './games/VideoPoker';
 import { HigherLower } from './games/HigherLower';
@@ -237,7 +238,7 @@ const GAMES: GameEntry[] = [
 ];
 
 export function App() {
-  const { balance, flush } = useWallet();
+  const { balance, flush, refresh } = useWallet();
   const { session, logout: endSession } = useSession();
   const { t, lang, setLang } = useI18n();
   /** Saves any unsaved coin change first, so logging out never loses it. */
@@ -393,7 +394,13 @@ export function App() {
               <Slots ranked={{ userId: session.user.userId, token: session.idToken, active: activeId === id && view === 'game', onUnauthorized: endSession }} />
             ) : (
               <GameScope gameId={id}>
-                <Component />
+                {id === 'blackjack' ? (
+                  <BlackjackModes key={session.user.userId} userId={session.user.userId} token={session.idToken}
+                    active={activeId === id && view === 'game'} onUnauthorized={endSession}
+                    balance={balance} flushBalance={flush} reloadBalance={refresh}>
+                    <Component />
+                  </BlackjackModes>
+                ) : <Component />}
               </GameScope>
             )}
           </div>
