@@ -19,6 +19,7 @@ import { Rules } from './components/Rules';
 import { UpdateLog } from './components/UpdateLog';
 import { AdminPanel } from './components/AdminPanel';
 import { AdminGate } from './components/AdminGate';
+import { OpenPlayerProfile, PlayerName, PlayerProfile } from './components/PlayerProfile';
 import { Leaderboard } from './components/Leaderboard';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { SaveStatus } from './components/SaveStatus';
@@ -281,7 +282,8 @@ export function App() {
   const [sort, setSort] = useState<SortOrder>('default');
   const [view, setView] = useState<'game' | 'rules' | 'updates' | 'admin' | 'leaderboard'>('game');
   // Time spent playing, for the stats: only counted while a game is showing, not the rules or the leaderboard.
-  usePlaytime(activeId, view === 'game');
+  const [profileId, setProfileId] = useState<string | null>(null);
+  usePlaytime(activeId, view === 'game' && !profileId);
   const showRules = view !== 'game';
   /** Set once the admin password has been entered. It lasts until the page is reloaded or you log out. */
   const [adminUnlocked, setAdminUnlocked] = useState(false);
@@ -323,11 +325,14 @@ export function App() {
   ];
 
   return (
-    <div className="app">
+    <OpenPlayerProfile.Provider value={setProfileId}>
+      {profileId && <PlayerProfile key={profileId} userId={profileId} onBack={() => setProfileId(null)} />}
+      <div className="app" hidden={profileId !== null}>
       <AnnouncementBar />
       <header>
         <h1>{t('header.title')}</h1>
         <div className="header-actions">
+          <PlayerName userId={session.user.userId} name={session.user.displayName} />
           <div className="balance" aria-live="polite">
             {t('header.coins', { amount: balance })} <small>({lang === 'zh-CN' ? '\u7ec3\u4e60' : 'practice'})</small>
           </div>
@@ -391,12 +396,12 @@ export function App() {
         {GAMES.map(({ id, Component }) => (
           <div key={id} hidden={id !== activeId}>
             {id === 'slots' ? (
-              <Slots ranked={{ userId: session.user.userId, token: session.idToken, active: activeId === id && view === 'game', onUnauthorized: endSession }} />
+              <Slots ranked={{ userId: session.user.userId, token: session.idToken, active: activeId === id && view === 'game' && !profileId, onUnauthorized: endSession }} />
             ) : (
               <GameScope gameId={id}>
                 {id === 'blackjack' ? (
                   <BlackjackModes key={session.user.userId} userId={session.user.userId} token={session.idToken}
-                    active={activeId === id && view === 'game'} onUnauthorized={endSession}
+                    active={activeId === id && view === 'game' && !profileId} onUnauthorized={endSession}
                     balance={balance} flushBalance={flush} reloadBalance={refresh}>
                     <Component />
                   </BlackjackModes>
@@ -407,5 +412,6 @@ export function App() {
         ))}
       </div>
     </div>
+    </OpenPlayerProfile.Provider>
   );
 }

@@ -1,9 +1,10 @@
+import { PlayerName } from './PlayerProfile';
 import { useState } from 'react';
 import { isLive } from '../abuse';
 import { useAbuseEvents, type EventOutcome } from '../abuseEvents';
 import { eventWords } from '../abuseText';
 import { useCoinNotices } from '../coinNotices';
-import { useI18n, type MessageKey, type Translate } from '../i18n';
+import { formatNumber, useI18n, type MessageKey, type Translate } from '../i18n';
 import { useWinAnnouncements } from '../winAnnouncements';
 import type { AbuseEvent } from '../api';
 import { VerifiedBadge } from './VerifiedBadge';
@@ -30,11 +31,14 @@ export function AnnouncementBar() {
   return (
     <div className="abuse-bars">
       {wins.map((w) => {
-        const text = t('announce.bigWin', { name: w.displayName, win: t(`win.${w.win}` as MessageKey), prize: w.prize });
+        const win = t(`win.${w.win}` as MessageKey);
+        const text = t('announce.bigWin', { name: w.displayName, win, prize: w.prize });
         return (
           <div key={w.announcementId} className="abuse-bar saved" role="status">
             <span className="abuse-title">{t('announce.winTitle')}</span>
-            <span className="abuse-message">{text}</span>
+            <span className="abuse-message">{tx('announce.bigWin', {
+              name: <PlayerName userId={w.userId} name={w.displayName} />, win, prize: formatNumber(w.prize),
+            })}</span>
             {w.verified && <VerifiedBadge />}
             <button className="abuse-dismiss" onClick={() => dismissWin(w.announcementId)} aria-label={t('announce.dismiss', { text })}>
               ×
@@ -51,7 +55,10 @@ export function AnnouncementBar() {
         return (
           <div key={n.noticeId} className={`abuse-bar ${sent ? 'saved' : 'removed'}`} role="status">
             <span className="abuse-title">{sent ? t('announce.coinsSent') : t('announce.coinsRemoved')}</span>
-            <span className="abuse-message">{text}</span>
+            <span className="abuse-message">{tx(sent ? 'announce.sentText' : 'announce.removedText', {
+              name: <PlayerName userId={n.senderUserId} name={n.senderDisplayName} />,
+              amount: formatNumber(Math.abs(n.amount)),
+            })}</span>
             <button className="abuse-dismiss" onClick={() => dismissNotice(n.noticeId)} aria-label={t('announce.dismiss', { text })}>
               ×
             </button>

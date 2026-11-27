@@ -1,3 +1,4 @@
+import { PlayerName } from './PlayerProfile';
 import { useState, type FormEvent } from 'react';
 import { ApiError, getPlayerLog, searchLogAccounts, type LogAccount, type LogEntry, type LogType } from '../api';
 import { useI18n, type MessageKey, type Translate } from '../i18n';
@@ -156,7 +157,7 @@ export function AdminLog() {
           <tbody>
             {accounts.map((a) => (
               <tr key={a.userId} className={a.userId === chosen?.userId ? 'chosen' : undefined}>
-                <td>{a.displayName}</td>
+                <td><PlayerName userId={a.userId} name={a.displayName} /></td>
                 <td>{a.email}</td>
                 <td>{a.status}</td>
                 <td>

@@ -161,6 +161,7 @@ export const giveCoins = async (token: string, userId: string, amount: number) =
 
 /** A message to the player, such as "250 coins have been sent to you by <admin>". */
 export interface CoinNotice {
+  senderUserId?: string;
   noticeId: string;
   /** Positive when coins were sent, negative when they were removed. */
   amount: number;
@@ -235,6 +236,7 @@ export const recordStats = async (token: string, report: StatsReport) =>
 
 /** One line of the leaderboard: a player's rank, name and coins. Never an email or account id. */
 export interface LeaderboardEntry {
+  userId?: string;
   rank: number;
   displayName: string;
   coins: number;
@@ -243,6 +245,15 @@ export interface LeaderboardEntry {
   /** Wins, draws, losses and play time for the chosen period. Missing from an older server, which has no stats yet. */
   stats?: PlayerStats;
 }
+export interface PlayerProfileData {
+  displayName: string;
+  createdAt: string;
+  lastSeenAt: string | null;
+}
+
+export const getPlayerProfile = async (token: string, userId: string) =>
+  (await request<PlayerProfileData>('GET', `/v1/users/${encodeURIComponent(userId)}/profile`, undefined, token))!;
+
 export interface LeaderboardResponse {
   /** The top players, best first. */
   entries: LeaderboardEntry[];
@@ -306,6 +317,7 @@ export interface WinReportBody {
 export const reportWin = async (token: string, body: WinReportBody) =>
   (await request<{ confirmed: boolean; announced: boolean }>('POST', '/v1/me/wins', body, token))!;
 export interface WinAnnouncement {
+  userId?: string;
   announcementId: string;
   displayName: string;
   verified: boolean;
