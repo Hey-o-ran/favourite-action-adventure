@@ -1,18 +1,20 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { ApiError, getPlayerProfile, type PlayerProfileData } from '../api';
+import { ApiError, getPlayerProfile, getPublicPlayerProfile, type PlayerProfileData } from '../api';
 import { useI18n } from '../i18n';
 import { useSession } from '../session';
 
-export const OpenPlayerProfile = createContext<((userId: string) => void) | null>(null);
+export type ProfileTarget = { id: string; kind: 'account' | 'public' };
+export const OpenPlayerProfile = createContext<((target: ProfileTarget) => void) | null>(null);
 
-export function PlayerName({ userId, name }: { userId?: string; name: string }) {
+export function PlayerName({ userId, profileId, name }: { userId?: string; profileId?: string; name: string }) {
   const open = useContext(OpenPlayerProfile);
-  return userId && open
-    ? <button type="button" className="profile-name" onClick={() => open(userId)}>{name}</button>
+  const target: ProfileTarget | undefined = profileId ? { id: profileId, kind: 'public' } : userId ? { id: userId, kind: 'account' } : undefined;
+  return target && open
+    ? <button type="button" className="profile-name" onClick={() => open(target)}>{name}</button>
     : <>{name}</>;
 }
 
-export function PlayerProfile({ userId, onBack }: { userId: string; onBack: () => void }) {
+export function PlayerProfile({ target: { id, kind }, onBack }: { target: ProfileTarget; onBack: () => void }) {
   const { session, logout } = useSession();
   const { lang, t } = useI18n();
   const [profile, setProfile] = useState<PlayerProfileData>();
@@ -20,7 +22,8 @@ export function PlayerProfile({ userId, onBack }: { userId: string; onBack: () =
 
   useEffect(() => {
     let current = true;
-    getPlayerProfile(session.idToken, userId).then((data) => {
+    const lookup = kind === 'public' ? getPublicPlayerProfile : getPlayerProfile;
+    lookup(session.idToken, id).then((data) => {
       if (current) setProfile(data);
     }).catch((reason: unknown) => {
       if (!current) return;
@@ -31,7 +34,7 @@ export function PlayerProfile({ userId, onBack }: { userId: string; onBack: () =
       setError(reason instanceof ApiError && reason.status === 404 ? 'profile.notFound' : 'profile.failed');
     });
     return () => { current = false; };
-  }, [session.idToken, userId, logout]);
+  }, [session.idToken, id, kind, logout]);
 
   const date = new Intl.DateTimeFormat(lang, { dateStyle: 'long' });
   const relative = new Intl.RelativeTimeFormat(lang, { numeric: 'always' });

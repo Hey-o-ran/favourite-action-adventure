@@ -112,7 +112,7 @@ export function Leaderboard() {
                   <tr className={[`rank-${e.rank}`, mine && 'me'].filter(Boolean).join(' ')}>
                     <td>{e.rank}</td>
                     <td>
-                      <PlayerName userId={e.userId ?? (mine ? session.user.userId : undefined)} name={e.displayName} />
+                      <PlayerName profileId={e.profileId} userId={mine ? session.user.userId : undefined} name={e.displayName} />
                       {e.verified && <VerifiedBadge />}
                       {mine && <span className="you-tag"> {t('leaderboard.you')}</span>}
                     </td>

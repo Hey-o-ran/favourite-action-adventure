@@ -37,7 +37,7 @@ export function AnnouncementBar() {
           <div key={w.announcementId} className="abuse-bar saved" role="status">
             <span className="abuse-title">{t('announce.winTitle')}</span>
             <span className="abuse-message">{tx('announce.bigWin', {
-              name: <PlayerName userId={w.userId} name={w.displayName} />, win, prize: formatNumber(w.prize),
+              name: <PlayerName profileId={w.profileId} name={w.displayName} />, win, prize: formatNumber(w.prize),
             })}</span>
             {w.verified && <VerifiedBadge />}
             <button className="abuse-dismiss" onClick={() => dismissWin(w.announcementId)} aria-label={t('announce.dismiss', { text })}>
@@ -56,7 +56,7 @@ export function AnnouncementBar() {
           <div key={n.noticeId} className={`abuse-bar ${sent ? 'saved' : 'removed'}`} role="status">
             <span className="abuse-title">{sent ? t('announce.coinsSent') : t('announce.coinsRemoved')}</span>
             <span className="abuse-message">{tx(sent ? 'announce.sentText' : 'announce.removedText', {
-              name: <PlayerName userId={n.senderUserId} name={n.senderDisplayName} />,
+              name: <PlayerName profileId={n.senderProfileId} name={n.senderDisplayName} />,
               amount: formatNumber(Math.abs(n.amount)),
             })}</span>
             <button className="abuse-dismiss" onClick={() => dismissNotice(n.noticeId)} aria-label={t('announce.dismiss', { text })}>

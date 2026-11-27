@@ -2,13 +2,14 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, getPlayerProfile } from '../api';
+import { ApiError, getPlayerProfile, getPublicPlayerProfile } from '../api';
 import { SessionContext, type Session } from '../session';
 import { OpenPlayerProfile, PlayerName, PlayerProfile } from './PlayerProfile';
 
 vi.mock('../api', async (original) => ({
   ...await original<typeof import('../api')>(),
   getPlayerProfile: vi.fn(),
+  getPublicPlayerProfile: vi.fn(),
 }));
 
 const session: Session = {
@@ -31,7 +32,7 @@ describe('player profiles', () => {
     });
     const onBack = vi.fn();
     render(<SessionContext.Provider value={{ session, logout: vi.fn() }}>
-      <PlayerProfile userId="player" onBack={onBack} />
+      <PlayerProfile target={{ id: 'player', kind: 'account' }} onBack={onBack} />
     </SessionContext.Provider>);
     expect(await screen.findByRole('heading', { name: 'Player' })).toBeVisible();
     expect(screen.getByText('Unknown')).toBeVisible();
@@ -41,21 +42,22 @@ describe('player profiles', () => {
   });
 
   it('shows an unavailable profile as player not found', async () => {
-    vi.mocked(getPlayerProfile).mockRejectedValue(new ApiError(404, 'USER_NOT_FOUND', 'No such user'));
+    vi.mocked(getPublicPlayerProfile).mockRejectedValue(new ApiError(404, 'USER_NOT_FOUND', 'No such user'));
     render(<SessionContext.Provider value={{ session, logout: vi.fn() }}>
-      <PlayerProfile userId="unavailable" onBack={vi.fn()} />
+      <PlayerProfile target={{ id: 'p_unavailable', kind: 'public' }} onBack={vi.fn()} />
     </SessionContext.Provider>);
     expect(await screen.findByRole('alert')).toHaveTextContent('Player not found');
+    expect(getPublicPlayerProfile).toHaveBeenCalledWith('token', 'p_unavailable');
   });
 
   it('opens a linked name by ID and displays names from older responses as text', () => {
     const open = vi.fn();
     render(<OpenPlayerProfile.Provider value={open}>
-      <PlayerName userId="stable-id" name="Linked player" />
+      <PlayerName profileId="p_stable-id" name="Linked player" />
       <PlayerName name="Legacy player" />
     </OpenPlayerProfile.Provider>);
     fireEvent.click(screen.getByRole('button', { name: 'Linked player' }));
-    expect(open).toHaveBeenCalledWith('stable-id');
+    expect(open).toHaveBeenCalledWith({ id: 'p_stable-id', kind: 'public' });
     expect(screen.getByText('Legacy player')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Legacy player' })).toBeNull();
   });
