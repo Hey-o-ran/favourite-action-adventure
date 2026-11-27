@@ -164,6 +164,20 @@ test('leaving mid-match warns that it forfeits the pot, and only leaves once con
   expect(await screen.findByRole('button', { name: 'Create room' })).toBeVisible();
 });
 
+test('leaving a room the server no longer has goes back to the lobby instead of keeping the player in it', async () => {
+  vi.spyOn(api, 'getPrivateBlackjackRoom').mockResolvedValue(activeRoom);
+  vi.spyOn(api, 'joinPrivateBlackjackRoom').mockResolvedValue(activeRoom);
+  const leave = vi.spyOn(api, 'leavePrivateBlackjackRoom').mockRejectedValue(new api.ApiError(404, 'UNKNOWN', 'Not Found'));
+  open('guest');
+  fireEvent.change(screen.getByLabelText('Invite code'), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Join room' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Leave room' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Leave and forfeit' }));
+  await waitFor(() => expect(leave).toHaveBeenCalledWith('test-token', code));
+  expect(await screen.findByRole('button', { name: 'Create room' })).toBeVisible();
+  expect(sessionStorage.getItem('private-blackjack:guest')).toBeNull();
+});
+
 test('shows the claim button only while the other player holds the move', async () => {
   vi.spyOn(api, 'getPrivateBlackjackRoom').mockResolvedValue(activeRoom);
   vi.spyOn(api, 'joinPrivateBlackjackRoom').mockResolvedValue(activeRoom);

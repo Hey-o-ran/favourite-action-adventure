@@ -195,6 +195,12 @@ function PrivateBlackjack({ userId, token, active, onUnauthorized, balance, flus
         // Not an error to show: the claim button counts down to the moment it will work.
         setClaimableAt(tooEarly);
         setNow(Date.now());
+      } else if (options.closes && error instanceof ApiError && error.status === 404) {
+        // The server has no such room to leave (it expired or was closed, or cannot be left): there is nothing to
+        // wait for, so go back to the lobby instead of keeping the player stuck in it.
+        rememberCode(key, '');
+        setCode('');
+        setRoom(undefined);
       } else if (error instanceof ApiError && error.code === 'NOT_ENOUGH_COINS') setMessage('privateBlackjack.notEnough');
       else if (error instanceof ApiError && error.code === 'VALIDATION_ERROR' && error.fields?.stake) setMessage('privateBlackjack.badStake');
       else if (error instanceof ApiError && error.status === 409) setMessage('privateBlackjack.conflict');
