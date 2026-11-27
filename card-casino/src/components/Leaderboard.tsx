@@ -1,3 +1,4 @@
+import { PlayerName } from './PlayerProfile';
 import { Fragment, useEffect, useState } from 'react';
 import { ApiError, getLeaderboard, type LeaderboardPeriod, type LeaderboardResponse, type PlayerStats } from '../api';
 import { useI18n, formatNumber } from '../i18n';
@@ -111,7 +112,7 @@ export function Leaderboard() {
                   <tr className={[`rank-${e.rank}`, mine && 'me'].filter(Boolean).join(' ')}>
                     <td>{e.rank}</td>
                     <td>
-                      {e.displayName}
+                      <PlayerName profileId={e.profileId} userId={mine ? session.user.userId : undefined} name={e.displayName} />
                       {e.verified && <VerifiedBadge />}
                       {mine && <span className="you-tag"> {t('leaderboard.you')}</span>}
                     </td>
