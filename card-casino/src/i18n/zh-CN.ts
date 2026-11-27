@@ -3,6 +3,16 @@ import { rulesZh } from './rules.zh';
 
 /** Simplified Chinese. It must have every key that `en-GB.ts` has, and use the same {values}. */
 export const zhCN: Record<MessageKey, string> = {
+  'appearance.title': '纸牌外观',
+  'appearance.device': '保存在此设备上。',
+  'appearance.face': '牌面',
+  'appearance.back': '牌背',
+  'appearance.classic': '经典',
+  'appearance.ivory': '象牙色',
+  'appearance.blue': '蓝色',
+  'appearance.red': '红色',
+  'appearance.green': '绿色',
+  'appearance.preview': '纸牌预览',
   'privateBlackjack.practice': "练习",
   'privateBlackjack.title': "私人二十一点",
   'privateBlackjack.mode': "房间模式",
