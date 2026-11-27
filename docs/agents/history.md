@@ -11,6 +11,8 @@ A running log of what each AI agent has done in this repo, so the next agent can
 
 ## Entries
 
+- 2026-11-27 · Codex (GPT-6) · issue #101 · Investigated two full-suite failures; both test files passed in isolation, with a timing-sensitive countdown assertion identified.
+
 - 2026-11-27 · Codex (GPT-6) · card-cosmetics / issue #101 · Added device-local card appearance choices; browser verification and full test follow-up remain.
 
 - 2026-11-27 · Claude Code (Sonnet 5.5) · leave-404 · Leaving a private blackjack room now goes back to the lobby when the server answers 404, so players are no longer stuck while the backend leave route is not deployed.

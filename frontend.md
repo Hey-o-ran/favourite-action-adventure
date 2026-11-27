@@ -4,6 +4,8 @@ This is a working list of frontend ideas, not a commitment to implement every it
 
 ## Current work
 
+- [ ] Investigate and stabilize the full-suite AdminAbuse preview wait under load; its file passes alone (issue #101).
+
 - [ ] Verify card appearance at phone widths in both languages and rerun the full suite after the private-blackjack countdown failure (issue #101).
 
 - [ ] Check the private blackjack lobby and match at 320 px in both languages before opening the PR, then smoke-test a host and guest on the deployed API (issue #80).
