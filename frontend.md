@@ -4,6 +4,8 @@ This is a working list of frontend ideas, not a commitment to implement every it
 
 ## Current work
 
+- [ ] Verify card appearance at phone widths in both languages and rerun the full suite after the private-blackjack countdown failure (issue #101).
+
 - [ ] Check the private blackjack lobby and match at 320 px in both languages before opening the PR, then smoke-test a host and guest on the deployed API (issue #80).
 - [x] Improve narrow-screen game finder filters and shortcut touch targets (issue #60). The filters use a two-column layout on small screens; game shortcuts and controls have larger touch targets.
 - [x] Landlord, favourites, recent games, a Blackjack guide, and server-settled ranked Slots are present on main.
