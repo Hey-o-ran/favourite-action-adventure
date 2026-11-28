@@ -4,9 +4,10 @@ This is a working list of frontend ideas, not a commitment to implement every it
 
 ## Current work
 
-- [ ] Investigate and stabilize the full-suite AdminAbuse preview wait under load; its file passes alone (issue #101).
+- [x] Investigate and stabilize the full-suite AdminAbuse preview wait under load; its file passes alone (issue #101). The wait now allows 5 s, and the countdown tests freeze `Date`. The full suite passes (70 files, 1,193 tests).
 
-- [ ] Verify card appearance at phone widths in both languages and rerun the full suite after the private-blackjack countdown failure (issue #101).
+- [ ] Verify card appearance at phone widths (320 px and 390 px) in English and Chinese in a real browser before merging the card appearance PR (issue #101). No browser was available to the agent that took over this branch, so this is still open.
+- [ ] After backend PR Hey-o-ran/battle-bricks-backliners#67 is deployed, smoke-test the player profile page and name links on the live API in both languages (PR #100, issue #95).
 
 - [ ] Check the private blackjack lobby and match at 320 px in both languages before opening the PR, then smoke-test a host and guest on the deployed API (issue #80).
 - [x] Improve narrow-screen game finder filters and shortcut touch targets (issue #60). The filters use a two-column layout on small screens; game shortcuts and controls have larger touch targets.
