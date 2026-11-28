@@ -679,3 +679,12 @@ button.all-in:disabled { background: #ffffff14; border-color: #ffffff33; font-we
 .private-blackjack-warning p { margin: 0 0 0.5rem; }
 .private-blackjack-claim p { margin: 0.4rem 0 0; max-width: 24rem; color: var(--muted); font-size: 0.85rem; }
 .private-blackjack-settlement { font-weight: 600; }
+
+/* Player-selected card appearance */
+:root[data-card-face="ivory"] .card:not(.back) { background: #fff2d2; }
+:root[data-card-back="red"] .card.back { background: repeating-linear-gradient(45deg, #7f1d1d 0 6px, #b91c1c 6px 12px); }
+:root[data-card-back="green"] .card.back { background: repeating-linear-gradient(45deg, #14532d 0 6px, #15803d 6px 12px); }
+.card-appearance-controls { display: flex; flex-wrap: wrap; gap: 16px; }
+.card-appearance-controls label { display: flex; flex-direction: column; gap: 6px; }
+.card-appearance-controls select { font: inherit; padding: 8px; max-width: 100%; }
+.card-appearance-preview { margin-top: 16px; }

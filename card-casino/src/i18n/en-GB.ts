@@ -6,6 +6,16 @@ import { rulesEn } from './rules';
  * `{name}` marks a value that is filled in when the text is shown.
  */
 export const enGB = {
+  'appearance.title': 'Card appearance',
+  'appearance.device': 'Saved on this device.',
+  'appearance.face': 'Card front',
+  'appearance.back': 'Card back',
+  'appearance.classic': 'Classic',
+  'appearance.ivory': 'Ivory',
+  'appearance.blue': 'Blue',
+  'appearance.red': 'Red',
+  'appearance.green': 'Green',
+  'appearance.preview': 'Card preview',
   'privateBlackjack.practice': "Practice",
   'privateBlackjack.title': "Private blackjack",
   'privateBlackjack.mode': "Room mode",

@@ -45,7 +45,8 @@ const renderForm = async () => {
       </WalletProvider>
     </SessionContext.Provider>,
   );
-  await screen.findByRole('heading', { name: /admin abuse/i });
+  // The wallet loads the mocked balance first; allow longer than the default 1 s when the full suite is busy.
+  await screen.findByRole('heading', { name: /admin abuse/i }, { timeout: 5000 });
 };
 
 beforeEach(() => {

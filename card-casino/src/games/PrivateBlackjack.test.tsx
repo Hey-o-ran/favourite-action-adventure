@@ -25,6 +25,7 @@ afterEach(() => {
   cleanup();
   sessionStorage.clear();
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 /** Opens the private blackjack lobby. `wallet` counts how often the balance was saved and loaded again. */
@@ -200,6 +201,8 @@ test('shows the claim button only while the other player holds the move', async 
 });
 
 test('a claim that comes too early counts down to when it will work', async () => {
+  // Freeze Date so a slow render cannot push the countdown from 1:30 to 1:29.
+  vi.useFakeTimers({ toFake: ['Date'] });
   vi.spyOn(api, 'getPrivateBlackjackRoom').mockResolvedValue(activeRoom);
   vi.spyOn(api, 'joinPrivateBlackjackRoom').mockResolvedValue(activeRoom);
   const claim = vi.spyOn(api, 'claimPrivateBlackjackForfeit')
@@ -214,6 +217,8 @@ test('a claim that comes too early counts down to when it will work', async () =
 });
 
 test('counts down to the deadline the room response carries, without a failed claim', async () => {
+  // Freeze Date so a slow render cannot push the countdown from 1:30 to 1:29.
+  vi.useFakeTimers({ toFake: ['Date'] });
   const waiting = { ...activeRoom, awaiting: 'host', claimableAt: Date.now() + 90_000 };
   vi.spyOn(api, 'getPrivateBlackjackRoom').mockResolvedValue(waiting);
   vi.spyOn(api, 'joinPrivateBlackjackRoom').mockResolvedValue(waiting);
